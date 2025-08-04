@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/chatContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@android:color/white"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+
+    <TextView
+        android:id="@+id/chatTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Health Screening with Pepper"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_gravity="center_horizontal"
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/progressText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Question 1 of 9"
+        android:textSize="16sp"
+        android:layout_gravity="center_horizontal"
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:overScrollMode="always">
+
+        <LinearLayout
+            android:id="@+id/messageContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="16dp" />
+    </ScrollView>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="8dp"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/editTextQuestion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Tapez votre question..."
+            android:inputType="text"
+            android:imeOptions="actionSend"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+
+
+
+        <ImageButton
+            android:id="@+id/buttonMic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_btn_speak_now"
+            android:contentDescription="Microphone"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:layout_marginStart="8dp"
+            app:tint="@android:color/black" />
+
+        <Button
+            android:id="@+id/buttonSendQuestion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Envoyer"
+            android:layout_marginStart="8dp"
+            android:textColor="@android:color/black"/>
+    </LinearLayout>
+</LinearLayout>

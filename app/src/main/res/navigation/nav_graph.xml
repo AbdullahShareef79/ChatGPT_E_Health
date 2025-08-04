@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/startChildFragment">
+
+    <!-- 1. Écran de démarrage "StartChildFragment" -->
+    <fragment
+        android:id="@+id/startChildFragment"
+        android:name="com.example.pepperapp.ui.Fragments.StartChildFragment"
+        android:label="Start"
+        tools:layout="@layout/fragment_start_child">
+        <action
+            android:id="@+id/action_startChildFragment_to_chooseFragment"
+            app:destination="@id/chooseFragment" />
+    </fragment>
+
+    <!-- 2. Écran de choix -->
+    <fragment
+        android:id="@+id/chooseFragment"
+        android:name="com.example.pepperapp.ui.Fragments.ChooseFragment"
+        android:label="Choose"
+        tools:layout="@layout/fragment_choose">
+        <action
+            android:id="@+id/action_chooseFragment_to_listenStoryFragment"
+            app:destination="@id/listenStoryFragment" />
+        <action
+            android:id="@+id/action_chooseFragment_to_storySelectionFragment"
+            app:destination="@id/storySelectionFragment" />
+        <action
+            android:id="@+id/action_chooseFragment_to_interactionsFragment"
+            app:destination="@id/interactionsFragment" />
+
+        <action
+            android:id="@+id/action_chooseFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
+
+        <action
+            android:id="@+id/action_chooseFragment_to_gameFragment"
+            app:destination="@id/gameFragment" />
+    </fragment>
+    <!-- Fragment de jeu -->
+    <fragment
+        android:id="@+id/gameFragment"
+        android:name="com.example.pepperapp.ui.Fragments.GameFragment"
+        android:label="Jeu" />
+
+    <!-- 3.a Écouter l’histoire -->
+    <fragment
+        android:id="@+id/listenStoryFragment"
+        android:name="com.example.pepperapp.ui.Fragments.ListenStoryFragment"
+        android:label="Écouter l’histoire"
+        tools:layout="@layout/fragment_listen_story" />
+
+    <!-- 3.b Histoire du monstre des couleurs -->
+    <fragment
+        android:id="@+id/monstreDesEmotionsFragment"
+        android:name="com.example.pepperapp.ui.Fragments.MonstreDesEmotionsFragment"
+        android:label="Monstre Des Emotions "
+        tools:layout="@layout/fragment_listen_story" />
+
+    <!-- 3.c Histoire de Pepper -->
+    <fragment
+        android:id="@+id/pepperStoryFragment"
+        android:name="com.example.pepperapp.ui.Fragments.PepperStoryFragment"
+        android:label="presentation de Pepper"
+        tools:layout="@layout/fragment_listen_story" />
+
+    <!-- 3.d Sélection d'histoire -->
+    <fragment
+        android:id="@+id/storySelectionFragment"
+        android:name="com.example.pepperapp.ui.Fragments.StorySelectionFragment"
+        android:label="Sélection d'histoire"
+        tools:layout="@layout/fragment_story_selection">
+        <action
+            android:id="@+id/action_storySelectionFragment_to_listenStoryFragment"
+            app:destination="@id/listenStoryFragment" />
+        <action
+            android:id="@+id/action_storySelectionFragment_to_monstreDesEmotionsFragment"
+            app:destination="@id/monstreDesEmotionsFragment" />
+
+        <action
+            android:id="@+id/action_storySelectionFragment_to_pepperStoryFragment"
+            app:destination="@id/pepperStoryFragment" />
+    </fragment>
+
+    <!-- 4. Interactions parent -->
+    <fragment
+        android:id="@+id/interactionsFragment"
+        android:name="com.example.pepperapp.ui.Fragments.InteractionsFragment"
+        android:label="Interactions"
+        tools:layout="@layout/fragment_interactions">
+        <action
+            android:id="@+id/action_interactionsFragment_to_sadFragment"
+            app:destination="@id/sadFragment" />
+        <action
+            android:id="@+id/action_interactionsFragment_to_happyFragment"
+            app:destination="@id/happyFragment" />
+        <action
+            android:id="@+id/action_interactionsFragment_to_hugFragment"
+            app:destination="@id/hugFragment" />
+        <action
+            android:id="@+id/action_interactionsFragment_to_goodbyeFragment"
+            app:destination="@id/goodbyeFragment" />
+        <action
+            android:id="@+id/action_interactionsFragment_to_colerefragment"
+            app:destination="@id/colereFragment" />
+    </fragment>
+
+    <!-- 5. Fragments d’émotions -->
+    <fragment
+        android:id="@+id/sadFragment"
+        android:name="com.example.pepperapp.ui.Fragments.SadFragment"
+        android:label="Sad"
+        tools:layout="@layout/fragment_sad" />
+    <fragment
+        android:id="@+id/happyFragment"
+        android:name="com.example.pepperapp.ui.Fragments.HappyFragment"
+        android:label="Happy"
+        tools:layout="@layout/fragment_happy" />
+    <fragment
+        android:id="@+id/hugFragment"
+        android:name="com.example.pepperapp.ui.Fragments.HugFragment"
+        android:label="Hug"
+        tools:layout="@layout/fragment_hug" />
+    <fragment
+        android:id="@+id/goodbyeFragment"
+        android:name="com.example.pepperapp.ui.Fragments.GoodbyeFragment"
+        android:label="Goodbye"
+        tools:layout="@layout/fragment_goodbye" />
+    <fragment
+         android:id="@+id/colereFragment"
+           android:name="com.example.pepperapp.ui.Fragments.ColereFragment"
+           android:label="Colère"
+        />
+
+
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="com.example.pepperapp.ui.Fragments.ChatFragment"
+        android:label="Health Screening"
+        tools:layout="@layout/fragment_chat" />
+
+
+</navigation>
