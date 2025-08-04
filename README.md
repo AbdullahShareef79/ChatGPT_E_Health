@@ -1,6 +1,4 @@
-<div align="center">
-  <img src="./doc/iconpepper.png" width="40%" alt="YourBestFriendPepper logo">
-</div>
+
 
 # ChatGPT E-Health: Pepper Robot PHQ-9 Health Screening
 
