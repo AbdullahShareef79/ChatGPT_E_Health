@@ -2,116 +2,131 @@
   <img src="./doc/iconpepper.png" width="40%" alt="YourBestFriendPepper logo">
 </div>
 
-# YourBestFriendPepper
+# ChatGPT E-Health: Pepper Robot PHQ-9 Health Screening
 
-> **Study and Research Project (TER) – Master 1 Computer Science – HAI823I – 2024‑2025**
-> **University of Montpellier**
-> Developed by **Hadil Ladj** (MSc Software Engineering) — Supervised by **Prof. Madalina Croitoru**
+## Overview
 
-**YourBestFriendPepper** is an Android application designed for the **Pepper** humanoid robot (SoftBank Robotics). The app offers children aged **3 to 6** an interactive journey to identify, express, and understand emotions through storytelling, tactile interactions, and an AI‑powered open dialogue.
+This project transforms the **YourBestFriendPepper** Android application to include a comprehensive **PHQ-9 mental health screening** system. The robot conducts guided health assessments using natural language processing and AI-powered analysis.
 
----
+## 🎯 Key Features
 
-## Target Audience
+### **PHQ-9 Health Screening**
+- **Guided Assessment**: Conducts all 9 PHQ-9 questions sequentially
+- **Voice & Text Input**: Dual input methods for accessibility
+- **Real-time Progress**: Visual progress tracking with question counter
+- **AI Analysis**: OpenAI GPT-4o-mini for empathetic summaries
+- **Data Persistence**: Local storage of all screening sessions
 
-* **Age Range:** 3 – 6 years
-* **Settings:** kindergartens, educational workshops, child–robot mediation
-
----
-
-##  Educational Goals
-
-| Goal                      | Description                                                            |
-| ------------------------- | ---------------------------------------------------------------------- |
-| **Emotion recognition**   | Link each basic emotion to a colour (*The Colour Monster* story).      |
-| **Oral expression**       | Encourage children to verbalise and ask questions to the robot.        |
-| **Multimodal engagement** | Combine oral narration **and** tactile feedback to reinforce learning. |
-
----
-
-## 🔍 Research Question
-
-> **“How does a speech-touch bimodal interaction with the Pepper humanoid robot affect emotion-recognition and verbalization in preschoolers (3–6 years)?”**
-
-This question guides the experimental study described in the TER report. The present README focuses on the software implementation.
-
----
-
-## User Flow
-
-1. **Welcome Screen:** illustration + **Start** button.
-2. **Main Menu:** four features — Listen to a story • Emotion interaction • Talk with Pepper (ChatGPT) • Comprehension quiz.
-3. **Stories:**
-
-   * Pepper’s self‑introduction;
-   * *The Colour Monster* by Anna Llenas;
-   * *Mammoth Helmouth’s Furry Wig* by Val Reiyel.
-4. **Emotion Interaction:** child picks an emotion (joy, sadness, anger, fear) → Pepper plays an animation and waits for touch sensors. A **Bye‑bye** button ends the session.
-5. **Free Dialogue:** Pepper, powered by the ChatGPT API, answers children’s questions in his own persona.
-6. **Quiz:** multiple‑choice questions to validate understanding of the story and emotions.
-<img src="./doc/Pepper-Enfant TER.png" width="80%" alt="YourBestFriendPepper screen flow">
-
----
+### **Robot Integration**
+- **QiSDK Voice Recognition**: Natural speech input processing
+- **Pepper Robot Compatibility**: Designed for SoftBank Robotics Pepper
+- **Multimodal Interaction**: Voice, text, and touch interactions
+- **Ethical Design**: Clear disclaimers and supportive messaging
 
 ## 🛠️ Technology Stack
 
-| Technology                                    | Purpose                                                                             |
-| --------------------------------------------- | ----------------------------------------------------------------------------------- |
-| **Android Studio Bumblebee 2021.1.1 Patch 1** | Development & deployment on Pepper                                                  |
-| **QiSDK**                                     | Access to Pepper’s voice, motion, and tactile sensors (robot running **NAOqi 2.9**) |
-| **Kotlin**                                    | Main language (fragment‑based architecture)                                         |
-| **Room / SQLite**                             | Local persistence (quiz answers, logs)                                              |
-| **OpenAI API**                                | AI‑generated responses (ChatGPT)                                                    |
+- **Android Studio Bumblebee 2021.1.1**
+- **Kotlin** - Primary language
+- **QiSDK** - Pepper robot integration
+- **Room Database** - Local data persistence
+- **OpenAI API** - GPT-4o-mini for analysis
+- **OkHttp** - Network communication
 
----
+## 📋 PHQ-9 Implementation
 
-## ⚡ Setup & Requirements
+### Questions Covered
+1. Little interest or pleasure in doing things
+2. Feeling down, depressed, or hopeless
+3. Trouble falling/staying asleep or sleeping too much
+4. Feeling tired or having little energy
+5. Poor appetite or overeating
+6. Feeling bad about self/failure
+7. Trouble concentrating
+8. Moving/speaking slowly
+9. Thoughts of self-harm
 
-1. **OpenAI API Key:** add your key in `src/main/java/com/example/pepperapp/ui/Fragments/ChatFragment.kt` at line 54.
-2. **Start Pepper:** press the button under the screen **once** to boot.
-3. **Network:** connect Pepper and your laptop to the same Wi‑Fi or mobile hotspot.
-4. **ADB Connection:** pull down Pepper’s notification bar to get the IP address, then:
+### Severity Assessment
+- **0-4**: Minimal symptoms
+- **5-9**: Mild symptoms
+- **10-14**: Moderate symptoms
+- **15-19**: Moderately severe symptoms
+- **20-27**: Severe symptoms
 
+## 🚀 Setup Instructions
+
+### Prerequisites
+1. **Android Studio Bumblebee 2021.1.1**
+2. **Pepper Robot** with NAOqi 2.9
+3. **OpenAI API Key** (for AI analysis)
+4. **Network Connection** for API calls
+
+### Installation Steps
+
+1. **Clone the Repository**
    ```bash
-   adb connect <PEPPER_IP>:5555
+   git clone https://github.com/AbdullahShareef79/ChatGPT_E_Health.git
+   cd ChatGPT_E_Health
    ```
-6. **Android Studio:**
 
-   * Open the project with **Android Studio Bumblebee**.
-   * Verify Pepper appears as a connected device.
-   * If not:
+2. **Configure OpenAI API**
+   - Open `app/src/main/java/com/example/pepperapp/ui/Fragments/ChatFragment.kt`
+   - Replace `YOUR_OPENAI_API_KEY_HERE` with your actual OpenAI API key
 
-     ```bash
-     adb kill-server
-     adb start-server
-     adb connect <PEPPER_IP>:5555
-     ```
+3. **Connect to Pepper Robot**
+   - Ensure Pepper and your device are on the same network
+   - Get Pepper's IP address from the notification bar
+   - Use ADB to connect: `adb connect <PEPPER_IP>:5555`
+
+4. **Build and Deploy**
+   - Open project in Android Studio
+   - Select Pepper as the target device
+   - Build and run the application
+
+## 📱 Usage Flow
+
+1. **Launch Application** on Pepper robot
+2. **Select "Health Screening"** from main menu
+3. **Complete 9 Questions** with voice or text input
+4. **Receive AI Analysis** with severity assessment
+5. **View Supportive Feedback** and guidance
+6. **Session Saved** locally for research
+
+## 🔒 Security & Privacy
+
+- **Local Storage**: All sessions stored on device
+- **No Cloud Storage**: Data remains private
+- **API Key Security**: Replace placeholder with actual key
+- **Ethical Design**: Clear disclaimers throughout
+
+## 📊 Research Applications
+
+This implementation supports research on:
+- **Human-Robot Interaction** in healthcare
+- **Mental Health Screening** through robotics
+- **Multimodal Communication** effectiveness
+- **AI-Assisted Healthcare** delivery
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Original Project**: [YourBestFriendPepper](https://github.com/L-Hadil/PepperRobot_AI_assistant) by Hadil Ladj
+- **University of Montpellier** - Research supervision
+- **SoftBank Robotics** - Pepper robot platform
+
+## 📞 Support
+
+For questions or support, please open an issue on GitHub.
 
 ---
 
-## ▶️ Run the App
-
-1. Configure the **OpenAI API key**.
-2. Boot Pepper.
-3. Establish **ADB connection**.
-4. In Android Studio, select Pepper and press ▶️ to install and launch the app.
-
----
-
-## Code Structure
-
-```
-app/
- ├─ ui/
- │   ├─ MainActivity.kt       
- │   └─ Fragments/
- │       ├─ HappyFragment.kt  # joy
- │       ├─ SadFragment.kt    # sadness
- │       └─ …
- ├─ data/                     # Room database (quiz, logs)
- └─ assets/animations/        # .qianim animation files
-```
-
----
-
-> *“Pepper isn’t just a robot — he’s children’s best friend!”* 🤖💛
+**Note**: This is a research project and should not be used as a substitute for professional medical diagnosis or treatment.
