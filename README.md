@@ -104,6 +104,49 @@ This implementation supports research on:
 - **Multimodal Communication** effectiveness
 - **AI-Assisted Healthcare** delivery
 
+### Research Evaluation Features
+
+This implementation includes comprehensive logging and evaluation capabilities for research purposes:
+
+- **Turn-Level Logging**: Every interaction is logged with detailed metadata
+- **GPT Usage Tracking**: Logs when and why GPT is used vs. local logic
+- **Language Detection**: Tracks EN/DE language usage
+- **CSV Export**: Export logs for analysis in Excel/R/Python
+- **A/B Testing**: Toggle GPT on/off for comparison studies
+
+See [docs/LOGGING_AND_EVALUATION.md](docs/LOGGING_AND_EVALUATION.md) for complete details.
+
+### Exporting Interaction Logs
+
+1. Complete a PHQ-9 screening session
+2. Open the app menu (⋮) → "Export Logs"
+3. Retrieve CSV file from device storage using ADB:
+   ```bash
+   adb pull /storage/emulated/0/Android/data/com.example.pepperapp/files/interaction_logs_*.csv
+   ```
+
+### Documentation
+
+- **[Logging and Evaluation](docs/LOGGING_AND_EVALUATION.md)**: Complete logging pipeline documentation
+- **[Prompts and System Messages](docs/PROMPTS_AND_SYSTEM_MESSAGES.md)**: All GPT prompts and robot messages
+
+### Research Data Fields
+
+Each interaction logs:
+- ASR transcript and language detection
+- Local NLP success/failure
+- GPT usage (when, why, model, prompt, response)
+- Final robot output
+- PHQ-9 question mapping
+- Timestamps and session tracking
+
+This enables:
+- Qualitative feedback analysis
+- Quantitative statistics
+- "With vs without GPT" comparison
+- Language reliability analysis
+- NLP failure case studies
+
 ## 🤝 Contributing
 
 1. Fork the repository

@@ -23,9 +23,13 @@ import com.aldebaran.qi.sdk.`object`.locale.Region
 import com.aldebaran.qi.sdk.`object`.locale.Locale as QiLocale
 import com.aldebaran.qi.sdk.`object`.conversation.ListenResult
 import com.example.pepperapp.R
+import com.example.pepperapp.config.GptConfig
+import com.example.pepperapp.data.LogManager
 import com.example.pepperapp.data.PepperDatabase
+import com.example.pepperapp.model.InteractionLogEntry
 import com.example.pepperapp.model.PHQ9Question
 import com.example.pepperapp.model.PHQ9Session
+import com.example.pepperapp.util.LanguageDetector
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,6 +40,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import java.util.UUID
 
 class ChatFragment : Fragment(), RobotLifecycleCallbacks {
 
@@ -53,6 +58,7 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
     private val responses = mutableListOf<Int>()
     private val questions = PHQ9Question.getPHQ9Questions()
     private var isScreeningActive = false
+    private var sessionId: String = UUID.randomUUID().toString()
 
     // OpenAI Configuration
     private val apiKey = "YOUR_OPENAI_API_KEY_HERE" // Replace with your actual OpenAI API key
@@ -84,6 +90,10 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         // Initialize database
         database = PepperDatabase.getDatabase(requireContext())
 
+        // Initialize logging session
+        sessionId = UUID.randomUUID().toString()
+        LogManager.startSession(sessionId)
+
         // Initialize UI components
         messageContainer = view.findViewById(R.id.messageContainer)
         scrollView = view.findViewById(R.id.scrollView)
@@ -109,7 +119,7 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
             val text = questionEditText.text.toString().trim()
             if (text.isNotEmpty()) {
                 if (isScreeningActive) {
-                    handleScreeningResponse(text)
+                    handleScreeningResponse(text, isVoiceInput = false)
                 } else {
                     handleUserInput(text)
                 }
@@ -133,6 +143,8 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         isScreeningActive = true
         currentQuestionIndex = 0
         responses.clear()
+        sessionId = UUID.randomUUID().toString()
+        LogManager.startSession(sessionId)
         
         // Show progress UI
         progressText.visibility = View.VISIBLE
@@ -140,11 +152,28 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         progressBar.max = questions.size
         
         // Add welcome message
-        addMessageBubble(
-            "I will ask you a few questions to check how you've been feeling recently. " +
+        val welcomeMessage = "I will ask you a few questions to check how you've been feeling recently. " +
             "This is not a diagnosis, but it helps you understand your emotions better. " +
-            "Please answer honestly based on the last 2 weeks.",
-            isRobot = true
+            "Please answer honestly based on the last 2 weeks."
+        
+        addMessageBubble(welcomeMessage, isRobot = true)
+        speak(welcomeMessage)
+        
+        // Log robot turn
+        logInteraction(
+            userRawSpeech = null,
+            asrTranscript = "",
+            languageDetected = "EN",
+            phqQuestionId = null,
+            handlingModule = "PEPPER_LOCAL",
+            pepperLocalNlpSuccess = true,
+            gptUsed = false,
+            gptReason = null,
+            gptModel = null,
+            gptPromptSnippet = null,
+            gptResponse = null,
+            finalRobotOutput = welcomeMessage,
+            notes = "Screening started"
         )
         
         // Start with first question
@@ -163,24 +192,206 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         addMessageBubble(questionText, isRobot = true)
         speak(questionText)
         
+        // Log robot turn
+        logInteraction(
+            userRawSpeech = null,
+            asrTranscript = "",
+            languageDetected = "EN",
+            phqQuestionId = "Q${question.id}",
+            handlingModule = "PEPPER_LOCAL",
+            pepperLocalNlpSuccess = true,
+            gptUsed = false,
+            gptReason = null,
+            gptModel = null,
+            gptPromptSnippet = null,
+            gptResponse = null,
+            finalRobotOutput = questionText,
+            notes = "Asking PHQ-9 question ${currentQuestionIndex + 1}"
+        )
+        
         // Update progress
         progressText.text = "Question ${currentQuestionIndex + 1} of ${questions.size}"
         progressBar.progress = currentQuestionIndex + 1
     }
 
-    private fun handleScreeningResponse(response: String) {
+    private fun handleScreeningResponse(response: String, isVoiceInput: Boolean) {
         questionEditText.setText("")
         hideKeyboard()
         
         addMessageBubble(response, isRobot = false)
         
-        // Parse response and get score
-        val score = parseResponseToScore(response, currentQuestionIndex)
-        responses.add(score)
+        // Detect language
+        val languageDetected = LanguageDetector.detectLanguage(response)
         
-        // Move to next question
-        currentQuestionIndex++
-        askCurrentQuestion()
+        // Try local NLP parsing
+        val score = parseResponseToScore(response, currentQuestionIndex)
+        val localNlpSuccess = score >= 0 && score <= 3
+        
+        val question = questions[currentQuestionIndex]
+        val phqQuestionId = "Q${question.id}"
+        
+        // Determine if we need GPT fallback
+        var gptUsed = false
+        var gptReason: String? = null
+        var gptModel: String? = null
+        var gptPromptSnippet: String? = null
+        var gptResponse: String? = null
+        var handlingModule = "PEPPER_LOCAL"
+        var finalRobotOutput = ""
+        
+        if (!localNlpSuccess && GptConfig.isGptEnabled()) {
+            // Local parsing failed, try GPT fallback
+            handlingModule = "GPT_FALLBACK"
+            gptReason = "intent_not_found"
+            
+            lifecycleScope.launch {
+                try {
+                    val gptResult = callGptForResponseParsing(response, currentQuestionIndex)
+                    gptUsed = true
+                    gptModel = "gpt-4o-mini"
+                    gptPromptSnippet = "Parse PHQ-9 response: $response"
+                    gptResponse = gptResult
+                    
+                    // Try to extract score from GPT response
+                    val parsedScore = extractScoreFromGptResponse(gptResult)
+                    if (parsedScore != null) {
+                        responses.add(parsedScore)
+                        finalRobotOutput = "Thank you. Moving to the next question."
+                    } else {
+                        // Still unclear, use default
+                        responses.add(1)
+                        finalRobotOutput = "I understand. Moving to the next question."
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "GPT fallback failed", e)
+                    gptUsed = false
+                    gptReason = "gpt_api_error"
+                    responses.add(1) // Default score
+                    finalRobotOutput = "I understand. Moving to the next question."
+                }
+                
+                withContext(Dispatchers.Main) {
+                    if (finalRobotOutput.isNotEmpty()) {
+                        speak(finalRobotOutput)
+                    }
+                    
+                    // Log the interaction
+                    logInteraction(
+                        userRawSpeech = if (isVoiceInput) response else null,
+                        asrTranscript = response,
+                        languageDetected = languageDetected,
+                        phqQuestionId = phqQuestionId,
+                        handlingModule = handlingModule,
+                        pepperLocalNlpSuccess = localNlpSuccess,
+                        gptUsed = gptUsed,
+                        gptReason = gptReason,
+                        gptModel = gptModel,
+                        gptPromptSnippet = gptPromptSnippet,
+                        gptResponse = gptResponse,
+                        finalRobotOutput = finalRobotOutput,
+                        notes = "Response to question ${currentQuestionIndex + 1}"
+                    )
+                    
+                    // Move to next question
+                    currentQuestionIndex++
+                    askCurrentQuestion()
+                }
+            }
+        } else {
+            // Local parsing succeeded or GPT disabled
+            if (!GptConfig.isGptEnabled() && !localNlpSuccess) {
+                gptReason = "gpt_disabled_experiment"
+            }
+            
+            responses.add(score)
+            finalRobotOutput = "Thank you. Moving to the next question."
+            speak(finalRobotOutput)
+            
+            // Log the interaction
+            logInteraction(
+                userRawSpeech = if (isVoiceInput) response else null,
+                asrTranscript = response,
+                languageDetected = languageDetected,
+                phqQuestionId = phqQuestionId,
+                handlingModule = handlingModule,
+                pepperLocalNlpSuccess = localNlpSuccess,
+                gptUsed = gptUsed,
+                gptReason = gptReason,
+                gptModel = gptModel,
+                gptPromptSnippet = gptPromptSnippet,
+                gptResponse = gptResponse,
+                finalRobotOutput = finalRobotOutput,
+                notes = "Response to question ${currentQuestionIndex + 1}"
+            )
+            
+            // Move to next question
+            currentQuestionIndex++
+            askCurrentQuestion()
+        }
+    }
+
+    private suspend fun callGptForResponseParsing(response: String, questionIndex: Int): String = withContext(Dispatchers.IO) {
+        val question = questions[questionIndex]
+        val prompt = """
+            The user is answering a PHQ-9 mental health screening question.
+            Question: ${question.question}
+            User response: "$response"
+            
+            Determine which option best matches the user's response:
+            - "Not at all" (score 0)
+            - "Several days" (score 1)
+            - "More than half the days" (score 2)
+            - "Nearly every day" (score 3)
+            
+            Respond with ONLY the score number (0, 1, 2, or 3). If unclear, respond with "1".
+        """.trimIndent()
+
+        try {
+            val payload = JSONObject().apply {
+                put("model", "gpt-4o-mini")
+                put("messages", JSONArray().apply {
+                    put(JSONObject().apply {
+                        put("role", "system")
+                        put("content", prompt)
+                    })
+                })
+            }
+
+            val body = payload.toString().toRequestBody("application/json".toMediaType())
+            val request = Request.Builder()
+                .url("https://api.openai.com/v1/chat/completions")
+                .addHeader("Authorization", "Bearer $apiKey")
+                .post(body)
+                .build()
+
+            client.newCall(request).execute().use { resp ->
+                if (!resp.isSuccessful) {
+                    return@withContext "1"
+                }
+                
+                val text = resp.body?.string().orEmpty()
+                val choices = JSONObject(text).getJSONArray("choices")
+                val content = choices.getJSONObject(0)
+                    .getJSONObject("message")
+                    .optString("content", "").trim()
+                
+                content.ifEmpty { "1" }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error calling GPT for parsing", e)
+            "1"
+        }
+    }
+
+    private fun extractScoreFromGptResponse(gptResponse: String): Int? {
+        val cleaned = gptResponse.trim()
+        return when {
+            cleaned.contains("0") -> 0
+            cleaned.contains("1") -> 1
+            cleaned.contains("2") -> 2
+            cleaned.contains("3") -> 3
+            else -> null
+        }
     }
 
     private fun parseResponseToScore(response: String, questionIndex: Int): Int {
@@ -199,7 +410,7 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
                         return question.scores[index]
                     }
                 }
-                1 // Default to "several days" if unclear
+                -1 // Return -1 to indicate failure
             }
         }
     }
@@ -208,16 +419,52 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         val totalScore = responses.sum()
         val severity = getSeverityLevel(totalScore)
         
-        // Generate summary with OpenAI
+        // Generate summary with OpenAI (if enabled)
         lifecycleScope.launch {
-            val summary = generateSummary(totalScore, severity, responses)
+            val summary = if (GptConfig.isGptEnabled()) {
+                generateSummary(totalScore, severity, responses)
+            } else {
+                "Thank you for completing the screening. Your total score is $totalScore, which indicates $severity symptoms. Remember, this is just a tool to help you reflect on your emotions. If you have concerns, please talk to a healthcare provider."
+            }
+            
+            var gptUsed = false
+            var gptModel: String? = null
+            var gptPromptSnippet: String? = null
+            var gptResponse: String? = null
+            
+            if (GptConfig.isGptEnabled()) {
+                gptUsed = true
+                gptModel = "gpt-4o-mini"
+                gptPromptSnippet = "Generate empathetic summary for PHQ-9 score $totalScore"
+                gptResponse = summary
+            }
             
             withContext(Dispatchers.Main) {
                 addMessageBubble(summary, isRobot = true)
                 speak(summary)
                 
+                // Log final interaction
+                logInteraction(
+                    userRawSpeech = null,
+                    asrTranscript = "",
+                    languageDetected = "EN",
+                    phqQuestionId = "COMPLETE",
+                    handlingModule = if (GptConfig.isGptEnabled()) "GPT_FALLBACK" else "PEPPER_LOCAL",
+                    pepperLocalNlpSuccess = true,
+                    gptUsed = gptUsed,
+                    gptReason = if (gptUsed) "summary_generation" else "gpt_disabled_experiment",
+                    gptModel = gptModel,
+                    gptPromptSnippet = gptPromptSnippet,
+                    gptResponse = gptResponse,
+                    finalRobotOutput = summary,
+                    notes = "Screening completed. Score: $totalScore, Severity: $severity"
+                )
+                
                 // Save session to database
                 saveSession(totalScore, severity, summary)
+                
+                // End logging session
+                LogManager.endSession()
                 
                 // Reset UI
                 isScreeningActive = false
@@ -305,6 +552,42 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         }
     }
 
+    private fun logInteraction(
+        userRawSpeech: String?,
+        asrTranscript: String,
+        languageDetected: String,
+        phqQuestionId: String?,
+        handlingModule: String,
+        pepperLocalNlpSuccess: Boolean,
+        gptUsed: Boolean,
+        gptReason: String?,
+        gptModel: String?,
+        gptPromptSnippet: String?,
+        gptResponse: String?,
+        finalRobotOutput: String,
+        notes: String?
+    ) {
+        val entry = InteractionLogEntry(
+            timestamp = System.currentTimeMillis(),
+            sessionId = sessionId,
+            turnIndex = LogManager.getCurrentTurnIndex(),
+            userRawSpeech = userRawSpeech,
+            asrTranscript = asrTranscript,
+            languageDetected = languageDetected,
+            phqQuestionId = phqQuestionId,
+            handlingModule = handlingModule,
+            pepperLocalNlpSuccess = pepperLocalNlpSuccess,
+            gptUsed = gptUsed,
+            gptReason = gptReason,
+            gptModel = gptModel,
+            gptPromptSnippet = gptPromptSnippet,
+            gptResponse = gptResponse,
+            finalRobotOutput = finalRobotOutput,
+            notes = notes
+        )
+        LogManager.logTurn(entry)
+    }
+
     private fun saveSession(totalScore: Int, severity: String, summary: String) {
         lifecycleScope.launch {
             try {
@@ -338,7 +621,7 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
                 withContext(Dispatchers.Main) {
                     questionEditText.setText(text)
                     questionEditText.setSelection(text.length)
-                    handleScreeningResponse(text)
+                    handleScreeningResponse(text, isVoiceInput = true)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Voice recognition error", e)
@@ -356,19 +639,45 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         hideKeyboard()
         addMessageBubble(text, isRobot = false)
 
+        // Detect language
+        val languageDetected = LanguageDetector.detectLanguage(text)
+        
         // Start PHQ-9 screening if user wants to
-        if (text.lowercase().contains("health") || 
+        val shouldStart = text.lowercase().contains("health") || 
             text.lowercase().contains("screening") ||
             text.lowercase().contains("check") ||
-            text.lowercase().contains("feeling")) {
+            text.lowercase().contains("feeling") ||
+            text.lowercase().contains("yes") ||
+            text.lowercase().contains("start")
+        
+        val response = if (shouldStart) {
             startPHQ9Screening()
+            null // Will be handled by startPHQ9Screening
         } else {
-            addMessageBubble(
-                "I'm here to help with a health screening. Would you like to start? " +
-                "Just say 'yes' or type 'start screening' to begin.",
-                isRobot = true
+            "I'm here to help with a health screening. Would you like to start? " +
+            "Just say 'yes' or type 'start screening' to begin."
+        }
+        
+        if (response != null) {
+            addMessageBubble(response, isRobot = true)
+            speak(response)
+            
+            // Log interaction
+            logInteraction(
+                userRawSpeech = null,
+                asrTranscript = text,
+                languageDetected = languageDetected,
+                phqQuestionId = null,
+                handlingModule = "PEPPER_LOCAL",
+                pepperLocalNlpSuccess = true,
+                gptUsed = false,
+                gptReason = null,
+                gptModel = null,
+                gptPromptSnippet = null,
+                gptResponse = null,
+                finalRobotOutput = response,
+                notes = "Initial user input before screening"
             )
-            speak("I'm here to help with a health screening. Would you like to start?")
         }
     }
 
@@ -438,6 +747,7 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
     }
 
     override fun onDestroyView() {
+        LogManager.endSession()
         QiSDK.unregister(requireActivity(), this)
         super.onDestroyView()
     }
