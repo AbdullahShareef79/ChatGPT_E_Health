@@ -440,6 +440,12 @@ class VoicePHQ9GUI:
                 os.unlink(temp_filename)
                 
                 text = transcript.text.strip()
+                
+                # Check if transcription is meaningful
+                if len(text) < 2 or text.lower() in ['oh', 'uh', 'um', 'ah']:
+                    self.root.after(0, lambda: self.add_system_message("❌ No clear speech detected. Please speak your answer clearly."))
+                    return
+                
                 self.root.after(0, lambda: self.process_response(text, is_voice=True))
                 
             except sr.WaitTimeoutError:
@@ -619,11 +625,11 @@ Please consider reaching out to a mental health professional or counselor."""
             resp = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": f"You are helping score PHQ-9 responses. The question is: '{q['question']}'\n\nOptions:\n0 = Not at all\n1 = Several days\n2 = More than half the days\n3 = Nearly every day\n\nRespond with ONLY the number (0, 1, 2, or 3) and the corresponding phrase, separated by |. Example: '1|Several days'"},
-                    {"role": "user", "content": f"User said: '{response}'. What score?"}
+                    {"role": "system", "content": f"Question: {q['question']}\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE"},
+                    {"role": "user", "content": f"{response}"}
                 ],
                 temperature=0,
-                max_tokens=20
+                max_tokens=10
             )
             result = resp.choices[0].message.content.strip()
             parts = result.split('|')
@@ -635,6 +641,30 @@ Please consider reaching out to a mental health professional or counselor."""
                 return (-1, None)
         except:
             return (-1, None)
+    
+    def check_confirmation_with_gpt(self, response: str) -> bool:
+        """Use GPT to understand if user confirmed"""
+        if not OPENAI_API_KEY:
+            resp_lower = response.lower().strip()
+            return any(word in resp_lower for word in ['yes', 'correct', 'right', 'yeah', 'yep', 'ok', 'okay'])
+        
+        try:
+            import openai
+            openai.api_key = OPENAI_API_KEY
+            resp = openai.ChatCompletion.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "Reply YES if confirming, NO if not."},
+                    {"role": "user", "content": f"Is '{response}' a confirmation?"}
+                ],
+                temperature=0,
+                max_tokens=3
+            )
+            result = resp.choices[0].message.content.strip().upper()
+            return "YES" in result
+        except:
+            resp_lower = response.lower().strip()
+            return any(word in resp_lower for word in ['yes', 'correct', 'right', 'yeah', 'yep', 'ok', 'okay'])
     
     def check_consent_with_gpt(self, response: str) -> bool:
         """Use GPT to understand if user consented"""
@@ -649,11 +679,11 @@ Please consider reaching out to a mental health professional or counselor."""
             resp = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "You are analyzing consent. Respond with ONLY 'YES' if the user agrees/consents, or 'NO' if they decline/refuse."},
-                    {"role": "user", "content": f"User was asked: 'Do you consent to participate?' They said: '{response}'. Did they consent?"}
+                    {"role": "system", "content": "Reply YES if agrees/consents, NO if declines."},
+                    {"role": "user", "content": f"Does '{response}' mean consent?"}
                 ],
                 temperature=0,
-                max_tokens=5
+                max_tokens=3
             )
             result = resp.choices[0].message.content.strip().upper()
             return "YES" in result
@@ -677,7 +707,8 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             resp = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
                 messages=[{"role": "system", "content": prompt}],
-                temperature=0
+                temperature=0,
+                max_tokens=5
             )
             gpt_text = resp.choices[0].message.content.strip()
             score = int(gpt_text[0]) if gpt_text[0] in "0123" else 1
@@ -732,16 +763,15 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         
         # Handle answer confirmation
         if self.waiting_for_answer_confirmation:
-            resp_lower = response.lower().strip()
             self.add_user_message(response)
             
-            if any(word in resp_lower for word in ['yes', 'correct', 'right', 'yeah', 'yep', 'ok', 'okay']):
+            # Use GPT to check confirmation
+            confirmed = self.check_confirmation_with_gpt(response)
+            
+            if confirmed:
                 self.waiting_for_answer_confirmation = False
                 score = self.pending_score
                 confirmation = self.pending_confirmation
-                
-                # Get acknowledgment
-                ack = self.get_acknowledgment(score)
                 
                 # Log
                 q = PHQ9_QUESTIONS[self.current_question]
@@ -756,7 +786,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     gptModel="",
                     gptPromptSnippet="",
                     gptResponse="",
-                    finalRobotOutput=ack,
+                    finalRobotOutput="Confirmed",
                     notes=f"Q{self.current_question + 1} response, score={score}"
                 )
                 
@@ -764,12 +794,8 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 if self.handle_crisis_protocol(score):
                     return
                 
-                # Continue
-                def ack_and_continue():
-                    self.root.after(0, lambda: self.add_robot_message(ack))
-                    self.speak(ack)
-                    time.sleep(0.5)
-                    
+                # Move directly to next question
+                def continue_thread():
                     if self.current_question < 8:
                         next_msg = "Let me ask you the next question."
                         self.root.after(0, lambda: self.add_robot_message(next_msg))
@@ -779,7 +805,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     self.current_question += 1
                     self.root.after(500, self.ask_question)
                 
-                threading.Thread(target=ack_and_continue, daemon=True).start()
+                threading.Thread(target=continue_thread, daemon=True).start()
                 return
             else:
                 # User says no, ask again
