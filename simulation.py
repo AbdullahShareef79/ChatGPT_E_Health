@@ -14,14 +14,26 @@ from datetime import datetime
 from typing import Optional, List, Tuple
 import openai
 import os
-import speech_recognition as sr
-import pyttsx3
-import threading
+from dotenv import load_dotenv
 
-# Configuration
-OPENAI_API_KEY = "YOUR_OPENAI_API_KEY_HERE"  # Replace with your actual key
-GPT_ENABLED = True  # Set to False for "without GPT" experiments
+# Load environment variables from .env file
+load_dotenv()
+
+# Configuration from .env file
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "YOUR_OPENAI_API_KEY_HERE")
+GPT_ENABLED = os.getenv("GPT_ENABLED", "True").lower() == "true"
 SIMULATION_MODE = True  # Always True for Python simulation
+
+# Try to import speech libraries (optional)
+try:
+    import speech_recognition as sr
+    import pyttsx3
+    SPEECH_AVAILABLE = True
+except ImportError:
+    SPEECH_AVAILABLE = False
+    print("⚠️  Speech libraries not available. Running in text-only mode.")
+    print("   To enable speech: pip install SpeechRecognition pyttsx3")
+    print("   On Windows: pip install pipwin && pipwin install pyaudio\n")
 
 # PHQ-9 Questions
 PHQ9_QUESTIONS = [
@@ -160,26 +172,31 @@ class PHQ9Simulator:
     def __init__(self, api_key: str, gpt_enabled: bool = True, use_speech: bool = True):
         self.api_key = api_key
         self.gpt_enabled = gpt_enabled
-        self.use_speech = use_speech
+        self.use_speech = use_speech and SPEECH_AVAILABLE
         self.session_id = str(uuid.uuid4())
         self.logger = InteractionLogger(self.session_id)
         self.responses = []
         
-        # Initialize speech components
+        # Initialize speech components (if available)
         if self.use_speech:
-            self.recognizer = sr.Recognizer()
-            self.microphone = sr.Microphone()
-            self.tts_engine = pyttsx3.init()
-            
-            # Configure TTS
-            self.tts_engine.setProperty('rate', 150)  # Speed
-            self.tts_engine.setProperty('volume', 0.9)  # Volume
-            
-            # Adjust for ambient noise
-            print("🎤 Calibrating microphone for ambient noise... Please wait.")
-            with self.microphone as source:
-                self.recognizer.adjust_for_ambient_noise(source, duration=1)
-            print("✅ Microphone ready!\n")
+            try:
+                self.recognizer = sr.Recognizer()
+                self.microphone = sr.Microphone()
+                self.tts_engine = pyttsx3.init()
+                
+                # Configure TTS
+                self.tts_engine.setProperty('rate', 150)  # Speed
+                self.tts_engine.setProperty('volume', 0.9)  # Volume
+                
+                # Adjust for ambient noise
+                print("🎤 Calibrating microphone for ambient noise... Please wait.")
+                with self.microphone as source:
+                    self.recognizer.adjust_for_ambient_noise(source, duration=1)
+                print("✅ Microphone ready!\n")
+            except Exception as e:
+                print(f"⚠️  Could not initialize speech: {e}")
+                print("   Running in text-only mode.\n")
+                self.use_speech = False
         
         if self.api_key and self.api_key != "YOUR_OPENAI_API_KEY_HERE":
             openai.api_key = self.api_key
@@ -518,10 +535,10 @@ def main():
     print("   WITH SPEECH INPUT/OUTPUT - Just like Pepper!")
     print("="*70)
     
-    # Configuration
+    # Configuration from .env
     api_key = OPENAI_API_KEY
     gpt_enabled = GPT_ENABLED
-    use_speech = True  # Use speech by default
+    use_speech = SPEECH_AVAILABLE  # Use speech if libraries available
     
     # Check for text-only mode
     import sys
@@ -529,9 +546,13 @@ def main():
         use_speech = False
         print("\n📝 Running in TEXT-ONLY mode (no speech)")
     
-    if api_key == "YOUR_OPENAI_API_KEY_HERE":
-        print("\n⚠️  Warning: OpenAI API key not set!")
+    # Check API key
+    if api_key == "YOUR_OPENAI_API_KEY_HERE" or not api_key:
+        print("\n⚠️  Warning: OpenAI API key not set in .env file!")
         print("   GPT fallback and summary generation will use defaults.")
+        print("   To fix: Create .env file with OPENAI_API_KEY=your_key")
+    else:
+        print(f"\n✅ OpenAI API key loaded from .env")
     
     print(f"\nConfiguration:")
     print(f"  - GPT Mode: {'ENABLED' if gpt_enabled else 'DISABLED'}")

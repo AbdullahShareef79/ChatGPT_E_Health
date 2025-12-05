@@ -1,5 +1,9 @@
 openai==0.28.1
 SpeechRecognition==3.10.0
 pyttsx3==2.90
-pyaudio==0.2.13
+python-dotenv==1.0.0
+# Note: PyAudio is optional - only needed for speech input
+# On Windows, install manually if needed:
+# pip install pipwin
+# pipwin install pyaudio
 

@@ -14,3 +14,14 @@
 .cxx
 local.properties
 /docs
+
+# Environment variables (NEVER commit API keys!)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+*.csv
+interaction_logs_*.csv
