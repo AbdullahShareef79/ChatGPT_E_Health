@@ -49,11 +49,23 @@ class SimpleLogger:
         self.entries = []
         self.turn_index = 0
         self.transcript = []
+        self.gpt_calls = []  # Track all GPT API calls
         self.session_start = datetime.now()
         
         # Create session folder
         self.session_folder = Path("data") / "sessions" / f"session_{session_id[:8]}_{self.session_start.strftime('%Y%m%d_%H%M%S')}"
         self.session_folder.mkdir(parents=True, exist_ok=True)
+    
+    def log_gpt_call(self, purpose, prompt, response, model="gpt-4o-mini", tokens_used=None):
+        """Log GPT API call with input/output"""
+        self.gpt_calls.append({
+            "timestamp": datetime.now().isoformat(),
+            "purpose": purpose,
+            "model": model,
+            "prompt": prompt,
+            "response": response,
+            "tokens_used": tokens_used
+        })
     
     def log_turn(self, **kwargs):
         entry = {
@@ -84,6 +96,8 @@ class SimpleLogger:
             "total_score": total_score,
             "severity": severity,
             "transcript": self.transcript,
+            "gpt_calls": self.gpt_calls,
+            "total_gpt_calls": len(self.gpt_calls),
             "interaction_logs": self.entries
         }
         
@@ -120,6 +134,29 @@ class SimpleLogger:
             ])
             writer.writeheader()
             writer.writerows(self.entries)
+        
+        # Save GPT calls log
+        if self.gpt_calls:
+            gpt_log_file = self.session_folder / "gpt_api_calls.json"
+            with open(gpt_log_file, 'w', encoding='utf-8') as f:
+                json.dump(self.gpt_calls, f, indent=2, ensure_ascii=False)
+            
+            # Also save as readable text
+            gpt_txt_file = self.session_folder / "gpt_api_calls.txt"
+            with open(gpt_txt_file, 'w', encoding='utf-8') as f:
+                f.write(f"GPT API Calls Log\n")
+                f.write(f"Session: {self.session_id}\n")
+                f.write(f"Total Calls: {len(self.gpt_calls)}\n")
+                f.write(f"{'='*70}\n\n")
+                
+                for i, call in enumerate(self.gpt_calls, 1):
+                    f.write(f"CALL #{i} - {call['purpose']}\n")
+                    f.write(f"Time: {call['timestamp']}\n")
+                    f.write(f"Model: {call['model']}\n")
+                    f.write(f"Tokens: {call.get('tokens_used', 'N/A')}\n")
+                    f.write(f"\nPrompt:\n{call['prompt']}\n")
+                    f.write(f"\nResponse:\n{call['response']}\n")
+                    f.write(f"{'-'*70}\n\n")
         
         return self.session_folder
     
@@ -715,16 +752,30 @@ Please consider reaching out to a mental health professional or counselor."""
             openai.api_key = OPENAI_API_KEY
             q = PHQ9_QUESTIONS[self.current_question]
             
+            prompt = f"Question: {q['question']}\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE"
+            
             resp = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": f"Question: {q['question']}\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE"},
+                    {"role": "system", "content": prompt},
                     {"role": "user", "content": f"{response}"}
                 ],
                 temperature=0,
                 max_tokens=10
             )
+            
             result = resp.choices[0].message.content.strip()
+            tokens = resp.usage.total_tokens if hasattr(resp, 'usage') else None
+            
+            # Log GPT call
+            self.logger.log_gpt_call(
+                purpose=f"Parse PHQ-9 Q{self.current_question + 1} response",
+                prompt=f"System: {prompt}\nUser: {response}",
+                response=result,
+                model="gpt-4o-mini",
+                tokens_used=tokens
+            )
+            
             parts = result.split('|')
             if len(parts) >= 2:
                 score = int(parts[0].strip())
@@ -732,7 +783,8 @@ Please consider reaching out to a mental health professional or counselor."""
                 return (score, confirm)
             else:
                 return (-1, None)
-        except:
+        except Exception as e:
+            print(f"GPT parse error: {e}")
             return (-1, None)
     
     def check_confirmation_with_gpt(self, response: str) -> bool:
@@ -744,18 +796,35 @@ Please consider reaching out to a mental health professional or counselor."""
         try:
             import openai
             openai.api_key = OPENAI_API_KEY
+            
+            prompt = "Reply YES if confirming, NO if not."
+            user_msg = f"Is '{response}' a confirmation?"
+            
             resp = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "Reply YES if confirming, NO if not."},
-                    {"role": "user", "content": f"Is '{response}' a confirmation?"}
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": user_msg}
                 ],
                 temperature=0,
                 max_tokens=3
             )
+            
             result = resp.choices[0].message.content.strip().upper()
+            tokens = resp.usage.total_tokens if hasattr(resp, 'usage') else None
+            
+            # Log GPT call
+            self.logger.log_gpt_call(
+                purpose="Check answer confirmation",
+                prompt=f"System: {prompt}\nUser: {user_msg}",
+                response=result,
+                model="gpt-4o-mini",
+                tokens_used=tokens
+            )
+            
             return "YES" in result
-        except:
+        except Exception as e:
+            print(f"GPT confirmation error: {e}")
             resp_lower = response.lower().strip()
             return any(word in resp_lower for word in ['yes', 'correct', 'right', 'yeah', 'yep', 'ok', 'okay'])
     
@@ -769,18 +838,35 @@ Please consider reaching out to a mental health professional or counselor."""
         try:
             import openai
             openai.api_key = OPENAI_API_KEY
+            
+            prompt = "Reply YES if agrees/consents, NO if declines."
+            user_msg = f"Does '{response}' mean consent?"
+            
             resp = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "Reply YES if agrees/consents, NO if declines."},
-                    {"role": "user", "content": f"Does '{response}' mean consent?"}
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": user_msg}
                 ],
                 temperature=0,
                 max_tokens=3
             )
+            
             result = resp.choices[0].message.content.strip().upper()
+            tokens = resp.usage.total_tokens if hasattr(resp, 'usage') else None
+            
+            # Log GPT call
+            self.logger.log_gpt_call(
+                purpose="Check consent",
+                prompt=f"System: {prompt}\nUser: {user_msg}",
+                response=result,
+                model="gpt-4o-mini",
+                tokens_used=tokens
+            )
+            
             return "YES" in result
-        except:
+        except Exception as e:
+            print(f"GPT consent error: {e}")
             # Fallback
             resp_lower = response.lower().strip()
             return any(word in resp_lower for word in ['yes', 'yeah', 'yep', 'accept', 'agree', 'consent', 'ok', 'okay', 'sure', 'fine', 'alright'])
@@ -804,9 +890,21 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 max_tokens=5
             )
             gpt_text = resp.choices[0].message.content.strip()
+            tokens = resp.usage.total_tokens if hasattr(resp, 'usage') else None
             score = int(gpt_text[0]) if gpt_text[0] in "0123" else 1
+            
+            # Log GPT call
+            self.logger.log_gpt_call(
+                purpose=f"Fallback parse PHQ-9 Q{self.current_question + 1}",
+                prompt=prompt,
+                response=gpt_text,
+                model="gpt-4o-mini",
+                tokens_used=tokens
+            )
+            
             return score, gpt_text
-        except:
+        except Exception as e:
+            print(f"GPT fallback error: {e}")
             return 1, "GPT_ERROR"
     
     def process_response(self, response: str, is_voice: bool):

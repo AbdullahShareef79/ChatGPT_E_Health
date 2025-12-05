@@ -14,7 +14,7 @@
 .cxx
 local.properties
 /docs
-
+WRITTENPART/
 # Environment variables (NEVER commit API keys!)
 .env
 
