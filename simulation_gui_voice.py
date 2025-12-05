@@ -180,7 +180,7 @@ class SimpleLogger:
 class VoicePHQ9GUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("🤖 PHQ-9 Pepper Simulation - VOICE ENABLED")
+        self.root.title("PHQ-9 Pepper Simulation - Voice Enabled")
         self.root.geometry("900x700")
         self.root.configure(bg="#f0f0f0")
         
@@ -247,7 +247,7 @@ class VoicePHQ9GUI:
         
         tk.Label(
             header,
-            text="🤖 PHQ-9 HEALTH SCREENING SIMULATION",
+            text="PHQ-9 HEALTH SCREENING SIMULATION",
             font=("Arial", 20, "bold"),
             bg="#4CAF50",
             fg="white"
@@ -342,7 +342,7 @@ class VoicePHQ9GUI:
         # Big microphone button
         self.mic_button = tk.Button(
             button_frame,
-            text="🎤 PRESS TO SPEAK",
+            text="PRESS TO SPEAK",
             font=("Arial", 16, "bold"),
             bg="#FF5722",
             fg="white",
@@ -428,7 +428,7 @@ class VoicePHQ9GUI:
     def add_robot_message(self, text):
         """Add robot message"""
         self.chat_area.config(state=tk.NORMAL)
-        self.chat_area.insert(tk.END, "🤖 Pepper: ", "robot")
+        self.chat_area.insert(tk.END, "[Pepper]: ", "robot")
         self.chat_area.insert(tk.END, text + "\n\n")
         self.chat_area.see(tk.END)
         self.chat_area.config(state=tk.DISABLED)
@@ -440,7 +440,7 @@ class VoicePHQ9GUI:
     def add_user_message(self, text):
         """Add user message"""
         self.chat_area.config(state=tk.NORMAL)
-        self.chat_area.insert(tk.END, "👤 You: ", "user")
+        self.chat_area.insert(tk.END, "[You]: ", "user")
         self.chat_area.insert(tk.END, text + "\n\n")
         self.chat_area.see(tk.END)
         self.chat_area.config(state=tk.DISABLED)
@@ -467,7 +467,7 @@ class VoicePHQ9GUI:
         self.text_input.config(state=tk.NORMAL)
         self.send_button.config(state=tk.NORMAL)
         if ASR_AVAILABLE and self.mic_available:
-            self.mic_button.config(state=tk.NORMAL, text="🎤 PRESS TO SPEAK")
+            self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK")
         
         # Run consent sequentially
         def consent_thread():
@@ -526,23 +526,23 @@ class VoicePHQ9GUI:
             )
         
         threading.Thread(target=question_thread, daemon=True).start()
-        self.status_label.config(text=f"Question {self.current_question + 1}/9 - 🎤 Press microphone or type answer")
+        self.status_label.config(text=f"Question {self.current_question + 1}/9 - Press microphone or type answer")
     
     def start_voice_input(self):
         """Start listening via microphone using Whisper"""
         if not self.mic_available or self.is_listening:
-            self.add_system_message("❌ Microphone not available. Please use text input.")
+            self.add_system_message("[Error] Microphone not available. Please use text input.")
             return
         
         self.is_listening = True
-        self.mic_button.config(text="🔴 LISTENING...", bg="#D32F2F")
-        self.status_label.config(text="🎤 LISTENING... Speak your answer now!")
+        self.mic_button.config(text="LISTENING...", bg="#D32F2F")
+        self.status_label.config(text="LISTENING... Speak your answer now!")
         
         def listen_thread():
             try:
                 with sr.Microphone() as source:
                     self.recognizer.adjust_for_ambient_noise(source, duration=0.2)
-                    self.root.after(0, lambda: self.add_system_message("🎤 Speak now!"))
+                    self.root.after(0, lambda: self.add_system_message("[Listening] Speak now!"))
                     audio = self.recognizer.listen(source, timeout=8, phrase_time_limit=10)
                 
                 self.root.after(0, lambda: self.status_label.config(text="🔄 Transcribing..."))
@@ -573,7 +573,7 @@ class VoicePHQ9GUI:
                 
                 # Check if transcription is meaningful
                 if len(text) < 2 or text.lower() in ['oh', 'uh', 'um', 'ah']:
-                    self.root.after(0, lambda: self.add_system_message("❌ No clear speech detected. Please speak your answer clearly."))
+                    self.root.after(0, lambda: self.add_system_message("[Error] No clear speech detected. Please speak your answer clearly."))
                     return
                 
                 self.root.after(0, lambda: self.process_response(text, is_voice=True))
@@ -584,9 +584,9 @@ class VoicePHQ9GUI:
                 error_msg = str(e)
                 print(f"Voice input error: {error_msg}")
                 if "PyAudio" in error_msg or "portaudio" in error_msg:
-                    self.root.after(0, lambda: self.add_system_message("❌ Microphone error. Please use text input."))
+                    self.root.after(0, lambda: self.add_system_message("[Error] Microphone error. Please use text input."))
                     self.mic_available = False
-                    self.root.after(0, lambda: self.mic_button.config(state=tk.DISABLED, text="🎤 N/A"))
+                    self.root.after(0, lambda: self.mic_button.config(state=tk.DISABLED, text="MIC N/A"))
                 else:
                     self.root.after(0, lambda: self.add_system_message(f"Error: {error_msg[:50]}. Use text input."))
             finally:
@@ -597,7 +597,7 @@ class VoicePHQ9GUI:
     def stop_listening(self):
         """Stop listening"""
         self.is_listening = False
-        self.mic_button.config(text="🎤 PRESS TO SPEAK", bg="#FF5722")
+        self.mic_button.config(text="PRESS TO SPEAK", bg="#FF5722")
     
     def send_text(self):
         """Send text input"""
@@ -942,7 +942,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 return
             else:
                 # User declined
-                self.add_system_message("✗ Consent declined")
+                self.add_system_message("[Consent declined]")
                 decline_msg = "I understand. Thank you for your time. The screening will not proceed."
                 self.add_robot_message(decline_msg)
                 self.speak(decline_msg)
@@ -1169,10 +1169,10 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         
         # Safety clamp
         if total > 27:
-            self.add_system_message(f"❌ ERROR: Score {total} exceeds maximum 27! Clamping.")
+            self.add_system_message(f"[ERROR] Score {total} exceeds maximum 27! Clamping.")
             total = 27
         elif total < 0:
-            self.add_system_message(f"❌ ERROR: Score {total} is negative! Clamping.")
+            self.add_system_message(f"[ERROR] Score {total} is negative! Clamping.")
             total = 0
         
         severity = self.get_severity(total)
@@ -1210,7 +1210,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             
             self.root.after(0, lambda: self.export_button.config(state=tk.NORMAL))
             self.root.after(0, lambda: self.restart_button.config(state=tk.NORMAL))
-            self.root.after(0, lambda: self.status_label.config(text=f"✅ Completed! Total score: {total}/27 - {severity}"))
+            self.root.after(0, lambda: self.status_label.config(text=f"Completed! Total score: {total}/27 - {severity}"))
             
             self.root.after(0, lambda: messagebox.showinfo("Screening Complete", 
                 f"PHQ-9 Screening Complete!\n\n"
@@ -1295,7 +1295,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
 def main():
     """Launch GUI"""
     print("\n" + "="*70)
-    print("🎤 PHQ-9 VOICE SIMULATION")
+    print("PHQ-9 VOICE SIMULATION")
     print("="*70)
     
     if not ASR_AVAILABLE:
