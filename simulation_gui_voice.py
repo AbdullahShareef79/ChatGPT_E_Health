@@ -30,6 +30,9 @@ except:
 
 try:
     import speech_recognition as sr
+    import openai
+    import tempfile
+    import wave
     ASR_AVAILABLE = True
 except:
     ASR_AVAILABLE = False
@@ -85,6 +88,11 @@ class VoicePHQ9GUI:
         self.responses = []
         self.session_active = False
         self.is_listening = False
+        self.waiting_for_crisis_ack = False
+        self.waiting_for_consent = False
+        self.waiting_for_answer_confirmation = False
+        self.pending_score = None
+        self.pending_confirmation = None
         
         # Initialize TTS
         if TTS_AVAILABLE:
@@ -264,16 +272,18 @@ class VoicePHQ9GUI:
         )
         instructions.pack(fill=tk.X, padx=25, pady=(0, 15))
     
-    def speak(self, text):
+    def speak(self, text, wait=True):
         """Robot speaks using TTS"""
         if self.tts_ready:
-            def tts_thread():
-                try:
-                    self.tts_engine.say(text)
-                    self.tts_engine.runAndWait()
-                except:
-                    pass
-            threading.Thread(target=tts_thread, daemon=True).start()
+            try:
+                self.tts_engine.say(text)
+                self.tts_engine.runAndWait()
+                if wait:
+                    time.sleep(0.3)  # Small pause after speaking
+            except Exception as e:
+                print(f"TTS Error: {e}")
+        else:
+            print(f"TTS not ready. Would speak: {text}")
     
     def add_robot_message(self, text):
         """Add robot message"""
@@ -309,30 +319,33 @@ class VoicePHQ9GUI:
         if ASR_AVAILABLE:
             self.mic_button.config(state=tk.NORMAL, text="🎤 PRESS TO SPEAK")
         
-        # Consent and disclaimer
-        consent = "Hello! Before we begin, I want to inform you that this is a technical demonstration for research purposes only. This is NOT a psychological evaluation or medical diagnosis."
-        self.add_robot_message(consent)
-        self.speak(consent)
-        time.sleep(6)
+        # Run consent in background thread to avoid blocking GUI
+        def consent_thread():
+            # Consent and disclaimer
+            consent = "Hello! Before we begin, I want to inform you that this is a technical demonstration for research purposes only. This is NOT a psychological evaluation or medical diagnosis."
+            self.root.after(0, lambda: self.add_robot_message(consent))
+            self.speak(consent)
+            
+            consent2 = "The information collected will be used solely for technical testing. If you have real health concerns, please consult a qualified healthcare professional."
+            self.root.after(0, lambda: self.add_robot_message(consent2))
+            self.speak(consent2)
+            
+            # Ask for consent
+            consent_question = "Do you consent to participate in this screening? Please say 'yes' to continue or 'no' to decline."
+            self.root.after(0, lambda: self.add_robot_message(consent_question))
+            self.speak(consent_question)
+            
+            # Set waiting for consent flag
+            self.waiting_for_consent = True
+            
+            self.logger.log_turn(
+                userRawSpeech="", asrTranscript="", languageDetected="EN",
+                phqQuestionId="", handlingModule="PEPPER_LOCAL", pepperLocalNlpSuccess=True,
+                gptUsed=False, gptReason="", gptModel="", gptPromptSnippet="",
+                gptResponse="", finalRobotOutput=consent + " " + consent2 + " " + consent_question, notes="Consent requested"
+            )
         
-        consent2 = "The information collected will be used solely for technical testing. If you have real health concerns, please consult a qualified healthcare professional."
-        self.add_robot_message(consent2)
-        self.speak(consent2)
-        time.sleep(5)
-        
-        welcome = "I will now ask you 9 questions about how you've been feeling over the last 2 weeks. Please answer with: not at all, several days, more than half the days, or nearly every day."
-        self.add_robot_message(welcome)
-        self.speak(welcome)
-        
-        self.logger.log_turn(
-            userRawSpeech="", asrTranscript="", languageDetected="EN",
-            phqQuestionId="", handlingModule="PEPPER_LOCAL", pepperLocalNlpSuccess=True,
-            gptUsed=False, gptReason="", gptModel="", gptPromptSnippet="",
-            gptResponse="", finalRobotOutput=consent + " " + consent2 + " " + welcome, notes="Consent and screening started"
-        )
-        
-        time.sleep(3)
-        self.ask_question()
+        threading.Thread(target=consent_thread, daemon=True).start()
     
     def ask_question(self):
         """Ask current PHQ-9 question"""
@@ -345,20 +358,24 @@ class VoicePHQ9GUI:
         self.progress_bar['value'] = self.current_question + 1
         
         question_text = f"Question {self.current_question + 1}: {q['question']}"
-        self.add_robot_message(question_text)
-        self.speak(question_text)
         
-        self.logger.log_turn(
-            userRawSpeech="", asrTranscript="", languageDetected="EN",
-            phqQuestionId=f"Q{q['id']}", handlingModule="PEPPER_LOCAL", pepperLocalNlpSuccess=True,
-            gptUsed=False, gptReason="", gptModel="", gptPromptSnippet="",
-            gptResponse="", finalRobotOutput=question_text, notes=f"Question {self.current_question + 1}"
-        )
+        # Speak question in background thread
+        def question_thread():
+            self.root.after(0, lambda: self.add_robot_message(question_text))
+            self.speak(question_text)
+            
+            self.logger.log_turn(
+                userRawSpeech="", asrTranscript="", languageDetected="EN",
+                phqQuestionId=f"Q{q['id']}", handlingModule="PEPPER_LOCAL", pepperLocalNlpSuccess=True,
+                gptUsed=False, gptReason="", gptModel="", gptPromptSnippet="",
+                gptResponse="", finalRobotOutput=question_text, notes=f"Question {self.current_question + 1}"
+            )
         
+        threading.Thread(target=question_thread, daemon=True).start()
         self.status_label.config(text=f"Question {self.current_question + 1}/9 - 🎤 Press microphone or type answer")
     
     def start_voice_input(self):
-        """Start listening via microphone"""
+        """Start listening via microphone using Whisper"""
         if not ASR_AVAILABLE or self.is_listening:
             return
         
@@ -370,19 +387,39 @@ class VoicePHQ9GUI:
             try:
                 recognizer = sr.Recognizer()
                 with sr.Microphone() as source:
-                    recognizer.adjust_for_ambient_noise(source, duration=0.3)
-                    self.root.after(0, lambda: self.add_system_message("Microphone active - speak now!"))
-                    audio = recognizer.listen(source, timeout=10, phrase_time_limit=15)
+                    recognizer.adjust_for_ambient_noise(source, duration=0.2)
+                    self.root.after(0, lambda: self.add_system_message("🎤 Speak now!"))
+                    audio = recognizer.listen(source, timeout=8, phrase_time_limit=10)
                 
-                self.root.after(0, lambda: self.status_label.config(text="Processing your speech..."))
-                transcript = recognizer.recognize_google(audio)
+                self.root.after(0, lambda: self.status_label.config(text="🔄 Transcribing..."))
                 
-                self.root.after(0, lambda: self.process_response(transcript, is_voice=True))
+                # Save audio to temp file
+                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_audio:
+                    temp_filename = temp_audio.name
+                    with wave.open(temp_filename, 'wb') as wf:
+                        wf.setnchannels(1)
+                        wf.setsampwidth(2)
+                        wf.setframerate(16000)
+                        wf.writeframes(audio.get_wav_data(convert_rate=16000))
+                
+                # Use OpenAI Whisper for transcription
+                openai.api_key = OPENAI_API_KEY
+                with open(temp_filename, 'rb') as audio_file:
+                    transcript = openai.Audio.transcribe(
+                        model="whisper-1",
+                        file=audio_file,
+                        language="en"
+                    )
+                
+                # Clean up temp file
+                import os
+                os.unlink(temp_filename)
+                
+                text = transcript.text.strip()
+                self.root.after(0, lambda: self.process_response(text, is_voice=True))
                 
             except sr.WaitTimeoutError:
-                self.root.after(0, lambda: self.add_system_message("⏰ Timeout - no speech detected. Try again or type."))
-            except sr.UnknownValueError:
-                self.root.after(0, lambda: self.add_system_message("❌ Could not understand. Try again or type."))
+                self.root.after(0, lambda: self.add_system_message("⏰ No speech detected. Try again or type."))
             except Exception as e:
                 self.root.after(0, lambda: self.add_system_message(f"Error: {str(e)[:50]}. Use text input."))
             finally:
@@ -402,52 +439,123 @@ class VoicePHQ9GUI:
             self.text_input.delete(0, tk.END)
             self.process_response(text, is_voice=False)
     
-    def parse_response(self, response: str) -> int:
-        """Parse response locally"""
+    def parse_response(self, response: str) -> tuple:
+        """Parse response locally - returns (score, confirmation_text)"""
         resp_lower = response.lower()
+        
         if "not at all" in resp_lower or "never" in resp_lower or resp_lower.strip() == "0":
-            return 0
-        elif "several days" in resp_lower or "sometimes" in resp_lower or resp_lower.strip() == "1":
-            return 1
-        elif "more than half" in resp_lower or "often" in resp_lower or resp_lower.strip() == "2":
-            return 2
-        elif "nearly every day" in resp_lower or "always" in resp_lower or resp_lower.strip() == "3":
-            return 3
+            return (0, "not at all")
+        elif "several days" in resp_lower or "sometimes" in resp_lower or "few days" in resp_lower or resp_lower.strip() == "1":
+            return (1, "several days")
+        elif "more than half" in resp_lower or "most days" in resp_lower or "often" in resp_lower or resp_lower.strip() == "2":
+            return (2, "more than half the days")
+        elif "nearly every day" in resp_lower or "every day" in resp_lower or "always" in resp_lower or "all the time" in resp_lower or resp_lower.strip() == "3":
+            return (3, "nearly every day")
         
         # Try matching options
         q = PHQ9_QUESTIONS[self.current_question]
         for idx, option in enumerate(q['options']):
             if option.lower() in resp_lower:
-                return q['scores'][idx]
-        return -1
+                return (q['scores'][idx], option)
+        
+        return (-1, None)
+    
+    def handle_crisis_protocol(self, score: int):
+        """Handle Q9 safety protocol when self-harm risk is detected"""
+        if self.current_question == 8 and score > 0:  # Q9 is index 8
+            # Pause conversation
+            self.text_input.config(state=tk.DISABLED)
+            self.send_button.config(state=tk.DISABLED)
+            self.mic_button.config(state=tk.DISABLED)
+            
+            # Add crisis warning to chat
+            self.add_system_message("⚠️ SAFETY PROTOCOL ACTIVATED ⚠️")
+            
+            # Display supportive message
+            crisis_msg = "I want to acknowledge your response. Your safety is very important. Please know that help is available."
+            self.add_robot_message(crisis_msg)
+            self.speak(crisis_msg)
+            time.sleep(4)
+            
+            # Show crisis resources
+            resources_title = "CRISIS RESOURCES - Please take note of these:"
+            self.add_robot_message(resources_title)
+            self.speak(resources_title)
+            time.sleep(2)
+            
+            # Display hotlines in chat (visible on screen)
+            crisis_info = """
+EMERGENCY HOTLINES:
+• Germany Crisis Hotline: 0800 111 0 111 or 0800 111 0 222
+• International Crisis Line: 116 123
+• Emergency Services: 112
+
+You are not alone. Professional help is available 24/7.
+Please consider reaching out to a mental health professional or counselor."""
+            
+            self.chat_area.config(state=tk.NORMAL)
+            self.chat_area.insert(tk.END, crisis_info + "\n\n", "system")
+            self.chat_area.see(tk.END)
+            self.chat_area.config(state=tk.DISABLED)
+            
+            # Speak resources
+            resources_msg = "Germany Crisis Hotline: 0800 111 0 111. International Crisis Line: 116 123. Emergency Services: 112. Please consider reaching out to a mental health professional. You are not alone, and help is available."
+            self.speak(resources_msg)
+            time.sleep(8)
+            
+            # Important reminder
+            reminder = "This screening is not a diagnosis. Please contact a healthcare professional for proper evaluation and support."
+            self.add_robot_message(reminder)
+            self.speak(reminder)
+            time.sleep(5)
+            
+            # Ask for acknowledgment
+            self.add_robot_message("Have you noted these resources? Type 'yes' or press the microphone to continue.")
+            self.speak("Have you noted these resources? Please confirm to continue.")
+            
+            # Re-enable input for acknowledgment
+            self.text_input.config(state=tk.NORMAL)
+            self.send_button.config(state=tk.NORMAL)
+            if ASR_AVAILABLE:
+                self.mic_button.config(state=tk.NORMAL)
+            
+            # Set flag to wait for acknowledgment
+            self.waiting_for_crisis_ack = True
+            
+            return True
+        return False
     
     def get_acknowledgment(self, score: int) -> str:
-        """Get varied acknowledgment based on score"""
+        """Get varied acknowledgment based on score (without mentioning numbers)"""
         acknowledgments = {
             0: [
-                "I understand, not at all. That's recorded as score 0.",
-                "Okay, not at all. I've noted that as 0.",
-                "Got it, not experiencing that. Score 0 recorded."
+                "I understand, not at all.",
+                "Okay, not at all.",
+                "Got it, you haven't experienced that.",
+                "Thank you, not at all."
             ],
             1: [
-                "I see, several days. That's recorded as score 1.",
-                "Understood, several days. I've noted that as 1.",
-                "Okay, on several days. Score 1 recorded."
+                "I see, several days.",
+                "Understood, several days.",
+                "Okay, on several days.",
+                "Thank you, several days."
             ],
             2: [
-                "I hear you, more than half the days. That's recorded as score 2.",
-                "Understood, more than half the days. I've noted that as 2.",
-                "Got it, more than half the days. Score 2 recorded."
+                "I hear you, more than half the days.",
+                "Understood, more than half the days.",
+                "Okay, more than half the days.",
+                "Thank you, more than half the days."
             ],
             3: [
-                "I understand, nearly every day. That's recorded as score 3.",
-                "Okay, nearly every day. I've noted that as 3.",
-                "Got it, nearly every day. Score 3 recorded."
+                "I understand, nearly every day.",
+                "Okay, nearly every day.",
+                "Got it, nearly every day.",
+                "Thank you, nearly every day."
             ]
         }
         if score in acknowledgments:
             return random.choice(acknowledgments[score])
-        return f"Thank you, I've recorded your response as score {score}."
+        return "Thank you, I've noted your response."
     
     def call_gpt_fallback(self, response: str) -> tuple:
         """Call GPT for unclear responses"""
@@ -477,6 +585,124 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         if not self.session_active:
             return
         
+        # Handle consent response
+        if self.waiting_for_consent:
+            resp_lower = response.lower().strip()
+            self.add_user_message(response)
+            
+            if any(word in resp_lower for word in ['yes', 'accept', 'agree', 'consent', 'ok', 'okay', 'sure']):
+                self.waiting_for_consent = False
+                self.add_system_message("✓ Consent given")
+                
+                # Thank and explain
+                def proceed_thread():
+                    thanks = "Thank you for consenting."
+                    self.root.after(0, lambda: self.add_robot_message(thanks))
+                    self.speak(thanks)
+                    
+                    instructions = "I will now ask you 9 questions about how you've been feeling over the last 2 weeks. Please answer with: not at all, several days, more than half the days, or nearly every day."
+                    self.root.after(0, lambda: self.add_robot_message(instructions))
+                    self.speak(instructions)
+                    
+                    # Start questions
+                    self.root.after(1000, self.ask_question)
+                
+                threading.Thread(target=proceed_thread, daemon=True).start()
+                return
+            else:
+                # User declined
+                self.add_system_message("✗ Consent declined")
+                decline_msg = "I understand. Thank you for your time. The screening will not proceed."
+                self.add_robot_message(decline_msg)
+                self.speak(decline_msg)
+                self.session_active = False
+                self.text_input.config(state=tk.DISABLED)
+                self.send_button.config(state=tk.DISABLED)
+                self.mic_button.config(state=tk.DISABLED)
+                return
+        
+        # Handle answer confirmation
+        if self.waiting_for_answer_confirmation:
+            resp_lower = response.lower().strip()
+            self.add_user_message(response)
+            
+            if any(word in resp_lower for word in ['yes', 'correct', 'right', 'yeah', 'yep', 'ok', 'okay']):
+                self.waiting_for_answer_confirmation = False
+                score = self.pending_score
+                confirmation = self.pending_confirmation
+                
+                # Get acknowledgment
+                ack = self.get_acknowledgment(score)
+                
+                # Log
+                q = PHQ9_QUESTIONS[self.current_question]
+                self.logger.log_turn(
+                    userRawSpeech="", asrTranscript=confirmation,
+                    languageDetected="EN",
+                    phqQuestionId=f"Q{q['id']}",
+                    handlingModule="PEPPER_LOCAL",
+                    pepperLocalNlpSuccess=True,
+                    gptUsed=False,
+                    gptReason="",
+                    gptModel="",
+                    gptPromptSnippet="",
+                    gptResponse="",
+                    finalRobotOutput=ack,
+                    notes=f"Q{self.current_question + 1} response, score={score}"
+                )
+                
+                # CHECK FOR CRISIS PROTOCOL (Q9 with score > 0)
+                if self.handle_crisis_protocol(score):
+                    return
+                
+                # Continue
+                def ack_and_continue():
+                    self.root.after(0, lambda: self.add_robot_message(ack))
+                    self.speak(ack)
+                    
+                    if self.current_question < 8:
+                        next_msg = "Let me ask you the next question."
+                        self.root.after(0, lambda: self.add_robot_message(next_msg))
+                        self.speak(next_msg)
+                    
+                    self.current_question += 1
+                    self.root.after(1500, self.ask_question)
+                
+                threading.Thread(target=ack_and_continue, daemon=True).start()
+                return
+            else:
+                # User says no, ask again
+                retry_msg = "I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day."
+                self.add_robot_message(retry_msg)
+                self.speak(retry_msg)
+                self.waiting_for_answer_confirmation = False
+                
+                # Re-ask question
+                def reask():
+                    q = PHQ9_QUESTIONS[self.current_question]
+                    question_text = f"Question {self.current_question + 1}: {q['question']}"
+                    self.root.after(0, lambda: self.add_robot_message(question_text))
+                    self.speak(question_text)
+                
+                threading.Thread(target=reask, daemon=True).start()
+                return
+        
+        # Handle crisis acknowledgment
+        if self.waiting_for_crisis_ack:
+            resp_lower = response.lower().strip()
+            if any(word in resp_lower for word in ['yes', 'ok', 'okay', 'noted', 'understood', 'continue', 'proceed']):
+                self.waiting_for_crisis_ack = False
+                self.add_user_message(response)
+                self.add_system_message("Crisis resources acknowledged. Continuing screening...")
+                
+                # Move to next question or complete
+                self.current_question += 1
+                self.root.after(2000, self.ask_question)
+                return
+            else:
+                self.add_system_message("Please confirm you have noted the crisis resources by saying 'yes' or typing 'yes'.")
+                return
+        
         self.add_user_message(response)
         
         # Detect language
@@ -484,60 +710,35 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         self.add_system_message(f"Language: {lang}")
         
         # Try local NLP
-        score = self.parse_response(response)
+        score, confirmation = self.parse_response(response)
         local_success = 0 <= score <= 3
         
         gpt_used = False
         gpt_reason = None
         module = "PEPPER_LOCAL"
         
-        if not local_success and GPT_ENABLED:
-            self.add_system_message("Using GPT fallback...")
-            score, gpt_resp = self.call_gpt_fallback(response)
-            gpt_used = True
-            gpt_reason = "intent_not_found"
-            module = "GPT_FALLBACK"
-            self.add_system_message(f"GPT: {gpt_resp}")
-        elif not local_success:
-            self.add_system_message("Local NLP failed, GPT disabled - default score")
-            score = 1
-            gpt_reason = "gpt_disabled"
+        if not local_success:
+            # Ask for clarification
+            clarify_msg = f"I heard '{response}', but I'm not sure I understood correctly. Could you please repeat using: not at all, several days, more than half the days, or nearly every day?"
+            self.add_robot_message(clarify_msg)
+            self.speak(clarify_msg)
+            self.add_system_message("Asked for clarification")
+            return
         else:
-            self.add_system_message(f"Local NLP: score={score}")
+            self.add_system_message(f"Local NLP: score={score}, understood as: {confirmation}")
         
         self.responses.append(score)
         
-        # Get varied acknowledgment with score
-        ack = self.get_acknowledgment(score)
-        self.add_robot_message(ack)
-        self.speak(ack)
+        # Confirm what was understood
+        confirm_msg = f"I understood: {confirmation}. Is that correct?"
+        self.add_robot_message(confirm_msg)
+        self.speak(confirm_msg)
         
-        # Log
-        q = PHQ9_QUESTIONS[self.current_question]
-        self.logger.log_turn(
-            userRawSpeech=response if is_voice else "",
-            asrTranscript=response,
-            languageDetected=lang,
-            phqQuestionId=f"Q{q['id']}",
-            handlingModule=module,
-            pepperLocalNlpSuccess=local_success,
-            gptUsed=gpt_used,
-            gptReason=gpt_reason or "",
-            gptModel="gpt-4o-mini" if gpt_used else "",
-            gptPromptSnippet=f"Parse: {response}" if gpt_used else "",
-            gptResponse="",
-            finalRobotOutput=ack,
-            notes=f"Q{self.current_question + 1} response, score={score}"
-        )
-        
-        # Next question
-        if self.current_question < 8:
-            next_msg = "Let me ask you the next question."
-            self.add_robot_message(next_msg)
-            self.speak(next_msg)
-        
-        self.current_question += 1
-        self.root.after(2000, self.ask_question)
+        # Set flag waiting for confirmation
+        self.waiting_for_answer_confirmation = True
+        self.pending_score = score
+        self.pending_confirmation = confirmation
+        return
     
     def complete_screening(self):
         """Finish screening"""
@@ -554,38 +755,39 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         self.add_system_message(f"COMPLETED | Total Score: {total} out of 27 | Severity: {severity.upper()}")
         self.add_system_message(f"Your responses: {self.responses}")
         
-        # First message - score
-        intro = f"Thank you for completing all 9 questions. Let me share your results."
-        self.add_robot_message(intro)
-        self.speak(intro)
-        time.sleep(3)
+        # Speak summary in background thread
+        def summary_thread():
+            # First message - score
+            intro = f"Thank you for completing all 9 questions. Let me share your results."
+            self.root.after(0, lambda: self.add_robot_message(intro))
+            self.speak(intro)
+            
+            # Second message - score breakdown
+            score_msg = f"Your total score is {total} out of a maximum of 27 points. This indicates {severity} level symptoms."
+            self.root.after(0, lambda: self.add_robot_message(score_msg))
+            self.speak(score_msg)
+            
+            # Third message - severity description
+            self.root.after(0, lambda: self.add_robot_message(severity_description))
+            self.speak(severity_description)
+            
+            # Fourth message - disclaimer
+            disclaimer = "Please remember: This is a technical demonstration only, not a medical diagnosis. This data is collected for research purposes. If you have real health concerns, please consult a qualified healthcare professional."
+            self.root.after(0, lambda: self.add_robot_message(disclaimer))
+            self.speak(disclaimer)
+            
+            self.root.after(0, lambda: self.export_button.config(state=tk.NORMAL))
+            self.root.after(0, lambda: self.status_label.config(text=f"✅ Completed! Total score: {total}/27 - {severity}"))
+            
+            self.root.after(0, lambda: messagebox.showinfo("Screening Complete", 
+                f"PHQ-9 Screening Complete!\n\n"
+                f"Total Score: {total} / 27\n"
+                f"Severity Level: {severity.upper()}\n\n"
+                f"{severity_description}\n\n"
+                f"⚠️ This is for technical demonstration only.\n"
+                f"Click 'Export Logs' to save the session data."))
         
-        # Second message - score breakdown
-        score_msg = f"Your total score is {total} out of a maximum of 27 points. This indicates {severity} level symptoms."
-        self.add_robot_message(score_msg)
-        self.speak(score_msg)
-        time.sleep(4)
-        
-        # Third message - severity description
-        self.add_robot_message(severity_description)
-        self.speak(severity_description)
-        time.sleep(5)
-        
-        # Fourth message - disclaimer
-        disclaimer = "Please remember: This is a technical demonstration only, not a medical diagnosis. This data is collected for research purposes. If you have real health concerns, please consult a qualified healthcare professional."
-        self.add_robot_message(disclaimer)
-        self.speak(disclaimer)
-        
-        self.export_button.config(state=tk.NORMAL)
-        self.status_label.config(text=f"✅ Completed! Total score: {total}/27 - {severity}")
-        
-        messagebox.showinfo("Screening Complete", 
-            f"PHQ-9 Screening Complete!\n\n"
-            f"Total Score: {total} / 27\n"
-            f"Severity Level: {severity.upper()}\n\n"
-            f"{severity_description}\n\n"
-            f"⚠️ This is for technical demonstration only.\n"
-            f"Click 'Export Logs' to save the session data.")
+        threading.Thread(target=summary_thread, daemon=True).start()
     
     def get_severity(self, score):
         """Get severity level"""
