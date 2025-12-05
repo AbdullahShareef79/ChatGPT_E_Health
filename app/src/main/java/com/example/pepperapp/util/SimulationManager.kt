@@ -28,6 +28,7 @@ class SimulationManager(private val context: Context) {
     var onSpeechResult: ((String) -> Unit)? = null
     var onSpeechError: ((String) -> Unit)? = null
     var onTtsComplete: (() -> Unit)? = null
+    var onTtsReady: (() -> Unit)? = null  // New callback for TTS ready
     
     fun initializeTts() {
         tts = TextToSpeech(context) { status ->
@@ -39,6 +40,7 @@ class SimulationManager(private val context: Context) {
                 } else {
                     ttsInitialized = true
                     Log.d(TAG, "TTS initialized successfully")
+                    onTtsReady?.invoke()  // Notify when ready
                 }
             } else {
                 Log.e(TAG, "TTS initialization failed")
@@ -49,6 +51,9 @@ class SimulationManager(private val context: Context) {
     
     fun speak(text: String, onComplete: (() -> Unit)? = null) {
         if (ttsInitialized && tts != null) {
+            // Generate utterance ID once
+            val utteranceId = "utteranceId_${System.currentTimeMillis()}"
+            
             // Set utterance listener for completion callback
             tts?.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
                 override fun onStart(utteranceId: String?) {
@@ -68,8 +73,8 @@ class SimulationManager(private val context: Context) {
             })
             
             val params = Bundle()
-            params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "utteranceId_${System.currentTimeMillis()}")
-            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, params, "utteranceId_${System.currentTimeMillis()}")
+            params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId)
+            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, params, utteranceId)
         } else {
             Log.w(TAG, "TTS not initialized, skipping speech")
             onComplete?.invoke()

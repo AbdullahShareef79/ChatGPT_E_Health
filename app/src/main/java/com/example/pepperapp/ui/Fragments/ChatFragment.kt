@@ -134,7 +134,6 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         
         // Initialize simulation manager
         simulationManager = SimulationManager(requireContext())
-        simulationManager?.initializeTts()
         
         // Set up callbacks
         simulationManager?.onSpeechResult = { transcript ->
@@ -159,16 +158,18 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
             }
         }
         
-        // Initial greeting in simulation mode
-        lifecycleScope.launch {
-            kotlinx.coroutines.delay(500) // Small delay for UI to settle
-            withContext(Dispatchers.Main) {
+        // Wait for TTS to be ready before speaking initial greeting
+        simulationManager?.onTtsReady = {
+            lifecycleScope.launch(Dispatchers.Main) {
                 val greeting = "Hello! I'm here to help with a health screening. Would you like to start?"
                 addMessageBubble(greeting, isRobot = true)
                 speak(greeting)
                 updateStatus("Ready")
             }
         }
+        
+        // Initialize TTS (will trigger onTtsReady callback when complete)
+        simulationManager?.initializeTts()
         
         Log.d(TAG, "Simulation mode initialized")
     }
