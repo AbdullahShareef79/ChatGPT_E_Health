@@ -10,6 +10,7 @@ import threading
 import time
 import uuid
 import csv
+import random
 from datetime import datetime
 from typing import Optional
 from dotenv import load_dotenv
@@ -308,7 +309,18 @@ class VoicePHQ9GUI:
         if ASR_AVAILABLE:
             self.mic_button.config(state=tk.NORMAL, text="🎤 PRESS TO SPEAK")
         
-        welcome = "I will ask you 9 questions about how you've been feeling over the last 2 weeks. This is not a diagnosis, but helps you understand your emotions. Please answer honestly."
+        # Consent and disclaimer
+        consent = "Hello! Before we begin, I want to inform you that this is a technical demonstration for research purposes only. This is NOT a psychological evaluation or medical diagnosis."
+        self.add_robot_message(consent)
+        self.speak(consent)
+        time.sleep(6)
+        
+        consent2 = "The information collected will be used solely for technical testing. If you have real health concerns, please consult a qualified healthcare professional."
+        self.add_robot_message(consent2)
+        self.speak(consent2)
+        time.sleep(5)
+        
+        welcome = "I will now ask you 9 questions about how you've been feeling over the last 2 weeks. Please answer with: not at all, several days, more than half the days, or nearly every day."
         self.add_robot_message(welcome)
         self.speak(welcome)
         
@@ -316,10 +328,10 @@ class VoicePHQ9GUI:
             userRawSpeech="", asrTranscript="", languageDetected="EN",
             phqQuestionId="", handlingModule="PEPPER_LOCAL", pepperLocalNlpSuccess=True,
             gptUsed=False, gptReason="", gptModel="", gptPromptSnippet="",
-            gptResponse="", finalRobotOutput=welcome, notes="Screening started"
+            gptResponse="", finalRobotOutput=consent + " " + consent2 + " " + welcome, notes="Consent and screening started"
         )
         
-        time.sleep(1)
+        time.sleep(3)
         self.ask_question()
     
     def ask_question(self):
@@ -393,13 +405,13 @@ class VoicePHQ9GUI:
     def parse_response(self, response: str) -> int:
         """Parse response locally"""
         resp_lower = response.lower()
-        if "not at all" in resp_lower or "never" in resp_lower:
+        if "not at all" in resp_lower or "never" in resp_lower or resp_lower.strip() == "0":
             return 0
-        elif "several days" in resp_lower or "sometimes" in resp_lower:
+        elif "several days" in resp_lower or "sometimes" in resp_lower or resp_lower.strip() == "1":
             return 1
-        elif "more than half" in resp_lower or "often" in resp_lower:
+        elif "more than half" in resp_lower or "often" in resp_lower or resp_lower.strip() == "2":
             return 2
-        elif "nearly every day" in resp_lower or "always" in resp_lower:
+        elif "nearly every day" in resp_lower or "always" in resp_lower or resp_lower.strip() == "3":
             return 3
         
         # Try matching options
@@ -408,6 +420,34 @@ class VoicePHQ9GUI:
             if option.lower() in resp_lower:
                 return q['scores'][idx]
         return -1
+    
+    def get_acknowledgment(self, score: int) -> str:
+        """Get varied acknowledgment based on score"""
+        acknowledgments = {
+            0: [
+                "I understand, not at all. That's recorded as score 0.",
+                "Okay, not at all. I've noted that as 0.",
+                "Got it, not experiencing that. Score 0 recorded."
+            ],
+            1: [
+                "I see, several days. That's recorded as score 1.",
+                "Understood, several days. I've noted that as 1.",
+                "Okay, on several days. Score 1 recorded."
+            ],
+            2: [
+                "I hear you, more than half the days. That's recorded as score 2.",
+                "Understood, more than half the days. I've noted that as 2.",
+                "Got it, more than half the days. Score 2 recorded."
+            ],
+            3: [
+                "I understand, nearly every day. That's recorded as score 3.",
+                "Okay, nearly every day. I've noted that as 3.",
+                "Got it, nearly every day. Score 3 recorded."
+            ]
+        }
+        if score in acknowledgments:
+            return random.choice(acknowledgments[score])
+        return f"Thank you, I've recorded your response as score {score}."
     
     def call_gpt_fallback(self, response: str) -> tuple:
         """Call GPT for unclear responses"""
@@ -467,6 +507,11 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         
         self.responses.append(score)
         
+        # Get varied acknowledgment with score
+        ack = self.get_acknowledgment(score)
+        self.add_robot_message(ack)
+        self.speak(ack)
+        
         # Log
         q = PHQ9_QUESTIONS[self.current_question]
         self.logger.log_turn(
@@ -481,17 +526,18 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             gptModel="gpt-4o-mini" if gpt_used else "",
             gptPromptSnippet=f"Parse: {response}" if gpt_used else "",
             gptResponse="",
-            finalRobotOutput="Thank you",
-            notes=f"Q{self.current_question + 1} response"
+            finalRobotOutput=ack,
+            notes=f"Q{self.current_question + 1} response, score={score}"
         )
         
-        # Next
-        ack = "Thank you. Moving to the next question."
-        self.add_robot_message(ack)
-        self.speak(ack)
+        # Next question
+        if self.current_question < 8:
+            next_msg = "Let me ask you the next question."
+            self.add_robot_message(next_msg)
+            self.speak(next_msg)
         
         self.current_question += 1
-        self.root.after(1500, self.ask_question)
+        self.root.after(2000, self.ask_question)
     
     def complete_screening(self):
         """Finish screening"""
@@ -502,17 +548,44 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         
         total = sum(self.responses)
         severity = self.get_severity(total)
+        severity_description = self.get_severity_description(severity)
         
-        summary = f"Thank you for completing the screening. Your score is {total}, indicating {severity} symptoms. Remember, this is not a diagnosis. If concerned, please speak with a healthcare provider."
+        # Display score breakdown
+        self.add_system_message(f"COMPLETED | Total Score: {total} out of 27 | Severity: {severity.upper()}")
+        self.add_system_message(f"Your responses: {self.responses}")
         
-        self.add_system_message(f"COMPLETED | Score: {total} | Severity: {severity}")
-        self.add_robot_message(summary)
-        self.speak(summary)
+        # First message - score
+        intro = f"Thank you for completing all 9 questions. Let me share your results."
+        self.add_robot_message(intro)
+        self.speak(intro)
+        time.sleep(3)
+        
+        # Second message - score breakdown
+        score_msg = f"Your total score is {total} out of a maximum of 27 points. This indicates {severity} level symptoms."
+        self.add_robot_message(score_msg)
+        self.speak(score_msg)
+        time.sleep(4)
+        
+        # Third message - severity description
+        self.add_robot_message(severity_description)
+        self.speak(severity_description)
+        time.sleep(5)
+        
+        # Fourth message - disclaimer
+        disclaimer = "Please remember: This is a technical demonstration only, not a medical diagnosis. This data is collected for research purposes. If you have real health concerns, please consult a qualified healthcare professional."
+        self.add_robot_message(disclaimer)
+        self.speak(disclaimer)
         
         self.export_button.config(state=tk.NORMAL)
-        self.status_label.config(text=f"✅ Completed! Total score: {total}")
+        self.status_label.config(text=f"✅ Completed! Total score: {total}/27 - {severity}")
         
-        messagebox.showinfo("Complete", f"Screening complete!\n\nScore: {total}\nSeverity: {severity}\n\nClick Export Logs to save.")
+        messagebox.showinfo("Screening Complete", 
+            f"PHQ-9 Screening Complete!\n\n"
+            f"Total Score: {total} / 27\n"
+            f"Severity Level: {severity.upper()}\n\n"
+            f"{severity_description}\n\n"
+            f"⚠️ This is for technical demonstration only.\n"
+            f"Click 'Export Logs' to save the session data.")
     
     def get_severity(self, score):
         """Get severity level"""
@@ -521,6 +594,17 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         elif score <= 14: return "moderate"
         elif score <= 19: return "moderately severe"
         else: return "severe"
+    
+    def get_severity_description(self, severity):
+        """Get detailed description for each severity level"""
+        descriptions = {
+            "minimal": "Minimal depression symptoms. Scores in this range (0-4) typically suggest little to no depressive symptoms.",
+            "mild": "Mild depression symptoms. Scores in this range (5-9) may indicate mild depressive symptoms that might benefit from monitoring.",
+            "moderate": "Moderate depression symptoms. Scores in this range (10-14) suggest moderate depressive symptoms that may warrant professional evaluation.",
+            "moderately severe": "Moderately severe depression symptoms. Scores in this range (15-19) indicate significant symptoms that would benefit from professional care.",
+            "severe": "Severe depression symptoms. Scores in this range (20-27) suggest severe depressive symptoms requiring immediate professional attention."
+        }
+        return descriptions.get(severity, "Unknown severity level.")
     
     def export_logs(self):
         """Export to CSV"""

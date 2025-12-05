@@ -2,9 +2,7 @@
 
 # ChatGPT E-Health: Pepper Robot PHQ-9 Health Screening
 
-## Overview
 
-This project transforms the **YourBestFriendPepper** Android application to include a comprehensive **PHQ-9 mental health screening** system. The robot conducts guided health assessments using natural language processing and AI-powered analysis.
 
 ## 🎯 Key Features
 

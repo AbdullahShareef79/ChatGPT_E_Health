@@ -1,0 +1,111 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║           PHQ-9 VOICE SIMULATION - QUICK TEST GUIDE                  ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+🚀 TO START:
+   python simulation_gui_voice.py
+
+📝 WHAT TO EXPECT:
+
+1. GUI Window Opens
+   ├─ Title: "🤖 PHQ-9 HEALTH SCREENING SIMULATION"
+   ├─ Status: Shows Voice Mode ON/OFF, GPT ON/OFF
+   └─ Green Button: "▶ START SCREENING"
+
+2. Click START SCREENING
+   ├─ Robot speaks consent (3 parts, ~15 seconds)
+   ├─ Explains: "This is NOT psychological evaluation"
+   ├─ Says: "For technical demonstration only"
+   └─ Gives instructions: "Answer with not at all, several days..."
+
+3. For Each of 9 Questions:
+   ├─ Robot asks question (voice + text)
+   ├─ YOU RESPOND:
+   │   ├─ 🎤 Click red "PRESS TO SPEAK" button, then speak
+   │   └─ ⌨️ OR type in text field and press Enter/Send
+   ├─ Robot acknowledges: "I see, several days. That's recorded as 1."
+   └─ Robot says: "Let me ask you the next question."
+
+4. After Question 9:
+   ├─ Robot thanks you
+   ├─ Announces total score: "Your score is X out of 27"
+   ├─ States severity: "This indicates [minimal/mild/moderate/...] level"
+   ├─ Explains what that means
+   └─ Reminds: "This is technical demonstration only"
+
+5. Export Data:
+   └─ Click "📊 Export Logs" to save CSV file
+
+═══════════════════════════════════════════════════════════════════════
+
+🎤 VOICE INPUT TIPS:
+
+✓ Wait for "🔴 LISTENING..." to appear
+✓ Speak clearly at normal pace
+✓ Say answers like:
+  - "Not at all"
+  - "Several days"
+  - "More than half the days"
+  - "Nearly every day"
+  - Or just say: "Zero", "One", "Two", "Three"
+
+✓ If voice fails → Just type your answer instead
+
+═══════════════════════════════════════════════════════════════════════
+
+📊 VALID ANSWERS (Score 0-3):
+
+0 = Not at all / Never
+1 = Several days / Sometimes  
+2 = More than half the days / Often
+3 = Nearly every day / Always
+
+═══════════════════════════════════════════════════════════════════════
+
+🎯 TEST SCENARIOS:
+
+Quick Test (Minimal symptoms):
+Q1-9: All "not at all" → Score: 0/27 → MINIMAL
+
+Mild Test:
+Q1-9: Mix of "not at all" (0) and "several days" (1) → Score: 5-9 → MILD
+
+Moderate Test:
+Q1-9: Mix of 1s and 2s → Score: 10-14 → MODERATE
+
+═══════════════════════════════════════════════════════════════════════
+
+✅ FEATURES TO VERIFY:
+
+□ Consent plays at start
+□ All 9 questions are asked
+□ Robot acknowledges each answer with score
+□ Microphone button works (or text input works)
+□ Robot voice speaks (TTS)
+□ Progress bar updates (1/9, 2/9, ... 9/9)
+□ Final score calculated correctly
+□ Severity level shown
+□ Detailed description provided
+□ Export logs button works
+□ CSV file created
+
+═══════════════════════════════════════════════════════════════════════
+
+🐛 IF SOMETHING DOESN'T WORK:
+
+Microphone not working?
+→ Use text input instead (always works!)
+
+Robot not speaking?
+→ You can still see messages in chat window
+
+Can't understand speech?
+→ Speak more clearly OR use text input
+
+═══════════════════════════════════════════════════════════════════════
+
+💡 REMEMBER: This is for TECHNICAL DEMONSTRATION ONLY
+   Not for actual psychological evaluation!
+
+═══════════════════════════════════════════════════════════════════════
+
