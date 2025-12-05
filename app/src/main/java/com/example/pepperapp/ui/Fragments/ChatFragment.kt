@@ -59,11 +59,9 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
     private var simulationManager: SimulationManager? = null
 
     // PHQ-9 Screening State
-    private var currentQuestionIndex = 0
-    private val responses = mutableListOf<Int>()
+    private val sessionManager = com.example.pepperapp.model.PHQ9SessionManager()
     private val questions = PHQ9Question.getPHQ9Questions()
     private var isScreeningActive = false
-    private var sessionId: String = UUID.randomUUID().toString()
 
     // OpenAI Configuration
     private val apiKey = "YOUR_OPENAI_API_KEY_HERE" // Replace with your actual OpenAI API key
@@ -233,28 +231,56 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
     }
 
     private fun startPHQ9Screening() {
+        // Show consent dialog first
+        showConsentDialog()
+    }
+    
+    private fun showConsentDialog() {
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("PHQ-9 Screening Consent")
+            .setMessage("""
+                Hello! Before we begin, I want to inform you that this is a technical demonstration for research purposes only. This is NOT a psychological evaluation or medical diagnosis.
+                
+                The information collected will be used solely for technical testing. If you have real health concerns, please consult a qualified healthcare professional.
+                
+                Do you consent to participate in this screening?
+            """.trimIndent())
+            .setPositiveButton("Yes, I Consent") { _, _ ->
+                proceedWithScreening()
+            }
+            .setNegativeButton("No, Decline") { _, _ ->
+                val declineMsg = "I understand. Thank you for your time. The screening will not proceed."
+                addMessageBubble(declineMsg, isRobot = true)
+                speak(declineMsg)
+            }
+            .setCancelable(false)
+            .create()
+        dialog.show()
+    }
+    
+    private fun proceedWithScreening() {
         isScreeningActive = true
-        currentQuestionIndex = 0
-        responses.clear()
-        sessionId = UUID.randomUUID().toString()
-        LogManager.startSession(sessionId)
+        sessionManager.startSession()
+        LogManager.startSession(sessionManager.sessionId)
         
         // Show progress UI
         progressText.visibility = View.VISIBLE
         progressBar.visibility = View.VISIBLE
         progressBar.max = questions.size
         
-        // Add welcome message
-        val welcomeMessage = "I will ask you a few questions to check how you've been feeling recently. " +
-            "This is not a diagnosis, but it helps you understand your emotions better. " +
-            "Please answer honestly based on the last 2 weeks."
+        // Consent confirmed message
+        val thanks = "Thank you for consenting."
+        addMessageBubble(thanks, isRobot = true)
+        speak(thanks)
         
-        addMessageBubble(welcomeMessage, isRobot = true)
-        speak(welcomeMessage)
+        // Instructions
+        val instructions = "I will now ask you 9 questions about how you've been feeling over the last 2 weeks. Please answer with: not at all, several days, more than half the days, or nearly every day."
+        addMessageBubble(instructions, isRobot = true)
+        speak(instructions)
         
         updateStatus("Screening started")
         
-        // Log robot turn
+        // Log
         logInteraction(
             userRawSpeech = null,
             asrTranscript = "",
@@ -267,8 +293,8 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
             gptModel = null,
             gptPromptSnippet = null,
             gptResponse = null,
-            finalRobotOutput = welcomeMessage,
-            notes = "Screening started"
+            finalRobotOutput = thanks + " " + instructions,
+            notes = "Consent given, screening started"
         )
         
         // Start with first question
@@ -703,7 +729,7 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
             try {
                 val session = PHQ9Session(
                     timestamp = System.currentTimeMillis(),
-                    responses = responses.toList(),
+                    responses = sessionManager.finalScores.map { it ?: 0 },
                     totalScore = totalScore,
                     severity = severity,
                     gptSummary = summary

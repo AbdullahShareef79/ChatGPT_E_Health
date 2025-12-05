@@ -1,0 +1,81 @@
+PHQ-9 Screening Session
+Session ID: 020619e7-0ee4-4ff9-b587-b3f54253ca20
+Date: 2025-12-05 15:58:25
+======================================================================
+
+[15:58:26] Pepper: Hello! I'm Pepper, ready to conduct a health screening with you.
+[15:58:35] Pepper: Hello! Before we begin, I want to inform you that this is a technical demonstration for research purposes only. This is NOT a psychological evaluation or medical diagnosis.
+[15:58:37] Pepper: The information collected will be used solely for technical testing. If you have real health concerns, please consult a qualified healthcare professional.
+[15:58:38] Pepper: Do you consent to participate in this screening? Please say 'yes' to continue or 'no' to decline.
+[15:58:47] User: Yes.
+[15:58:48] Pepper: Thank you for consenting.
+[15:58:49] Pepper: I will now ask you 9 questions about how you've been feeling over the last 2 weeks. Please answer with: not at all, several days, more than half the days, or nearly every day.
+[15:58:51] Pepper: Question 1: Over the last 2 weeks, how often have you had little interest or pleasure in doing things?
+[15:59:01] User: Half of the days.
+[15:59:02] Pepper: I understood: More than half. Is that correct?
+[15:59:11] User: Yeah, true.
+[15:59:14] Pepper: Let me ask you the next question.
+[15:59:16] Pepper: Question 2: Over the last 2 weeks, how often have you felt down, depressed, or hopeless?
+[15:59:27] User: Always.
+[15:59:27] Pepper: I understood: every day. Is that correct?
+[15:59:43] User: Yes.
+[15:59:44] Pepper: Let me ask you the next question.
+[15:59:45] Pepper: Question 3: Over the last 2 weeks, how often have you had trouble falling or staying asleep, or sleeping too much?
+[15:59:52] User: Nearly every day.
+[15:59:52] Pepper: I understood: nearly every day. Is that correct?
+[15:59:59] User: . . . .
+[16:00:00] Pepper: I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day.
+[16:00:00] Pepper: Question 3: Over the last 2 weeks, how often have you had trouble falling or staying asleep, or sleeping too much?
+[16:00:15] User: Not at all.
+[16:00:15] Pepper: I understood: not at all. Is that correct?
+[16:00:28] User: ... ... ... ... ...
+[16:00:28] Pepper: I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day.
+[16:00:29] Pepper: Question 3: Over the last 2 weeks, how often have you had trouble falling or staying asleep, or sleeping too much?
+[16:00:34] User: Not at all.
+[16:00:34] Pepper: I understood: not at all. Is that correct?
+[16:00:51] User: Yes.
+[16:00:51] Pepper: Let me ask you the next question.
+[16:00:52] Pepper: Question 4: Over the last 2 weeks, how often have you felt tired or had little energy?
+[16:00:57] User: Every day.
+[16:00:57] Pepper: I understood: every day. Is that correct?
+[16:01:03] User: Yes. Yes.
+[16:01:03] Pepper: Let me ask you the next question.
+[16:01:05] Pepper: Question 5: Over the last 2 weeks, how often have you had poor appetite or overeating?
+[16:01:11] User: Not at all.
+[16:01:11] Pepper: I understood: not at all. Is that correct?
+[16:01:37] User: Yes, yes.
+[16:01:37] Pepper: Let me ask you the next question.
+[16:01:39] Pepper: Question 6: Over the last 2 weeks, how often have you felt bad about yourself, or that you are a failure, or have let yourself or your family down?
+[16:01:43] User: Not that tall.
+[16:01:44] Pepper: I understood: Not at all. Is that correct?
+[16:01:50] User: Yes, yes.
+[16:01:51] Pepper: Let me ask you the next question.
+[16:01:52] Pepper: Question 7: Over the last 2 weeks, how often have you had trouble concentrating on things, such as reading the newspaper or watching television?
+[16:02:00] User: No, not three times.
+[16:02:01] Pepper: I understood: Not at all. Is that correct?
+[16:02:18] User: Yes, yes.
+[16:02:19] Pepper: Let me ask you the next question.
+[16:02:20] Pepper: Question 8: Over the last 2 weeks, how often have you been moving or speaking slowly enough that other people could have noticed?
+[16:02:27] User: No, no, no.
+[16:02:28] Pepper: I understood: Not at all. Is that correct?
+[16:02:33] User: Yes.
+[16:02:33] Pepper: Let me ask you the next question.
+[16:02:35] Pepper: Question 9: Over the last 2 weeks, how often have you had thoughts that you would be better off dead or of hurting yourself in some way?
+[16:02:40] User: Yes, really.
+[16:02:41] Pepper: I heard 'Yes, really.', but I'm not sure I understood correctly. Could you please repeat using: not at all, several days, more than half the days, or nearly every day?
+[16:02:49] User: Yes, really.
+[16:02:50] Pepper: I heard 'Yes, really.', but I'm not sure I understood correctly. Could you please repeat using: not at all, several days, more than half the days, or nearly every day?
+[16:02:56] User: Nearly every day
+[16:02:56] Pepper: I understood: nearly every day. Is that correct?
+[16:03:13] User: Yes. Yes.
+[16:03:13] Pepper: I want to acknowledge your response. Your safety is very important. Please know that help is available.
+[16:03:18] Pepper: CRISIS RESOURCES - Please take note of these:
+[16:03:29] Pepper: This screening is not a diagnosis. Please contact a healthcare professional for proper evaluation and support.
+[16:03:34] Pepper: Have you noted these resources? Type 'yes' or press the microphone to continue.
+[16:03:44] User: Yes. Yes.
+
+======================================================================
+RESULTS:
+Total Score: 11/27
+Severity: moderate
+Responses: [2, 3, 0, 3, 0, 0, 0, 0, 3]

@@ -11,10 +11,12 @@ import time
 import uuid
 import csv
 import random
+import json
 from datetime import datetime
 from typing import Optional
 from dotenv import load_dotenv
 import os
+from pathlib import Path
 
 # Load configuration
 load_dotenv()
@@ -46,6 +48,12 @@ class SimpleLogger:
         self.session_id = session_id
         self.entries = []
         self.turn_index = 0
+        self.transcript = []
+        self.session_start = datetime.now()
+        
+        # Create session folder
+        self.session_folder = Path("data") / "sessions" / f"session_{session_id[:8]}_{self.session_start.strftime('%Y%m%d_%H%M%S')}"
+        self.session_folder.mkdir(parents=True, exist_ok=True)
     
     def log_turn(self, **kwargs):
         entry = {
@@ -56,6 +64,64 @@ class SimpleLogger:
         }
         self.entries.append(entry)
         self.turn_index += 1
+    
+    def add_to_transcript(self, speaker, text):
+        """Add message to conversation transcript"""
+        self.transcript.append({
+            "timestamp": datetime.now().isoformat(),
+            "speaker": speaker,
+            "text": text
+        })
+    
+    def save_session_data(self, responses, total_score, severity):
+        """Save complete session data"""
+        session_data = {
+            "session_id": self.session_id,
+            "start_time": self.session_start.isoformat(),
+            "end_time": datetime.now().isoformat(),
+            "duration_seconds": (datetime.now() - self.session_start).total_seconds(),
+            "phq9_responses": responses,
+            "total_score": total_score,
+            "severity": severity,
+            "transcript": self.transcript,
+            "interaction_logs": self.entries
+        }
+        
+        # Save as JSON
+        json_file = self.session_folder / "session_data.json"
+        with open(json_file, 'w', encoding='utf-8') as f:
+            json.dump(session_data, f, indent=2, ensure_ascii=False)
+        
+        # Save transcript as readable text
+        transcript_file = self.session_folder / "transcript.txt"
+        with open(transcript_file, 'w', encoding='utf-8') as f:
+            f.write(f"PHQ-9 Screening Session\n")
+            f.write(f"Session ID: {self.session_id}\n")
+            f.write(f"Date: {self.session_start.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"{'='*70}\n\n")
+            
+            for msg in self.transcript:
+                f.write(f"[{msg['timestamp'].split('T')[1][:8]}] {msg['speaker']}: {msg['text']}\n")
+            
+            f.write(f"\n{'='*70}\n")
+            f.write(f"RESULTS:\n")
+            f.write(f"Total Score: {total_score}/27\n")
+            f.write(f"Severity: {severity}\n")
+            f.write(f"Responses: {responses}\n")
+        
+        # Save CSV for analysis
+        csv_file = self.session_folder / "interaction_logs.csv"
+        with open(csv_file, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=[
+                "timestamp", "sessionId", "turnIndex", "userRawSpeech", "asrTranscript",
+                "languageDetected", "phqQuestionId", "handlingModule", "pepperLocalNlpSuccess",
+                "gptUsed", "gptReason", "gptModel", "gptPromptSnippet", "gptResponse",
+                "finalRobotOutput", "notes"
+            ])
+            writer.writeheader()
+            writer.writerows(self.entries)
+        
+        return self.session_folder
     
     def export_to_csv(self):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -85,7 +151,10 @@ class VoicePHQ9GUI:
         self.session_id = str(uuid.uuid4())
         self.logger = SimpleLogger(self.session_id)
         self.current_question = 0
-        self.responses = []
+        self.final_scores = [None] * 9  # Exactly 9 final confirmed scores
+        self.attempts_per_question = {i: [] for i in range(9)}  # Track all attempts
+        self.retry_counts = {i: 0 for i in range(9)}  # Track retries per question
+        self.MAX_RETRIES = 3
         self.session_active = False
         self.is_listening = False
         self.waiting_for_crisis_ack = False
@@ -274,6 +343,20 @@ class VoicePHQ9GUI:
         )
         self.export_button.pack(side=tk.LEFT, padx=5)
         
+        # Restart button
+        self.restart_button = tk.Button(
+            button_frame,
+            text="🔄 Restart",
+            font=("Arial", 12, "bold"),
+            bg="#9C27B0",
+            fg="white",
+            width=12,
+            height=3,
+            command=self.restart_screening,
+            state=tk.DISABLED
+        )
+        self.restart_button.pack(side=tk.LEFT, padx=5)
+        
         # Instructions
         instructions = tk.Label(
             self.root,
@@ -312,6 +395,10 @@ class VoicePHQ9GUI:
         self.chat_area.insert(tk.END, text + "\n\n")
         self.chat_area.see(tk.END)
         self.chat_area.config(state=tk.DISABLED)
+        
+        # Log to transcript
+        if hasattr(self, 'logger'):
+            self.logger.add_to_transcript("Pepper", text)
     
     def add_user_message(self, text):
         """Add user message"""
@@ -320,6 +407,10 @@ class VoicePHQ9GUI:
         self.chat_area.insert(tk.END, text + "\n\n")
         self.chat_area.see(tk.END)
         self.chat_area.config(state=tk.DISABLED)
+        
+        # Log to transcript
+        if hasattr(self, 'logger'):
+            self.logger.add_to_transcript("User", text)
     
     def add_system_message(self, text):
         """Add system info"""
@@ -332,7 +423,9 @@ class VoicePHQ9GUI:
         """Start PHQ-9 screening"""
         self.session_active = True
         self.current_question = 0
-        self.responses = []
+        self.final_scores = [None] * 9
+        self.attempts_per_question = {i: [] for i in range(9)}
+        self.retry_counts = {i: 0 for i in range(9)}
         self.start_button.config(state=tk.DISABLED)
         self.text_input.config(state=tk.NORMAL)
         self.send_button.config(state=tk.NORMAL)
@@ -773,6 +866,9 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 score = self.pending_score
                 confirmation = self.pending_confirmation
                 
+                # Store as FINAL confirmed score
+                self.final_scores[self.current_question] = score
+                
                 # Log
                 q = PHQ9_QUESTIONS[self.current_question]
                 self.logger.log_turn(
@@ -787,7 +883,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     gptPromptSnippet="",
                     gptResponse="",
                     finalRobotOutput="Confirmed",
-                    notes=f"Q{self.current_question + 1} response, score={score}"
+                    notes=f"Q{self.current_question + 1} FINAL score={score}, retries={self.retry_counts[self.current_question]}"
                 )
                 
                 # CHECK FOR CRISIS PROTOCOL (Q9 with score > 0)
@@ -808,11 +904,35 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 threading.Thread(target=continue_thread, daemon=True).start()
                 return
             else:
-                # User says no, ask again
+                # User says no - increment retry count
+                self.retry_counts[self.current_question] += 1
+                self.waiting_for_answer_confirmation = False
+                
+                # Check if max retries reached
+                if self.retry_counts[self.current_question] >= self.MAX_RETRIES:
+                    # Use last attempted score or default to 0
+                    fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
+                    self.final_scores[self.current_question] = fallback_score
+                    
+                    self.add_system_message(f"⚠️ Max retries reached for Q{self.current_question + 1}. Using fallback score: {fallback_score}")
+                    
+                    fallback_msg = "I understand this is difficult. Let's move to the next question."
+                    self.add_robot_message(fallback_msg)
+                    self.speak(fallback_msg)
+                    
+                    # Move to next question
+                    def continue_after_retry():
+                        time.sleep(0.5)
+                        self.current_question += 1
+                        self.root.after(500, self.ask_question)
+                    
+                    threading.Thread(target=continue_after_retry, daemon=True).start()
+                    return
+                
+                # Ask again
                 retry_msg = "I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day."
                 self.add_robot_message(retry_msg)
                 self.speak(retry_msg)
-                self.waiting_for_answer_confirmation = False
                 
                 # Re-ask question
                 def reask():
@@ -864,14 +984,53 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 local_success = False
                 self.add_system_message(f"GPT understood: score={score}, as: {confirmation}")
             else:
-                # Ask for clarification
+                # Increment retry and ask for clarification
+                self.retry_counts[self.current_question] += 1
+                
+                if self.retry_counts[self.current_question] >= self.MAX_RETRIES:
+                    # Max retries - use fallback
+                    fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
+                    self.final_scores[self.current_question] = fallback_score
+                    self.add_system_message(f"⚠️ Max retries. Using fallback: {fallback_score}")
+                    
+                    fallback_msg = "I'm having trouble understanding. Let's move to the next question."
+                    self.add_robot_message(fallback_msg)
+                    self.speak(fallback_msg)
+                    
+                    def skip_question():
+                        time.sleep(0.5)
+                        self.current_question += 1
+                        self.root.after(500, self.ask_question)
+                    
+                    threading.Thread(target=skip_question, daemon=True).start()
+                    return
+                
                 clarify_msg = f"I heard '{response}', but I'm not sure I understood correctly. Could you please repeat using: not at all, several days, more than half the days, or nearly every day?"
                 self.add_robot_message(clarify_msg)
                 self.speak(clarify_msg)
                 self.add_system_message("Asked for clarification")
                 return
         elif not local_success:
-            # Ask for clarification
+            # Increment retry
+            self.retry_counts[self.current_question] += 1
+            
+            if self.retry_counts[self.current_question] >= self.MAX_RETRIES:
+                fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
+                self.final_scores[self.current_question] = fallback_score
+                self.add_system_message(f"⚠️ Max retries. Using fallback: {fallback_score}")
+                
+                fallback_msg = "Let's move to the next question."
+                self.add_robot_message(fallback_msg)
+                self.speak(fallback_msg)
+                
+                def skip_question():
+                    time.sleep(0.5)
+                    self.current_question += 1
+                    self.root.after(500, self.ask_question)
+                
+                threading.Thread(target=skip_question, daemon=True).start()
+                return
+            
             clarify_msg = f"I heard '{response}', but I'm not sure I understood correctly. Could you please repeat using: not at all, several days, more than half the days, or nearly every day?"
             self.add_robot_message(clarify_msg)
             self.speak(clarify_msg)
@@ -880,7 +1039,8 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         else:
             self.add_system_message(f"Local NLP: score={score}, understood as: {confirmation}")
         
-        self.responses.append(score)
+        # Store as attempt (not final yet)
+        self.attempts_per_question[self.current_question].append(score)
         
         # Confirm what was understood
         confirm_msg = f"I understood: {confirmation}. Is that correct?"
@@ -900,13 +1060,34 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         self.send_button.config(state=tk.DISABLED)
         self.mic_button.config(state=tk.DISABLED)
         
-        total = sum(self.responses)
+        # Fill any missing scores with 0 (shouldn't happen but safety check)
+        for i in range(9):
+            if self.final_scores[i] is None:
+                self.final_scores[i] = 0
+                self.add_system_message(f"⚠️ Warning: Q{i+1} has no final score, defaulting to 0")
+        
+        # Calculate total (must be 0-27)
+        total = sum(self.final_scores)
+        
+        # Safety clamp
+        if total > 27:
+            self.add_system_message(f"❌ ERROR: Score {total} exceeds maximum 27! Clamping.")
+            total = 27
+        elif total < 0:
+            self.add_system_message(f"❌ ERROR: Score {total} is negative! Clamping.")
+            total = 0
+        
         severity = self.get_severity(total)
         severity_description = self.get_severity_description(severity)
         
+        # Save session data
+        session_folder = self.logger.save_session_data(self.final_scores, total, severity)
+        
         # Display score breakdown
         self.add_system_message(f"COMPLETED | Total Score: {total} out of 27 | Severity: {severity.upper()}")
-        self.add_system_message(f"Your responses: {self.responses}")
+        self.add_system_message(f"Final responses (Q1-Q9): {self.final_scores}")
+        self.add_system_message(f"Retry counts: {list(self.retry_counts.values())}")
+        self.add_system_message(f"Session saved: {session_folder}")
         
         # Speak summary in background thread
         def summary_thread():
@@ -930,6 +1111,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             self.speak(disclaimer)
             
             self.root.after(0, lambda: self.export_button.config(state=tk.NORMAL))
+            self.root.after(0, lambda: self.restart_button.config(state=tk.NORMAL))
             self.root.after(0, lambda: self.status_label.config(text=f"✅ Completed! Total score: {total}/27 - {severity}"))
             
             self.root.after(0, lambda: messagebox.showinfo("Screening Complete", 
@@ -937,8 +1119,8 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 f"Total Score: {total} / 27\n"
                 f"Severity Level: {severity.upper()}\n\n"
                 f"{severity_description}\n\n"
-                f"⚠️ This is for technical demonstration only.\n"
-                f"Click 'Export Logs' to save the session data."))
+                f"⚠️ This is for technical demonstration only.\n\n"
+                f"Session data saved to:\n{session_folder}"))
         
         threading.Thread(target=summary_thread, daemon=True).start()
     
@@ -962,10 +1144,50 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         return descriptions.get(severity, "Unknown severity level.")
     
     def export_logs(self):
-        """Export to CSV"""
-        filename = self.logger.export_to_csv()
-        messagebox.showinfo("Exported", f"Logs saved to:\n{filename}\n\nOpening folder...")
-        os.startfile(os.getcwd())
+        """Export to CSV and open folder"""
+        if hasattr(self, 'logger') and hasattr(self.logger, 'session_folder'):
+            os.startfile(str(self.logger.session_folder))
+            messagebox.showinfo("Session Data", f"Opening session folder:\n{self.logger.session_folder}")
+        else:
+            filename = self.logger.export_to_csv()
+            messagebox.showinfo("Exported", f"Logs saved to:\n{filename}")
+            os.startfile(os.getcwd())
+    
+    def restart_screening(self):
+        """Restart the screening"""
+        response = messagebox.askyesno("Restart", "Start a new screening session?\n\nCurrent session data is already saved.")
+        if response:
+            # Clear chat
+            self.chat_area.config(state=tk.NORMAL)
+            self.chat_area.delete(1.0, tk.END)
+            self.chat_area.config(state=tk.DISABLED)
+            
+            # Reset state
+            self.session_id = str(uuid.uuid4())
+            self.logger = SimpleLogger(self.session_id)
+            self.current_question = 0
+            self.final_scores = [None] * 9
+            self.attempts_per_question = {i: [] for i in range(9)}
+            self.retry_counts = {i: 0 for i in range(9)}
+            self.session_active = False
+            self.waiting_for_consent = False
+            self.waiting_for_answer_confirmation = False
+            self.waiting_for_crisis_ack = False
+            
+            # Reset UI
+            self.progress_bar['value'] = 0
+            self.progress_label.config(text="Question 0 / 9")
+            self.start_button.config(state=tk.NORMAL)
+            self.text_input.config(state=tk.DISABLED)
+            self.send_button.config(state=tk.DISABLED)
+            self.mic_button.config(state=tk.DISABLED)
+            self.export_button.config(state=tk.DISABLED)
+            self.restart_button.config(state=tk.DISABLED)
+            self.status_label.config(text="Ready to start new session")
+            
+            # Welcome message
+            self.add_robot_message("Ready for a new screening session. Click START SCREENING when ready.")
+            self.speak("Ready for a new screening session.")
     
     def update_status(self, text):
         """Update status"""
