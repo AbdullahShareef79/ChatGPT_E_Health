@@ -25,3 +25,6 @@ __pycache__/
 venv/
 *.csv
 interaction_logs_*.csv
+
+# Results and visualizations (regenerated each time)
+results/

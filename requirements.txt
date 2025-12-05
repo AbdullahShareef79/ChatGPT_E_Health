@@ -2,6 +2,7 @@ openai==0.28.1
 SpeechRecognition==3.10.0
 pyttsx3==2.90
 python-dotenv==1.0.0
+matplotlib>=3.10.0
 # Note: PyAudio is optional - only needed for speech input
 # On Windows, install manually if needed:
 # pip install pipwin

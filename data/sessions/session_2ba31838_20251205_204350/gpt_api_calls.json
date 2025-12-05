@@ -1,0 +1,202 @@
+[
+  {
+    "timestamp": "2025-12-05T20:44:48.927809",
+    "purpose": "Check consent",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if agrees/consents, NO if declines.\nUser: Does 'Yes, yes.' mean consent?",
+    "response": "YES",
+    "tokens_used": 33
+  },
+  {
+    "timestamp": "2025-12-05T20:45:47.234142",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 28
+  },
+  {
+    "timestamp": "2025-12-05T20:46:16.076643",
+    "purpose": "Parse PHQ-9 Q2 response",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Question: Over the last 2 weeks, how often have you felt down, depressed, or hopeless?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: Ehh, not really.",
+    "response": "0|Not at all",
+    "tokens_used": 76
+  },
+  {
+    "timestamp": "2025-12-05T20:46:43.325707",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'It is not correct. No, not correct.' a confirmation?",
+    "response": "NO",
+    "tokens_used": 36
+  },
+  {
+    "timestamp": "2025-12-05T20:47:02.278729",
+    "purpose": "Parse PHQ-9 Q2 response",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Question: Over the last 2 weeks, how often have you felt down, depressed, or hopeless?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: Hi, welcome to my channel. If you like this video, please give me a thumbs up and subscribe to my channel. Thank you.",
+    "response": "0|Not at all",
+    "tokens_used": 98
+  },
+  {
+    "timestamp": "2025-12-05T20:47:13.099448",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'No. No.' a confirmation?",
+    "response": "NO",
+    "tokens_used": 30
+  },
+  {
+    "timestamp": "2025-12-05T20:47:20.627941",
+    "purpose": "Parse PHQ-9 Q2 response",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Question: Over the last 2 weeks, how often have you felt down, depressed, or hopeless?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: A lot, actually.",
+    "response": "3|Nearly every day",
+    "tokens_used": 75
+  },
+  {
+    "timestamp": "2025-12-05T20:47:35.045325",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes, yes.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 30
+  },
+  {
+    "timestamp": "2025-12-05T20:48:02.132224",
+    "purpose": "Parse PHQ-9 Q3 response",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Question: Over the last 2 weeks, how often have you had trouble falling or staying asleep, or sleeping too much?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: A little bit, not a lot.",
+    "response": "1|Several days",
+    "tokens_used": 81
+  },
+  {
+    "timestamp": "2025-12-05T20:48:11.691100",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'No, no, no.' a confirmation?",
+    "response": "NO",
+    "tokens_used": 32
+  },
+  {
+    "timestamp": "2025-12-05T20:48:17.770684",
+    "purpose": "Parse PHQ-9 Q3 response",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Question: Over the last 2 weeks, how often have you had trouble falling or staying asleep, or sleeping too much?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: One or two days",
+    "response": "1|Several days",
+    "tokens_used": 77
+  },
+  {
+    "timestamp": "2025-12-05T20:48:23.137275",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes, yes.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 30
+  },
+  {
+    "timestamp": "2025-12-05T20:48:45.486022",
+    "purpose": "Parse PHQ-9 Q4 response",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Question: Over the last 2 weeks, how often have you felt tired or had little energy?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: One full week.",
+    "response": "1|Several days",
+    "tokens_used": 72
+  },
+  {
+    "timestamp": "2025-12-05T20:48:54.629919",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'This video is a derivative work of the Touhou Project.' a confirmation?",
+    "response": "NO",
+    "tokens_used": 38
+  },
+  {
+    "timestamp": "2025-12-05T20:49:03.809042",
+    "purpose": "Parse PHQ-9 Q4 response",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Question: Over the last 2 weeks, how often have you felt tired or had little energy?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: One full week.",
+    "response": "1|Several days",
+    "tokens_used": 72
+  },
+  {
+    "timestamp": "2025-12-05T20:49:09.355135",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes, yes.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 30
+  },
+  {
+    "timestamp": "2025-12-05T20:49:28.223847",
+    "purpose": "Parse PHQ-9 Q5 response",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Question: Over the last 2 weeks, how often have you had poor appetite or overeating?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: Okay",
+    "response": "Please provide your response using the format NUMBER|PH",
+    "tokens_used": 75
+  },
+  {
+    "timestamp": "2025-12-05T20:49:43.995069",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Hi, welcome to my channel. If you like my videos, please subscribe to my channel. Thank you very much.' a confirmation?",
+    "response": "NO",
+    "tokens_used": 50
+  },
+  {
+    "timestamp": "2025-12-05T20:49:50.292235",
+    "purpose": "Parse PHQ-9 Q5 response",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Question: Over the last 2 weeks, how often have you had poor appetite or overeating?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: What are the days?",
+    "response": "I'm sorry, but I need a specific response to",
+    "tokens_used": 79
+  },
+  {
+    "timestamp": "2025-12-05T20:49:59.867077",
+    "purpose": "Parse PHQ-9 Q6 response",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Question: Over the last 2 weeks, how often have you felt bad about yourself, or that you are a failure, or have let yourself or your family down?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: Okay, uh, okay, wait.",
+    "response": "Sure, take your time! Let me know when",
+    "tokens_used": 96
+  },
+  {
+    "timestamp": "2025-12-05T20:50:40.523684",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes, exactly.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 30
+  },
+  {
+    "timestamp": "2025-12-05T20:51:18.063930",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes, it's true.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 31
+  },
+  {
+    "timestamp": "2025-12-05T20:51:39.131058",
+    "purpose": "Parse PHQ-9 Q8 response",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Question: Over the last 2 weeks, how often have you been moving or speaking slowly enough that other people could have noticed?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: Zero, I didn't do that at all.",
+    "response": "0|Not at all",
+    "tokens_used": 84
+  },
+  {
+    "timestamp": "2025-12-05T20:51:44.100607",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes, exactly.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 30
+  },
+  {
+    "timestamp": "2025-12-05T20:52:20.878585",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes, exactly.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 30
+  }
+]
