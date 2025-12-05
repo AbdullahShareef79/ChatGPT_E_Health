@@ -2,6 +2,7 @@
 """
 PHQ-9 Health Screening Simulation
 Replicates the Android app logic without needing Android/emulator
+WITH SPEECH INPUT AND OUTPUT - just like Pepper!
 """
 
 import csv
@@ -13,6 +14,9 @@ from datetime import datetime
 from typing import Optional, List, Tuple
 import openai
 import os
+import speech_recognition as sr
+import pyttsx3
+import threading
 
 # Configuration
 OPENAI_API_KEY = "YOUR_OPENAI_API_KEY_HERE"  # Replace with your actual key
@@ -153,15 +157,73 @@ class LanguageDetector:
 class PHQ9Simulator:
     """Main PHQ-9 simulation class - identical logic to Android app"""
     
-    def __init__(self, api_key: str, gpt_enabled: bool = True):
+    def __init__(self, api_key: str, gpt_enabled: bool = True, use_speech: bool = True):
         self.api_key = api_key
         self.gpt_enabled = gpt_enabled
+        self.use_speech = use_speech
         self.session_id = str(uuid.uuid4())
         self.logger = InteractionLogger(self.session_id)
         self.responses = []
         
+        # Initialize speech components
+        if self.use_speech:
+            self.recognizer = sr.Recognizer()
+            self.microphone = sr.Microphone()
+            self.tts_engine = pyttsx3.init()
+            
+            # Configure TTS
+            self.tts_engine.setProperty('rate', 150)  # Speed
+            self.tts_engine.setProperty('volume', 0.9)  # Volume
+            
+            # Adjust for ambient noise
+            print("🎤 Calibrating microphone for ambient noise... Please wait.")
+            with self.microphone as source:
+                self.recognizer.adjust_for_ambient_noise(source, duration=1)
+            print("✅ Microphone ready!\n")
+        
         if self.api_key and self.api_key != "YOUR_OPENAI_API_KEY_HERE":
             openai.api_key = self.api_key
+    
+    def speak(self, text: str):
+        """Speak text using TTS - just like Pepper!"""
+        if self.use_speech:
+            print(f"🤖 Robot: {text}")
+            self.tts_engine.say(text)
+            self.tts_engine.runAndWait()
+        else:
+            print(f"🤖 Robot: {text}")
+    
+    def listen(self) -> Optional[str]:
+        """Listen to user speech and transcribe - just like Pepper ASR!"""
+        if not self.use_speech:
+            return input("\n👤 You: ").strip()
+        
+        print("\n🎤 Listening... (speak now)")
+        
+        try:
+            with self.microphone as source:
+                audio = self.recognizer.listen(source, timeout=10, phrase_time_limit=15)
+            
+            print("🔄 Processing speech...")
+            
+            # Use Google Speech Recognition (free)
+            transcript = self.recognizer.recognize_google(audio)
+            print(f"👤 You said: {transcript}")
+            return transcript
+            
+        except sr.WaitTimeoutError:
+            print("⏰ No speech detected. Please try again.")
+            return None
+        except sr.UnknownValueError:
+            print("❌ Could not understand audio. Please try again.")
+            return None
+        except sr.RequestError as e:
+            print(f"❌ Speech recognition error: {e}")
+            print("💡 Falling back to text input...")
+            return input("\n👤 You (text): ").strip()
+        except Exception as e:
+            print(f"❌ Error: {e}")
+            return None
     
     def parse_response_to_score(self, response: str, question_index: int) -> int:
         """
@@ -282,14 +344,13 @@ Keep the response conversational and under 3 sentences."""
         print("="*70)
         print(f"Session ID: {self.session_id}")
         print(f"GPT Mode: {'ENABLED' if self.gpt_enabled else 'DISABLED'}")
+        print(f"Speech Mode: {'ENABLED' if self.use_speech else 'TEXT ONLY'}")
         print("="*70 + "\n")
         
         # Welcome message
-        welcome_msg = """I will ask you a few questions to check how you've been feeling recently.
-This is not a diagnosis, but it helps you understand your emotions better.
-Please answer honestly based on the last 2 weeks."""
+        welcome_msg = "I will ask you a few questions to check how you've been feeling recently. This is not a diagnosis, but it helps you understand your emotions better. Please answer honestly based on the last 2 weeks."
         
-        print(f"🤖 Robot: {welcome_msg}\n")
+        self.speak(welcome_msg)
         
         self.logger.log_turn(
             user_raw_speech=None,
@@ -309,9 +370,15 @@ Please answer honestly based on the last 2 weeks."""
         
         # Ask each question
         for idx, question in enumerate(PHQ9_QUESTIONS):
-            print(f"\n📋 Question {idx + 1} of {len(PHQ9_QUESTIONS)}")
-            print(f"🤖 Robot: {question['question']}")
-            print(f"   Options: {', '.join(question['options'])}")
+            print(f"\n{'='*70}")
+            print(f"📋 Question {idx + 1} of {len(PHQ9_QUESTIONS)}")
+            print(f"{'='*70}")
+            
+            question_text = question['question']
+            self.speak(question_text)
+            
+            if self.use_speech:
+                print(f"   💡 Options: {', '.join(question['options'])}")
             
             # Log question
             self.logger.log_turn(
@@ -326,12 +393,25 @@ Please answer honestly based on the last 2 weeks."""
                 gpt_model=None,
                 gpt_prompt_snippet=None,
                 gpt_response=None,
-                final_robot_output=question['question'],
+                final_robot_output=question_text,
                 notes=f"Asking PHQ-9 question {idx + 1}"
             )
             
-            # Get user response
-            user_response = input("\n👤 You: ").strip()
+            # Get user response (with retry)
+            user_response = None
+            retry_count = 0
+            max_retries = 3
+            
+            while user_response is None and retry_count < max_retries:
+                user_response = self.listen()
+                if user_response is None:
+                    retry_count += 1
+                    if retry_count < max_retries:
+                        self.speak("I didn't catch that. Could you please repeat?")
+            
+            if user_response is None:
+                self.speak("Let's use text input for this question.")
+                user_response = input("\n👤 You (text): ").strip()
             
             # Detect language
             language_detected = LanguageDetector.detect_language(user_response)
@@ -371,7 +451,7 @@ Please answer honestly based on the last 2 weeks."""
             self.responses.append(score)
             
             robot_response = "Thank you. Moving to the next question."
-            print(f"🤖 Robot: {robot_response}")
+            self.speak(robot_response)
             print(f"   [Module: {handling_module}]")
             
             # Log response
@@ -403,9 +483,9 @@ Please answer honestly based on the last 2 weeks."""
         print("="*70 + "\n")
         
         # Generate summary
-        print("🤖 Robot: Generating summary...")
+        print("\n💭 Generating summary...")
         summary = self.generate_summary(total_score, severity)
-        print(f"\n🤖 Robot: {summary}\n")
+        self.speak(summary)
         
         # Log summary
         self.logger.log_turn(
@@ -433,30 +513,49 @@ Please answer honestly based on the last 2 weeks."""
 
 def main():
     """Main entry point"""
-    print("\n🎯 PHQ-9 Health Screening Simulation")
-    print("This Python script simulates the Android app without needing an emulator.\n")
+    print("\n" + "="*70)
+    print("🎯 PHQ-9 HEALTH SCREENING SIMULATION")
+    print("   WITH SPEECH INPUT/OUTPUT - Just like Pepper!")
+    print("="*70)
     
     # Configuration
     api_key = OPENAI_API_KEY
     gpt_enabled = GPT_ENABLED
+    use_speech = True  # Use speech by default
+    
+    # Check for text-only mode
+    import sys
+    if "--text-only" in sys.argv:
+        use_speech = False
+        print("\n📝 Running in TEXT-ONLY mode (no speech)")
     
     if api_key == "YOUR_OPENAI_API_KEY_HERE":
-        print("⚠️  Warning: OpenAI API key not set!")
-        print("   GPT fallback and summary generation will use defaults.\n")
+        print("\n⚠️  Warning: OpenAI API key not set!")
+        print("   GPT fallback and summary generation will use defaults.")
     
-    print(f"Configuration:")
+    print(f"\nConfiguration:")
     print(f"  - GPT Mode: {'ENABLED' if gpt_enabled else 'DISABLED'}")
+    print(f"  - Speech Mode: {'ENABLED' if use_speech else 'TEXT ONLY'}")
     print(f"  - Simulation Mode: ACTIVE")
-    print()
     
+    if use_speech:
+        print("\n🎤 IMPORTANT:")
+        print("  - Make sure your microphone is connected")
+        print("  - Find a quiet environment")
+        print("  - Speak clearly when prompted")
+        print("  - You'll hear the robot speak its questions")
+    
+    print("\n" + "="*70)
     input("Press Enter to start the screening...")
     
     # Run screening
-    simulator = PHQ9Simulator(api_key, gpt_enabled)
+    simulator = PHQ9Simulator(api_key, gpt_enabled, use_speech)
     simulator.run_screening()
     
-    print("\n✨ Thank you for participating!")
-    print("You can now analyze the CSV file in Excel, Python, or R.\n")
+    print("\n" + "="*70)
+    print("✨ Thank you for participating!")
+    print("You can now analyze the CSV file in Excel, Python, or R.")
+    print("="*70 + "\n")
 
 
 if __name__ == "__main__":
