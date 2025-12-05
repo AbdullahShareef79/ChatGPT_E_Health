@@ -39,8 +39,16 @@ try:
 except:
     ASR_AVAILABLE = False
 
-# Import simulation components
-from simulation import PHQ9_QUESTIONS, LanguageDetector
+# Import PHQ-9 questions from session manager
+from phq9_session import PHQ9_QUESTIONS
+
+# Simple language detector
+class LanguageDetector:
+    @staticmethod
+    def detect_language(text):
+        """Simple language detection - EN for now"""
+        # Could be enhanced with langdetect library if needed
+        return "EN"
 
 # Interaction logger (embedded)
 class SimpleLogger:
@@ -510,7 +518,7 @@ class VoicePHQ9GUI:
         self.progress_label.config(text=f"Question {self.current_question + 1} / 9")
         self.progress_bar['value'] = self.current_question + 1
         
-        question_text = f"Question {self.current_question + 1}: {q['question']}"
+        question_text = f"Question {self.current_question + 1}: {q.question}"
         
         # Display and speak question
         def question_thread():
@@ -642,9 +650,9 @@ class VoicePHQ9GUI:
         
         # Try matching PHQ-9 options
         q = PHQ9_QUESTIONS[self.current_question]
-        for idx, option in enumerate(q['options']):
+        for idx, option in enumerate(q.options):
             if option.lower() in resp_lower:
-                return (q['scores'][idx], option)
+                return (q.scores[idx], option)
         
         return (-1, None)
     
@@ -752,7 +760,7 @@ Please consider reaching out to a mental health professional or counselor."""
             openai.api_key = OPENAI_API_KEY
             q = PHQ9_QUESTIONS[self.current_question]
             
-            prompt = f"Question: {q['question']}\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE"
+            prompt = f"Question: {q.question}\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE"
             
             resp = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
@@ -874,7 +882,7 @@ Please consider reaching out to a mental health professional or counselor."""
     def call_gpt_fallback(self, response: str) -> tuple:
         """Call GPT for unclear responses"""
         q = PHQ9_QUESTIONS[self.current_question]
-        prompt = f"""The user is answering PHQ-9: {q['question']}
+        prompt = f"""The user is answering PHQ-9: {q.question}
 User said: "{response}"
 
 Options: Not at all (0), Several days (1), More than half (2), Nearly every day (3)
@@ -972,7 +980,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 self.logger.log_turn(
                     userRawSpeech="", asrTranscript=confirmation,
                     languageDetected="EN",
-                    phqQuestionId=f"Q{q['id']}",
+                    phqQuestionId=f"Q{q.id}",
                     handlingModule="PEPPER_LOCAL",
                     pepperLocalNlpSuccess=True,
                     gptUsed=False,
@@ -1035,7 +1043,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 # Re-ask question
                 def reask():
                     q = PHQ9_QUESTIONS[self.current_question]
-                    question_text = f"Question {self.current_question + 1}: {q['question']}"
+                    question_text = f"Question {self.current_question + 1}: {q.question}"
                     self.root.after(0, lambda: self.add_robot_message(question_text))
                     self.speak(question_text)
                 
