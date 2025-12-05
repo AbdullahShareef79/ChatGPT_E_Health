@@ -25,10 +25,12 @@ This project transforms the **YourBestFriendPepper** Android application to incl
 
 - **Android Studio Bumblebee 2021.1.1**
 - **Kotlin** - Primary language
-- **QiSDK** - Pepper robot integration
+- **QiSDK** - Pepper robot integration (optional)
 - **Room Database** - Local data persistence
 - **OpenAI API** - GPT-4o-mini for analysis
 - **OkHttp** - Network communication
+- **Android TTS** - Text-to-speech in simulation mode
+- **Android SpeechRecognizer** - Voice input in simulation mode
 
 ## 📋 PHQ-9 Implementation
 
@@ -54,9 +56,10 @@ This project transforms the **YourBestFriendPepper** Android application to incl
 
 ### Prerequisites
 1. **Android Studio Bumblebee 2021.1.1**
-2. **Pepper Robot** with NAOqi 2.9
+2. **Pepper Robot** with NAOqi 2.9 (optional - only for Pepper mode)
 3. **OpenAI API Key** (for AI analysis)
 4. **Network Connection** for API calls
+5. **Android Device or Emulator** (for simulation mode)
 
 ### Installation Steps
 
@@ -125,8 +128,53 @@ See [docs/LOGGING_AND_EVALUATION.md](docs/LOGGING_AND_EVALUATION.md) for complet
    adb pull /storage/emulated/0/Android/data/com.example.pepperapp/files/interaction_logs_*.csv
    ```
 
+## 🤖 Simulation Mode
+
+**Run the complete PHQ-9 screening WITHOUT the Pepper robot!**
+
+The app now supports **Simulation Mode** for research experiments on any Android device or emulator:
+
+### Key Features
+- ✅ **No Pepper Required**: Runs on phones, tablets, or emulators
+- ✅ **Voice Input**: Android SpeechRecognizer for ASR
+- ✅ **Text Input**: Type responses instead of speaking
+- ✅ **Android TTS**: Replace Pepper's voice with device TTS
+- ✅ **Identical Logic**: Same conversation flow and logging
+- ✅ **Full Logging**: All evaluation features work
+
+### Quick Start (Simulation Mode)
+
+1. **Set Mode** in `app/src/main/java/com/example/pepperapp/config/RobotMode.kt`:
+   ```kotlin
+   var currentRobotMode = RobotMode.SIMULATION
+   ```
+
+2. **Build and Install**:
+   ```bash
+   ./gradlew assembleDebug
+   adb install app/build/outputs/apk/debug/app-debug.apk
+   ```
+
+3. **Run Experiment**:
+   - Launch app on Android device
+   - Navigate to "Health Screening"
+   - Use voice OR text input
+   - Complete 9-question PHQ-9 screening
+   - Export logs via menu
+
+### When to Use Simulation Mode
+
+✅ **Remote experiments** without physical robot  
+✅ **Large-scale studies** with many participants  
+✅ **GPT evaluation** and comparison studies  
+✅ **Linguistic experiments** (EN/DE)  
+✅ **Initial testing** and debugging  
+
+See **[Simulation Mode Guide](docs/SIMULATION_MODE.md)** for complete documentation.
+
 ### Documentation
 
+- **[Simulation Mode](docs/SIMULATION_MODE.md)**: Complete guide to running without Pepper
 - **[Logging and Evaluation](docs/LOGGING_AND_EVALUATION.md)**: Complete logging pipeline documentation
 - **[Prompts and System Messages](docs/PROMPTS_AND_SYSTEM_MESSAGES.md)**: All GPT prompts and robot messages
 

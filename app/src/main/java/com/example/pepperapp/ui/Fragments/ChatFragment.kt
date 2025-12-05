@@ -24,12 +24,14 @@ import com.aldebaran.qi.sdk.`object`.locale.Locale as QiLocale
 import com.aldebaran.qi.sdk.`object`.conversation.ListenResult
 import com.example.pepperapp.R
 import com.example.pepperapp.config.GptConfig
+import com.example.pepperapp.config.RobotConfig
 import com.example.pepperapp.data.LogManager
 import com.example.pepperapp.data.PepperDatabase
 import com.example.pepperapp.model.InteractionLogEntry
 import com.example.pepperapp.model.PHQ9Question
 import com.example.pepperapp.model.PHQ9Session
 import com.example.pepperapp.util.LanguageDetector
+import com.example.pepperapp.util.SimulationManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -53,6 +55,9 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
     private var qiContext: QiContext? = null
     private var greeted = false
 
+    // Simulation mode components
+    private var simulationManager: SimulationManager? = null
+
     // PHQ-9 Screening State
     private var currentQuestionIndex = 0
     private val responses = mutableListOf<Int>()
@@ -75,6 +80,8 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
     private lateinit var questionEditText: EditText
     private lateinit var sendButton: Button
     private lateinit var micButton: ImageButton
+    private lateinit var simulationBanner: TextView
+    private lateinit var statusIndicator: TextView
 
     // Database
     private lateinit var database: PepperDatabase
@@ -85,7 +92,11 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_chat, container, false)
-        QiSDK.register(requireActivity(), this)
+        
+        // Only register QiSDK if in Pepper mode
+        if (RobotConfig.isPepperMode()) {
+            QiSDK.register(requireActivity(), this)
+        }
 
         // Initialize database
         database = PepperDatabase.getDatabase(requireContext())
@@ -102,6 +113,13 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         questionEditText = view.findViewById(R.id.editTextQuestion)
         sendButton = view.findViewById(R.id.buttonSendQuestion)
         micButton = view.findViewById(R.id.buttonMic)
+        simulationBanner = view.findViewById(R.id.simulationBanner)
+        statusIndicator = view.findViewById(R.id.statusIndicator)
+
+        // Set up simulation mode if needed
+        if (RobotConfig.isSimulationMode()) {
+            setupSimulationMode()
+        }
 
         // Set up UI
         setupUI()
@@ -109,10 +127,65 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         return view
     }
 
+    private fun setupSimulationMode() {
+        // Show simulation banner
+        simulationBanner.visibility = View.VISIBLE
+        statusIndicator.visibility = View.VISIBLE
+        
+        // Initialize simulation manager
+        simulationManager = SimulationManager(requireContext())
+        simulationManager?.initializeTts()
+        
+        // Set up callbacks
+        simulationManager?.onSpeechResult = { transcript ->
+            lifecycleScope.launch(Dispatchers.Main) {
+                questionEditText.setText(transcript)
+                questionEditText.setSelection(transcript.length)
+                updateStatus("ASR: $transcript")
+                if (isScreeningActive) {
+                    handleScreeningResponse(transcript, isVoiceInput = true)
+                } else {
+                    handleUserInput(transcript)
+                }
+            }
+        }
+        
+        simulationManager?.onSpeechError = { error ->
+            lifecycleScope.launch(Dispatchers.Main) {
+                updateStatus("ASR Error: $error")
+                Toast.makeText(requireContext(), 
+                    "Could not understand. Please type your response.", 
+                    Toast.LENGTH_SHORT).show()
+            }
+        }
+        
+        // Initial greeting in simulation mode
+        lifecycleScope.launch {
+            kotlinx.coroutines.delay(500) // Small delay for UI to settle
+            withContext(Dispatchers.Main) {
+                val greeting = "Hello! I'm here to help with a health screening. Would you like to start?"
+                addMessageBubble(greeting, isRobot = true)
+                speak(greeting)
+                updateStatus("Ready")
+            }
+        }
+        
+        Log.d(TAG, "Simulation mode initialized")
+    }
+
+    private fun updateStatus(status: String) {
+        if (RobotConfig.isSimulationMode()) {
+            statusIndicator.text = "Status: $status"
+            Log.d(TAG, "Status: $status")
+        }
+    }
+
     private fun setupUI() {
         questionEditText.post {
             questionEditText.requestFocus()
-            showKeyboard()
+            if (!RobotConfig.isSimulationMode()) {
+                showKeyboard()
+            }
         }
 
         sendButton.setOnClickListener {
@@ -130,12 +203,31 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         }
 
         micButton.setOnClickListener {
-            if (isScreeningActive) {
-                startVoiceRecognition()
+            if (RobotConfig.isSimulationMode()) {
+                // Use Android speech recognizer
+                checkAndRequestPermissions()
+                simulationManager?.startListening()
+                updateStatus("Listening...")
             } else {
-                Toast.makeText(requireContext(),
-                    "Please start the health screening first.", Toast.LENGTH_SHORT).show()
+                // Use Pepper speech recognizer
+                if (isScreeningActive) {
+                    startVoiceRecognition()
+                } else {
+                    Toast.makeText(requireContext(),
+                        "Please start the health screening first.", Toast.LENGTH_SHORT).show()
+                }
             }
+        }
+    }
+
+    private fun checkAndRequestPermissions() {
+        if (ContextCompat.checkSelfPermission(requireContext(), RECORD_PERMISSION) 
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(RECORD_PERMISSION),
+                REQ_CODE_RECORD
+            )
         }
     }
 
@@ -158,6 +250,8 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         
         addMessageBubble(welcomeMessage, isRobot = true)
         speak(welcomeMessage)
+        
+        updateStatus("Screening started")
         
         // Log robot turn
         logInteraction(
@@ -192,6 +286,8 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         addMessageBubble(questionText, isRobot = true)
         speak(questionText)
         
+        updateStatus("Question ${currentQuestionIndex + 1}/${questions.size}")
+        
         // Log robot turn
         logInteraction(
             userRawSpeech = null,
@@ -223,6 +319,8 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         // Detect language
         val languageDetected = LanguageDetector.detectLanguage(response)
         
+        updateStatus("Detected: $languageDetected")
+        
         // Try local NLP parsing
         val score = parseResponseToScore(response, currentQuestionIndex)
         val localNlpSuccess = score >= 0 && score <= 3
@@ -243,6 +341,8 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
             // Local parsing failed, try GPT fallback
             handlingModule = "GPT_FALLBACK"
             gptReason = "intent_not_found"
+            
+            updateStatus("Using GPT fallback...")
             
             lifecycleScope.launch {
                 try {
@@ -275,6 +375,8 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
                         speak(finalRobotOutput)
                     }
                     
+                    updateStatus("Module: $handlingModule, GPT: $gptUsed")
+                    
                     // Log the interaction
                     logInteraction(
                         userRawSpeech = if (isVoiceInput) response else null,
@@ -301,11 +403,14 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
             // Local parsing succeeded or GPT disabled
             if (!GptConfig.isGptEnabled() && !localNlpSuccess) {
                 gptReason = "gpt_disabled_experiment"
+                handlingModule = "PEPPER_LOCAL"
             }
             
             responses.add(score)
             finalRobotOutput = "Thank you. Moving to the next question."
             speak(finalRobotOutput)
+            
+            updateStatus("Module: $handlingModule${if (!GptConfig.isGptEnabled()) " [GPT OFF]" else ""}")
             
             // Log the interaction
             logInteraction(
@@ -419,6 +524,8 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
         val totalScore = responses.sum()
         val severity = getSeverityLevel(totalScore)
         
+        updateStatus("Generating summary...")
+        
         // Generate summary with OpenAI (if enabled)
         lifecycleScope.launch {
             val summary = if (GptConfig.isGptEnabled()) {
@@ -442,6 +549,8 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
             withContext(Dispatchers.Main) {
                 addMessageBubble(summary, isRobot = true)
                 speak(summary)
+                
+                updateStatus("Completed! Score: $totalScore")
                 
                 // Log final interaction
                 logInteraction(
@@ -607,6 +716,9 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
     }
 
     private fun startVoiceRecognition() {
+        // Only use Pepper ASR in Pepper mode
+        if (!RobotConfig.isPepperMode()) return
+        
         val ctx = qiContext ?: return
         
         lifecycleScope.launch(Dispatchers.IO) {
@@ -641,6 +753,8 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
 
         // Detect language
         val languageDetected = LanguageDetector.detectLanguage(text)
+        
+        updateStatus("Detected: $languageDetected")
         
         // Start PHQ-9 screening if user wants to
         val shouldStart = text.lowercase().contains("health") || 
@@ -704,13 +818,19 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
     }
 
     private fun speak(text: String, onDone: (() -> Unit)? = null) {
-        val ctx = qiContext ?: run { onDone?.invoke(); return }
-        lifecycleScope.launch(Dispatchers.IO) {
-            val say = SayBuilder.with(ctx)
-                .withText(text)
-                .withLocale(QiLocale(Language.ENGLISH, Region.UNITED_STATES))
-                .build()
-            say.async().run().thenConsume { onDone?.invoke() }
+        if (RobotConfig.isSimulationMode()) {
+            // Use Android TTS
+            simulationManager?.speak(text, onDone)
+        } else {
+            // Use Pepper TTS
+            val ctx = qiContext ?: run { onDone?.invoke(); return }
+            lifecycleScope.launch(Dispatchers.IO) {
+                val say = SayBuilder.with(ctx)
+                    .withText(text)
+                    .withLocale(QiLocale(Language.ENGLISH, Region.UNITED_STATES))
+                    .build()
+                say.async().run().thenConsume { onDone?.invoke() }
+            }
         }
     }
 
@@ -727,6 +847,9 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
     }
 
     override fun onRobotFocusGained(context: QiContext?) {
+        // Only handle Pepper callbacks in Pepper mode
+        if (!RobotConfig.isPepperMode()) return
+        
         qiContext = context
         if (!greeted) {
             greeted = true
@@ -738,17 +861,26 @@ class ChatFragment : Fragment(), RobotLifecycleCallbacks {
     }
 
     override fun onRobotFocusLost() {
+        if (!RobotConfig.isPepperMode()) return
         qiContext = null
     }
 
     override fun onRobotFocusRefused(reason: String?) {
+        if (!RobotConfig.isPepperMode()) return
         Toast.makeText(requireContext(),
             "Focus refused: $reason", Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroyView() {
         LogManager.endSession()
-        QiSDK.unregister(requireActivity(), this)
+        
+        // Clean up based on mode
+        if (RobotConfig.isPepperMode()) {
+            QiSDK.unregister(requireActivity(), this)
+        } else {
+            simulationManager?.shutdown()
+        }
+        
         super.onDestroyView()
     }
 }

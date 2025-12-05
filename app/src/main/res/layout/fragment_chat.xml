@@ -11,6 +11,32 @@
     android:clipChildren="false"
     android:clipToPadding="false">
 
+    <!-- Simulation Mode Banner -->
+    <TextView
+        android:id="@+id/simulationBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🤖 SIMULATION MODE"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:background="#FFA726"
+        android:textColor="@android:color/white"
+        android:padding="8dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+    <!-- Status Indicator -->
+    <TextView
+        android:id="@+id/statusIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Status: Ready"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:textColor="#666666"
+        android:layout_marginBottom="4dp"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/chatTitle"
@@ -72,7 +98,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Tapez votre question..."
+            android:hint="Type your response..."
             android:inputType="text"
             android:imeOptions="actionSend"
             android:textColor="@android:color/black"
@@ -97,7 +123,7 @@
             android:id="@+id/buttonSendQuestion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Envoyer"
+            android:text="Send"
             android:layout_marginStart="8dp"
             android:textColor="@android:color/black"/>
     </LinearLayout>
