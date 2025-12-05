@@ -100,17 +100,30 @@ class VoicePHQ9GUI:
                 self.tts_engine = pyttsx3.init()
                 self.tts_engine.setProperty('rate', 160)
                 self.tts_engine.setProperty('volume', 1.0)
+                voices = self.tts_engine.getProperty('voices')
+                if voices:
+                    self.tts_engine.setProperty('voice', voices[0].id)
                 self.tts_ready = True
-            except:
+                print("TTS initialized successfully")
+            except Exception as e:
+                print(f"TTS initialization failed: {e}")
                 self.tts_ready = False
         else:
             self.tts_ready = False
         
         # Initialize Speech Recognition
+        self.mic_available = False
         if ASR_AVAILABLE:
-            self.recognizer = sr.Recognizer()
-            self.recognizer.energy_threshold = 4000
-            self.recognizer.dynamic_energy_threshold = True
+            try:
+                self.recognizer = sr.Recognizer()
+                self.recognizer.energy_threshold = 3000
+                self.recognizer.dynamic_energy_threshold = True
+                # Test microphone
+                test_mic = sr.Microphone()
+                self.mic_available = True
+            except Exception as e:
+                print(f"Microphone initialization error: {e}")
+                self.mic_available = False
         
         # Create GUI
         self.create_widgets()
@@ -274,16 +287,23 @@ class VoicePHQ9GUI:
     
     def speak(self, text, wait=True):
         """Robot speaks using TTS"""
-        if self.tts_ready:
-            try:
-                self.tts_engine.say(text)
-                self.tts_engine.runAndWait()
-                if wait:
-                    time.sleep(0.3)  # Small pause after speaking
-            except Exception as e:
-                print(f"TTS Error: {e}")
-        else:
-            print(f"TTS not ready. Would speak: {text}")
+        if not self.tts_ready:
+            print(f"TTS not ready. Text: {text[:50]}")
+            return
+        
+        try:
+            print(f"SPEAKING: {text[:50]}...")
+            # Create new engine instance for thread safety
+            engine = pyttsx3.init()
+            engine.setProperty('rate', 160)
+            engine.setProperty('volume', 1.0)
+            engine.say(text)
+            engine.runAndWait()
+            engine.stop()
+            if wait:
+                time.sleep(0.3)
+        except Exception as e:
+            print(f"TTS Error: {e}")
     
     def add_robot_message(self, text):
         """Add robot message"""
@@ -316,19 +336,22 @@ class VoicePHQ9GUI:
         self.start_button.config(state=tk.DISABLED)
         self.text_input.config(state=tk.NORMAL)
         self.send_button.config(state=tk.NORMAL)
-        if ASR_AVAILABLE:
+        if ASR_AVAILABLE and self.mic_available:
             self.mic_button.config(state=tk.NORMAL, text="🎤 PRESS TO SPEAK")
         
-        # Run consent in background thread to avoid blocking GUI
+        # Run consent sequentially
         def consent_thread():
-            # Consent and disclaimer
+            # First disclaimer
             consent = "Hello! Before we begin, I want to inform you that this is a technical demonstration for research purposes only. This is NOT a psychological evaluation or medical diagnosis."
             self.root.after(0, lambda: self.add_robot_message(consent))
             self.speak(consent)
+            time.sleep(1)
             
+            # Second disclaimer
             consent2 = "The information collected will be used solely for technical testing. If you have real health concerns, please consult a qualified healthcare professional."
             self.root.after(0, lambda: self.add_robot_message(consent2))
             self.speak(consent2)
+            time.sleep(1)
             
             # Ask for consent
             consent_question = "Do you consent to participate in this screening? Please say 'yes' to continue or 'no' to decline."
@@ -359,10 +382,11 @@ class VoicePHQ9GUI:
         
         question_text = f"Question {self.current_question + 1}: {q['question']}"
         
-        # Speak question in background thread
+        # Display and speak question
         def question_thread():
             self.root.after(0, lambda: self.add_robot_message(question_text))
             self.speak(question_text)
+            time.sleep(0.5)
             
             self.logger.log_turn(
                 userRawSpeech="", asrTranscript="", languageDetected="EN",
@@ -376,7 +400,8 @@ class VoicePHQ9GUI:
     
     def start_voice_input(self):
         """Start listening via microphone using Whisper"""
-        if not ASR_AVAILABLE or self.is_listening:
+        if not self.mic_available or self.is_listening:
+            self.add_system_message("❌ Microphone not available. Please use text input.")
             return
         
         self.is_listening = True
@@ -385,11 +410,10 @@ class VoicePHQ9GUI:
         
         def listen_thread():
             try:
-                recognizer = sr.Recognizer()
                 with sr.Microphone() as source:
-                    recognizer.adjust_for_ambient_noise(source, duration=0.2)
+                    self.recognizer.adjust_for_ambient_noise(source, duration=0.2)
                     self.root.after(0, lambda: self.add_system_message("🎤 Speak now!"))
-                    audio = recognizer.listen(source, timeout=8, phrase_time_limit=10)
+                    audio = self.recognizer.listen(source, timeout=8, phrase_time_limit=10)
                 
                 self.root.after(0, lambda: self.status_label.config(text="🔄 Transcribing..."))
                 
@@ -421,7 +445,14 @@ class VoicePHQ9GUI:
             except sr.WaitTimeoutError:
                 self.root.after(0, lambda: self.add_system_message("⏰ No speech detected. Try again or type."))
             except Exception as e:
-                self.root.after(0, lambda: self.add_system_message(f"Error: {str(e)[:50]}. Use text input."))
+                error_msg = str(e)
+                print(f"Voice input error: {error_msg}")
+                if "PyAudio" in error_msg or "portaudio" in error_msg:
+                    self.root.after(0, lambda: self.add_system_message("❌ Microphone error. Please use text input."))
+                    self.mic_available = False
+                    self.root.after(0, lambda: self.mic_button.config(state=tk.DISABLED, text="🎤 N/A"))
+                else:
+                    self.root.after(0, lambda: self.add_system_message(f"Error: {error_msg[:50]}. Use text input."))
             finally:
                 self.root.after(0, self.stop_listening)
         
@@ -440,19 +471,40 @@ class VoicePHQ9GUI:
             self.process_response(text, is_voice=False)
     
     def parse_response(self, response: str) -> tuple:
-        """Parse response locally - returns (score, confirmation_text)"""
-        resp_lower = response.lower()
+        """Parse response locally - returns (score, user_friendly_confirmation)"""
+        resp_lower = response.lower().strip()
         
-        if "not at all" in resp_lower or "never" in resp_lower or resp_lower.strip() == "0":
+        # Score 0
+        if "not at all" in resp_lower or "never" in resp_lower:
             return (0, "not at all")
-        elif "several days" in resp_lower or "sometimes" in resp_lower or "few days" in resp_lower or resp_lower.strip() == "1":
+        elif resp_lower == "0":
+            return (0, "not at all")
+        
+        # Score 1
+        elif "several days" in resp_lower:
             return (1, "several days")
-        elif "more than half" in resp_lower or "most days" in resp_lower or "often" in resp_lower or resp_lower.strip() == "2":
+        elif "sometimes" in resp_lower or "few days" in resp_lower:
+            return (1, "sometimes")
+        elif resp_lower == "1":
+            return (1, "several days")
+        
+        # Score 2
+        elif "more than half" in resp_lower:
             return (2, "more than half the days")
-        elif "nearly every day" in resp_lower or "every day" in resp_lower or "always" in resp_lower or "all the time" in resp_lower or resp_lower.strip() == "3":
+        elif "most days" in resp_lower or "often" in resp_lower:
+            return (2, "often")
+        elif resp_lower == "2":
+            return (2, "more than half the days")
+        
+        # Score 3
+        elif "nearly every day" in resp_lower:
+            return (3, "nearly every day")
+        elif "every day" in resp_lower or "always" in resp_lower or "all the time" in resp_lower:
+            return (3, "every day")
+        elif resp_lower == "3":
             return (3, "nearly every day")
         
-        # Try matching options
+        # Try matching PHQ-9 options
         q = PHQ9_QUESTIONS[self.current_question]
         for idx, option in enumerate(q['options']):
             if option.lower() in resp_lower:
@@ -557,6 +609,59 @@ Please consider reaching out to a mental health professional or counselor."""
             return random.choice(acknowledgments[score])
         return "Thank you, I've noted your response."
     
+    def parse_with_gpt(self, response: str) -> tuple:
+        """Use GPT to parse unclear response into PHQ-9 score"""
+        try:
+            import openai
+            openai.api_key = OPENAI_API_KEY
+            q = PHQ9_QUESTIONS[self.current_question]
+            
+            resp = openai.ChatCompletion.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": f"You are helping score PHQ-9 responses. The question is: '{q['question']}'\n\nOptions:\n0 = Not at all\n1 = Several days\n2 = More than half the days\n3 = Nearly every day\n\nRespond with ONLY the number (0, 1, 2, or 3) and the corresponding phrase, separated by |. Example: '1|Several days'"},
+                    {"role": "user", "content": f"User said: '{response}'. What score?"}
+                ],
+                temperature=0,
+                max_tokens=20
+            )
+            result = resp.choices[0].message.content.strip()
+            parts = result.split('|')
+            if len(parts) >= 2:
+                score = int(parts[0].strip())
+                confirm = parts[1].strip()
+                return (score, confirm)
+            else:
+                return (-1, None)
+        except:
+            return (-1, None)
+    
+    def check_consent_with_gpt(self, response: str) -> bool:
+        """Use GPT to understand if user consented"""
+        if not OPENAI_API_KEY:
+            # Fallback to keywords
+            resp_lower = response.lower().strip()
+            return any(word in resp_lower for word in ['yes', 'yeah', 'yep', 'accept', 'agree', 'consent', 'ok', 'okay', 'sure', 'fine', 'alright'])
+        
+        try:
+            import openai
+            openai.api_key = OPENAI_API_KEY
+            resp = openai.ChatCompletion.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are analyzing consent. Respond with ONLY 'YES' if the user agrees/consents, or 'NO' if they decline/refuse."},
+                    {"role": "user", "content": f"User was asked: 'Do you consent to participate?' They said: '{response}'. Did they consent?"}
+                ],
+                temperature=0,
+                max_tokens=5
+            )
+            result = resp.choices[0].message.content.strip().upper()
+            return "YES" in result
+        except:
+            # Fallback
+            resp_lower = response.lower().strip()
+            return any(word in resp_lower for word in ['yes', 'yeah', 'yep', 'accept', 'agree', 'consent', 'ok', 'okay', 'sure', 'fine', 'alright'])
+    
     def call_gpt_fallback(self, response: str) -> tuple:
         """Call GPT for unclear responses"""
         q = PHQ9_QUESTIONS[self.current_question]
@@ -587,10 +692,12 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         
         # Handle consent response
         if self.waiting_for_consent:
-            resp_lower = response.lower().strip()
             self.add_user_message(response)
             
-            if any(word in resp_lower for word in ['yes', 'accept', 'agree', 'consent', 'ok', 'okay', 'sure']):
+            # Use GPT to understand consent
+            consent_given = self.check_consent_with_gpt(response)
+            
+            if consent_given:
                 self.waiting_for_consent = False
                 self.add_system_message("✓ Consent given")
                 
@@ -599,13 +706,15 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     thanks = "Thank you for consenting."
                     self.root.after(0, lambda: self.add_robot_message(thanks))
                     self.speak(thanks)
+                    time.sleep(1)
                     
                     instructions = "I will now ask you 9 questions about how you've been feeling over the last 2 weeks. Please answer with: not at all, several days, more than half the days, or nearly every day."
                     self.root.after(0, lambda: self.add_robot_message(instructions))
                     self.speak(instructions)
+                    time.sleep(1)
                     
                     # Start questions
-                    self.root.after(1000, self.ask_question)
+                    self.root.after(500, self.ask_question)
                 
                 threading.Thread(target=proceed_thread, daemon=True).start()
                 return
@@ -659,14 +768,16 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 def ack_and_continue():
                     self.root.after(0, lambda: self.add_robot_message(ack))
                     self.speak(ack)
+                    time.sleep(0.5)
                     
                     if self.current_question < 8:
                         next_msg = "Let me ask you the next question."
                         self.root.after(0, lambda: self.add_robot_message(next_msg))
                         self.speak(next_msg)
+                        time.sleep(0.5)
                     
                     self.current_question += 1
-                    self.root.after(1500, self.ask_question)
+                    self.root.after(500, self.ask_question)
                 
                 threading.Thread(target=ack_and_continue, daemon=True).start()
                 return
@@ -717,7 +828,23 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         gpt_reason = None
         module = "PEPPER_LOCAL"
         
-        if not local_success:
+        if not local_success and OPENAI_API_KEY:
+            # Use GPT to understand response
+            self.add_system_message("Using GPT to understand response...")
+            gpt_score, gpt_confirmation = self.parse_with_gpt(response)
+            if 0 <= gpt_score <= 3:
+                score = gpt_score
+                confirmation = gpt_confirmation
+                local_success = False
+                self.add_system_message(f"GPT understood: score={score}, as: {confirmation}")
+            else:
+                # Ask for clarification
+                clarify_msg = f"I heard '{response}', but I'm not sure I understood correctly. Could you please repeat using: not at all, several days, more than half the days, or nearly every day?"
+                self.add_robot_message(clarify_msg)
+                self.speak(clarify_msg)
+                self.add_system_message("Asked for clarification")
+                return
+        elif not local_success:
             # Ask for clarification
             clarify_msg = f"I heard '{response}', but I'm not sure I understood correctly. Could you please repeat using: not at all, several days, more than half the days, or nearly every day?"
             self.add_robot_message(clarify_msg)
