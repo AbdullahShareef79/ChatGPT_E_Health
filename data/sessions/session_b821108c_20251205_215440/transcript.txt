@@ -1,0 +1,67 @@
+PHQ-9 Screening Session
+Session ID: b821108c-f307-4be1-90f0-cbf31f1ee6d7
+Date: 2025-12-05 21:54:40
+======================================================================
+
+[21:54:44] Pepper: Hello! I'm Pepper, ready to conduct a health screening with you.
+[21:54:58] Pepper: Hello! Before we begin, I want to inform you that this is a technical demonstration for research purposes only. This is NOT a psychological evaluation or medical diagnosis.
+[21:55:00] Pepper: The information collected will be used solely for technical testing. If you have real health concerns, please consult a qualified healthcare professional.
+[21:55:01] Pepper: Do you consent to participate in this screening? Please say 'yes' to continue or 'no' to decline.
+[21:55:51] User: Yes. Yes. Yes.
+[21:55:53] Pepper: Thank you for consenting.
+[21:55:54] Pepper: I will now ask you 9 questions about how you've been feeling over the last 2 weeks. Please answer with: not at all, several days, more than half the days, or nearly every day.
+[21:55:56] Pepper: Question 1: Over the last 2 weeks, how often have you had little interest or pleasure in doing things?
+[21:56:29] User: Everything was okay with me.
+[21:56:31] Pepper: I understood: Not at all. Is that correct?
+[21:56:48] User: Yes.
+[21:56:49] Pepper: Let me ask you the next question.
+[21:56:50] Pepper: Question 2: Over the last 2 weeks, how often have you felt down, depressed, or hopeless?
+[21:57:07] User: Everything was okay with me. I didn't...
+[21:57:08] Pepper: I understood: Not at all. Is that correct?
+[21:57:49] User: Yes
+[21:57:49] Pepper: Let me ask you the next question.
+[21:57:51] Pepper: Question 3: Over the last 2 weeks, how often have you had trouble falling or staying asleep, or sleeping too much?
+[21:58:12] User: I didn't have any trouble with falling, or staying asleep, or sleeping too much.
+[21:58:13] Pepper: I understood: Not at all. Is that correct?
+[21:58:21] User: Yes, yes, yes.
+[21:58:21] Pepper: Let me ask you the next question.
+[21:58:23] Pepper: Question 4: Over the last 2 weeks, how often have you felt tired or had little energy?
+[21:58:41] User: I didn't feel tired or...
+[21:58:41] Pepper: I understood: Not at all. Is that correct?
+[21:58:49] User: Yes, yes.
+[21:58:50] Pepper: Let me ask you the next question.
+[21:58:52] Pepper: Question 5: Over the last 2 weeks, how often have you had poor appetite or overeating?
+[21:59:04] User: My eating was okay, was normal.
+[21:59:06] Pepper: I understood: Not at all. Is that correct?
+[21:59:18] User: Yes. Yes. Yes.
+[21:59:18] Pepper: Let me ask you the next question.
+[21:59:20] Pepper: Question 6: Over the last 2 weeks, how often have you felt bad about yourself, or that you are a failure, or have let yourself or your family down?
+[21:59:45] User: Everything was okay with me for two weeks.
+[21:59:45] Pepper: I understood: Not at all. Is that correct?
+[22:00:10] User: Yes.
+[22:00:10] Pepper: Let me ask you the next question.
+[22:00:12] Pepper: Question 7: Over the last 2 weeks, how often have you had trouble concentrating on things, such as reading the newspaper or watching television?
+[22:00:31] User: Everything was okay with me for two weeks.
+[22:00:31] Pepper: I understood: Not at all. Is that correct?
+[22:00:51] User: Yes
+[22:00:51] Pepper: Let me ask you the next question.
+[22:00:52] Pepper: Question 8: Over the last 2 weeks, how often have you been moving or speaking slowly enough that other people could have noticed?
+[22:01:10] User: My speaking was okay and normal for two weeks.
+[22:01:11] Pepper: I understood: Not at all. Is that correct?
+[22:01:30] User: Yes.
+[22:01:30] Pepper: Let me ask you the next question.
+[22:01:32] Pepper: Question 9: Over the last 2 weeks, how often have you had thoughts that you would be better off dead or of hurting yourself in some way?
+[22:01:53] User: For two weeks, everything was okay with me.
+[22:01:54] Pepper: I understood: Not at all. Is that correct?
+[22:02:08] User: Yes Yes
+[22:02:09] Pepper: I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day.
+[22:02:10] Pepper: Question 9: Over the last 2 weeks, how often have you had thoughts that you would be better off dead or of hurting yourself in some way?
+[22:02:24] User: For over two weeks
+[22:02:24] Pepper: I understood: Not at all. Is that correct?
+[22:02:58] User: Yes.
+
+======================================================================
+RESULTS:
+Total Score: 0/27
+Severity: minimal
+Responses: [0, 0, 0, 0, 0, 0, 0, 0, 0]

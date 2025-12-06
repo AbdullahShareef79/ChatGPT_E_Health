@@ -1,0 +1,298 @@
+GPT API Calls Log
+Session: b821108c-f307-4be1-90f0-cbf31f1ee6d7
+Total Calls: 21
+======================================================================
+
+CALL #1 - Check consent
+Time: 2025-12-05T21:55:53.164807
+Model: gpt-4o-mini
+Tokens: 35
+
+Prompt:
+System: Reply YES if agrees/consents, NO if declines.
+User: Does 'Yes. Yes. Yes.' mean consent?
+
+Response:
+YES
+----------------------------------------------------------------------
+
+CALL #2 - Parse PHQ-9 Q1 response
+Time: 2025-12-05T21:56:31.330504
+Model: gpt-4o-mini
+Tokens: 77
+
+Prompt:
+System: Question: Over the last 2 weeks, how often have you had little interest or pleasure in doing things?
+0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day
+Respond: NUMBER|PHRASE
+User: Everything was okay with me.
+
+Response:
+0|Not at all
+----------------------------------------------------------------------
+
+CALL #3 - Check answer confirmation
+Time: 2025-12-05T21:56:49.212720
+Model: gpt-4o-mini
+Tokens: 28
+
+Prompt:
+System: Reply YES if confirming, NO if not.
+User: Is 'Yes.' a confirmation?
+
+Response:
+YES
+----------------------------------------------------------------------
+
+CALL #4 - Parse PHQ-9 Q2 response
+Time: 2025-12-05T21:57:08.142873
+Model: gpt-4o-mini
+Tokens: 79
+
+Prompt:
+System: Question: Over the last 2 weeks, how often have you felt down, depressed, or hopeless?
+0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day
+Respond: NUMBER|PHRASE
+User: Everything was okay with me. I didn't...
+
+Response:
+0|Not at all
+----------------------------------------------------------------------
+
+CALL #5 - Check answer confirmation
+Time: 2025-12-05T21:57:49.764149
+Model: gpt-4o-mini
+Tokens: 28
+
+Prompt:
+System: Reply YES if confirming, NO if not.
+User: Is 'Yes' a confirmation?
+
+Response:
+YES
+----------------------------------------------------------------------
+
+CALL #6 - Parse PHQ-9 Q3 response
+Time: 2025-12-05T21:58:13.028043
+Model: gpt-4o-mini
+Tokens: 91
+
+Prompt:
+System: Question: Over the last 2 weeks, how often have you had trouble falling or staying asleep, or sleeping too much?
+0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day
+Respond: NUMBER|PHRASE
+User: I didn't have any trouble with falling, or staying asleep, or sleeping too much.
+
+Response:
+0|Not at all
+----------------------------------------------------------------------
+
+CALL #7 - Check answer confirmation
+Time: 2025-12-05T21:58:21.418518
+Model: gpt-4o-mini
+Tokens: 32
+
+Prompt:
+System: Reply YES if confirming, NO if not.
+User: Is 'Yes, yes, yes.' a confirmation?
+
+Response:
+YES
+----------------------------------------------------------------------
+
+CALL #8 - Parse PHQ-9 Q4 response
+Time: 2025-12-05T21:58:41.864240
+Model: gpt-4o-mini
+Tokens: 75
+
+Prompt:
+System: Question: Over the last 2 weeks, how often have you felt tired or had little energy?
+0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day
+Respond: NUMBER|PHRASE
+User: I didn't feel tired or...
+
+Response:
+0|Not at all
+----------------------------------------------------------------------
+
+CALL #9 - Check answer confirmation
+Time: 2025-12-05T21:58:50.452623
+Model: gpt-4o-mini
+Tokens: 30
+
+Prompt:
+System: Reply YES if confirming, NO if not.
+User: Is 'Yes, yes.' a confirmation?
+
+Response:
+YES
+----------------------------------------------------------------------
+
+CALL #10 - Parse PHQ-9 Q5 response
+Time: 2025-12-05T21:59:06.187830
+Model: gpt-4o-mini
+Tokens: 77
+
+Prompt:
+System: Question: Over the last 2 weeks, how often have you had poor appetite or overeating?
+0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day
+Respond: NUMBER|PHRASE
+User: My eating was okay, was normal.
+
+Response:
+0|Not at all
+----------------------------------------------------------------------
+
+CALL #11 - Check answer confirmation
+Time: 2025-12-05T21:59:18.535955
+Model: gpt-4o-mini
+Tokens: 32
+
+Prompt:
+System: Reply YES if confirming, NO if not.
+User: Is 'Yes. Yes. Yes.' a confirmation?
+
+Response:
+YES
+----------------------------------------------------------------------
+
+CALL #12 - Parse PHQ-9 Q6 response
+Time: 2025-12-05T21:59:45.885949
+Model: gpt-4o-mini
+Tokens: 92
+
+Prompt:
+System: Question: Over the last 2 weeks, how often have you felt bad about yourself, or that you are a failure, or have let yourself or your family down?
+0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day
+Respond: NUMBER|PHRASE
+User: Everything was okay with me for two weeks.
+
+Response:
+0|Not at all
+----------------------------------------------------------------------
+
+CALL #13 - Check answer confirmation
+Time: 2025-12-05T22:00:10.972709
+Model: gpt-4o-mini
+Tokens: 28
+
+Prompt:
+System: Reply YES if confirming, NO if not.
+User: Is 'Yes.' a confirmation?
+
+Response:
+YES
+----------------------------------------------------------------------
+
+CALL #14 - Parse PHQ-9 Q7 response
+Time: 2025-12-05T22:00:31.658751
+Model: gpt-4o-mini
+Tokens: 86
+
+Prompt:
+System: Question: Over the last 2 weeks, how often have you had trouble concentrating on things, such as reading the newspaper or watching television?
+0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day
+Respond: NUMBER|PHRASE
+User: Everything was okay with me for two weeks.
+
+Response:
+0|Not at all
+----------------------------------------------------------------------
+
+CALL #15 - Check answer confirmation
+Time: 2025-12-05T22:00:51.360230
+Model: gpt-4o-mini
+Tokens: 28
+
+Prompt:
+System: Reply YES if confirming, NO if not.
+User: Is 'Yes' a confirmation?
+
+Response:
+YES
+----------------------------------------------------------------------
+
+CALL #16 - Parse PHQ-9 Q8 response
+Time: 2025-12-05T22:01:11.366574
+Model: gpt-4o-mini
+Tokens: 85
+
+Prompt:
+System: Question: Over the last 2 weeks, how often have you been moving or speaking slowly enough that other people could have noticed?
+0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day
+Respond: NUMBER|PHRASE
+User: My speaking was okay and normal for two weeks.
+
+Response:
+0|Not at all
+----------------------------------------------------------------------
+
+CALL #17 - Check answer confirmation
+Time: 2025-12-05T22:01:30.743272
+Model: gpt-4o-mini
+Tokens: 28
+
+Prompt:
+System: Reply YES if confirming, NO if not.
+User: Is 'Yes.' a confirmation?
+
+Response:
+YES
+----------------------------------------------------------------------
+
+CALL #18 - Parse PHQ-9 Q9 response
+Time: 2025-12-05T22:01:54.397070
+Model: gpt-4o-mini
+Tokens: 89
+
+Prompt:
+System: Question: Over the last 2 weeks, how often have you had thoughts that you would be better off dead or of hurting yourself in some way?
+0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day
+Respond: NUMBER|PHRASE
+User: For two weeks, everything was okay with me.
+
+Response:
+0|Not at all
+----------------------------------------------------------------------
+
+CALL #19 - Check answer confirmation
+Time: 2025-12-05T22:02:09.554528
+Model: gpt-4o-mini
+Tokens: 29
+
+Prompt:
+System: Reply YES if confirming, NO if not.
+User: Is 'Yes Yes' a confirmation?
+
+Response:
+NO
+----------------------------------------------------------------------
+
+CALL #20 - Parse PHQ-9 Q9 response
+Time: 2025-12-05T22:02:24.596291
+Model: gpt-4o-mini
+Tokens: 83
+
+Prompt:
+System: Question: Over the last 2 weeks, how often have you had thoughts that you would be better off dead or of hurting yourself in some way?
+0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day
+Respond: NUMBER|PHRASE
+User: For over two weeks
+
+Response:
+0|Not at all
+----------------------------------------------------------------------
+
+CALL #21 - Check answer confirmation
+Time: 2025-12-05T22:02:59.522938
+Model: gpt-4o-mini
+Tokens: 28
+
+Prompt:
+System: Reply YES if confirming, NO if not.
+User: Is 'Yes.' a confirmation?
+
+Response:
+YES
+----------------------------------------------------------------------
+
