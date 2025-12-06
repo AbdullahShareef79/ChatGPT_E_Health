@@ -30,12 +30,19 @@ try:
 except:
     TTS_AVAILABLE = False
 
+ASR_AVAILABLE = False
 try:
     import speech_recognition as sr
     import openai
     import tempfile
     import wave
     ASR_AVAILABLE = True
+
+    # Listening tunables (safe defaults, easy to adjust)
+    LISTEN_TIMEOUT = 5           # seconds to wait for speech start
+    LISTEN_PHRASE_LIMIT = 8      # max seconds per utterance
+    LISTEN_AMBIENT_DURATION = 0.3  # seconds for ambient noise calibration
+    LISTEN_PAUSE_THRESHOLD = 0.7   # seconds of silence to end phrase
 except:
     ASR_AVAILABLE = False
 
@@ -543,15 +550,23 @@ class VoicePHQ9GUI:
             return
         
         self.is_listening = True
-        self.mic_button.config(text="LISTENING...", bg="#D32F2F")
+        # Debounce mic button during listen
+        self.mic_button.config(text="LISTENING...", bg="#D32F2F", state=tk.DISABLED)
         self.status_label.config(text="LISTENING... Speak your answer now!")
+        # Make ASR snappier
+        self.recognizer.pause_threshold = LISTEN_PAUSE_THRESHOLD
         
         def listen_thread():
+            failures = 0
             try:
                 with sr.Microphone() as source:
-                    self.recognizer.adjust_for_ambient_noise(source, duration=0.2)
+                    self.recognizer.adjust_for_ambient_noise(source, duration=LISTEN_AMBIENT_DURATION)
                     self.root.after(0, lambda: self.add_system_message("[Listening] Speak now!"))
-                    audio = self.recognizer.listen(source, timeout=8, phrase_time_limit=10)
+                    audio = self.recognizer.listen(
+                        source,
+                        timeout=LISTEN_TIMEOUT,
+                        phrase_time_limit=LISTEN_PHRASE_LIMIT
+                    )
                 
                 self.root.after(0, lambda: self.status_label.config(text="🔄 Transcribing..."))
                 
@@ -586,8 +601,21 @@ class VoicePHQ9GUI:
                 
                 self.root.after(0, lambda: self.process_response(text, is_voice=True))
                 
-            except sr.WaitTimeoutError:
-                self.root.after(0, lambda: self.add_system_message("⏰ No speech detected. Try again or type."))
+            except (sr.WaitTimeoutError, sr.UnknownValueError, sr.RequestError) as e:
+                failures += 1
+                if isinstance(e, sr.WaitTimeoutError):
+                    msg = "⏰ No speech detected. Try again or type."
+                elif isinstance(e, sr.UnknownValueError):
+                    msg = "[Error] Speech not understood. Please try again."
+                else:
+                    msg = "[Error] Speech service issue. Please try again or type."
+
+                if failures >= 2:
+                    self.root.after(0, lambda: self.add_system_message("Speech input failed twice, please type your answer instead."))
+                    return
+                else:
+                    self.root.after(0, lambda: self.add_system_message(msg))
+                    return
             except Exception as e:
                 error_msg = str(e)
                 print(f"Voice input error: {error_msg}")
@@ -605,7 +633,7 @@ class VoicePHQ9GUI:
     def stop_listening(self):
         """Stop listening"""
         self.is_listening = False
-        self.mic_button.config(text="PRESS TO SPEAK", bg="#FF5722")
+        self.mic_button.config(text="PRESS TO SPEAK", bg="#FF5722", state=tk.NORMAL)
     
     def send_text(self):
         """Send text input"""
