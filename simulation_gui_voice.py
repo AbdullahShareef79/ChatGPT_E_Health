@@ -17,9 +17,17 @@ from typing import Optional
 from dotenv import load_dotenv
 import os
 from pathlib import Path
+import queue
 
 # Load configuration
-load_dotenv()
+# Look for .env in the script's directory first, then current directory
+script_dir = Path(__file__).parent
+env_path = script_dir / '.env'
+if not env_path.exists():
+    # Try parent directory
+    env_path = script_dir.parent / '.env'
+    
+load_dotenv(dotenv_path=env_path if env_path.exists() else None)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 GPT_ENABLED = os.getenv("GPT_ENABLED", "True").lower() == "true"
 
@@ -36,6 +44,8 @@ try:
     import openai
     import tempfile
     import wave
+    import pyaudio
+    
     ASR_AVAILABLE = True
 
     # Listening tunables (safe defaults, easy to adjust)
@@ -43,7 +53,8 @@ try:
     LISTEN_PHRASE_LIMIT = 8      # max seconds per utterance
     LISTEN_AMBIENT_DURATION = 0.3  # seconds for ambient noise calibration
     LISTEN_PAUSE_THRESHOLD = 0.7   # seconds of silence to end phrase
-except:
+except Exception as e:
+    print(f"⚠️  Speech recognition initialization error: {e}")
     ASR_AVAILABLE = False
 
 # Import PHQ-9 questions from session manager
@@ -209,6 +220,7 @@ class VoicePHQ9GUI:
         self.MAX_RETRIES = 3
         self.session_active = False
         self.is_listening = False
+        self.is_speaking = False  # Track if TTS is currently speaking
         self.waiting_for_crisis_ack = False
         self.waiting_for_consent = False
         self.waiting_for_answer_confirmation = False
@@ -216,21 +228,30 @@ class VoicePHQ9GUI:
         self.pending_confirmation = None
         
         # Initialize TTS
+        self.tts_queue = queue.Queue()
+        self.tts_lock = threading.Lock()
+        self.tts_engine = None
+        self.tts_ready = False
+        
         if TTS_AVAILABLE:
             try:
-                self.tts_engine = pyttsx3.init()
+                # Initialize TTS engine
+                self.tts_engine = pyttsx3.init('sapi5')  # Explicitly use SAPI5 on Windows
                 self.tts_engine.setProperty('rate', 160)
                 self.tts_engine.setProperty('volume', 1.0)
                 voices = self.tts_engine.getProperty('voices')
                 if voices:
                     self.tts_engine.setProperty('voice', voices[0].id)
                 self.tts_ready = True
-                print("TTS initialized successfully")
+                print("✓ TTS initialized successfully")
+                
+                # Start TTS worker thread
+                self.tts_worker_running = True
+                self.tts_thread = threading.Thread(target=self._tts_worker, daemon=True)
+                self.tts_thread.start()
             except Exception as e:
-                print(f"TTS initialization failed: {e}")
+                print(f"⚠️  TTS initialization failed: {e}")
                 self.tts_ready = False
-        else:
-            self.tts_ready = False
         
         # Initialize Speech Recognition
         self.mic_available = False
@@ -239,19 +260,23 @@ class VoicePHQ9GUI:
                 self.recognizer = sr.Recognizer()
                 self.recognizer.energy_threshold = 3000
                 self.recognizer.dynamic_energy_threshold = True
+                
                 # Test microphone
                 test_mic = sr.Microphone()
+                with test_mic as source:
+                    self.recognizer.adjust_for_ambient_noise(source, duration=0.1)
+                
                 self.mic_available = True
             except Exception as e:
-                print(f"Microphone initialization error: {e}")
+                print(f"⚠️  Microphone initialization error: {e}")
                 self.mic_available = False
         
         # Create GUI
         self.create_widgets()
         
-        # Welcome
+        # Welcome - don't wait for speech to complete so GUI can show
         self.add_robot_message("Hello! I'm Pepper, ready to conduct a health screening with you.")
-        self.speak("Hello! I'm Pepper, ready to conduct a health screening with you.")
+        self.speak("Hello! I'm Pepper, ready to conduct a health screening with you.", wait=False)
     
     def create_widgets(self):
         """Create the GUI interface"""
@@ -420,25 +445,40 @@ class VoicePHQ9GUI:
         )
         instructions.pack(fill=tk.X, padx=25, pady=(0, 15))
     
-    def speak(self, text, wait=True):
-        """Robot speaks using TTS"""
+    def _tts_worker(self):
+        """Background worker thread for TTS - prevents threading issues"""
+        while self.tts_worker_running:
+            try:
+                text = self.tts_queue.get(timeout=0.5)
+                if text is None:  # Poison pill to stop worker
+                    break
+                
+                with self.tts_lock:
+                    try:
+                        # Use the shared engine instance
+                        self.tts_engine.say(text)
+                        self.tts_engine.runAndWait()
+                        time.sleep(0.3)
+                    except Exception as e:
+                        print(f"⚠️  TTS Error: {e}")
+                
+                self.tts_queue.task_done()
+            except queue.Empty:
+                continue
+            except Exception as e:
+                print(f"⚠️  TTS Worker Error: {e}")
+    
+    def speak(self, text, wait=True, blocking=False):
+        """Robot speaks using TTS - uses queue-based system to prevent threading issues"""
         if not self.tts_ready:
-            print(f"TTS not ready. Text: {text[:50]}")
             return
         
-        try:
-            print(f"SPEAKING: {text[:50]}...")
-            # Create new engine instance for thread safety
-            engine = pyttsx3.init()
-            engine.setProperty('rate', 160)
-            engine.setProperty('volume', 1.0)
-            engine.say(text)
-            engine.runAndWait()
-            engine.stop()
-            if wait:
-                time.sleep(0.3)
-        except Exception as e:
-            print(f"TTS Error: {e}")
+        # Add to queue
+        self.tts_queue.put(text)
+        
+        # Wait for it to complete if requested
+        if wait or blocking:
+            self.tts_queue.join()
     
     def add_robot_message(self, text):
         """Add robot message"""
@@ -481,30 +521,35 @@ class VoicePHQ9GUI:
         self.start_button.config(state=tk.DISABLED)
         self.text_input.config(state=tk.NORMAL)
         self.send_button.config(state=tk.NORMAL)
+        
         if ASR_AVAILABLE and self.mic_available:
             self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK")
         
-        # Run consent sequentially
+        # Run consent sequentially but non-blocking
         def consent_thread():
             # First disclaimer
             consent = "Hello! Before we begin, I want to inform you that this is a technical demonstration for research purposes only. This is NOT a psychological evaluation or medical diagnosis."
             self.root.after(0, lambda: self.add_robot_message(consent))
-            self.speak(consent)
+            self.speak(consent, wait=True)
             time.sleep(1)
             
             # Second disclaimer
             consent2 = "The information collected will be used solely for technical testing. If you have real health concerns, please consult a qualified healthcare professional."
             self.root.after(0, lambda: self.add_robot_message(consent2))
-            self.speak(consent2)
+            self.speak(consent2, wait=True)
             time.sleep(1)
             
             # Ask for consent
             consent_question = "Do you consent to participate in this screening? Please say 'yes' to continue or 'no' to decline."
             self.root.after(0, lambda: self.add_robot_message(consent_question))
-            self.speak(consent_question)
+            self.speak(consent_question, wait=True)
             
-            # Set waiting for consent flag
+            # Set waiting for consent flag AFTER speaking finishes
             self.waiting_for_consent = True
+            
+            # Ensure mic button is enabled after speaking
+            if ASR_AVAILABLE and self.mic_available:
+                self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
             
             self.logger.log_turn(
                 userRawSpeech="", asrTranscript="", languageDetected="EN",
@@ -530,12 +575,16 @@ class VoicePHQ9GUI:
         # Display and speak question
         def question_thread():
             self.root.after(0, lambda: self.add_robot_message(question_text))
-            self.speak(question_text)
+            self.speak(question_text, wait=True)  # Wait for speech to finish
             time.sleep(0.5)
+            
+            # Enable mic button AFTER speaking finishes
+            if ASR_AVAILABLE and self.mic_available and not self.is_listening:
+                self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
             
             self.logger.log_turn(
                 userRawSpeech="", asrTranscript="", languageDetected="EN",
-                phqQuestionId=f"Q{q['id']}", handlingModule="PEPPER_LOCAL", pepperLocalNlpSuccess=True,
+                phqQuestionId=f"Q{q.id}", handlingModule="PEPPER_LOCAL", pepperLocalNlpSuccess=True,
                 gptUsed=False, gptReason="", gptModel="", gptPromptSnippet="",
                 gptResponse="", finalRobotOutput=question_text, notes=f"Question {self.current_question + 1}"
             )
@@ -695,20 +744,22 @@ class VoicePHQ9GUI:
             # Add crisis warning to chat
             self.add_system_message("⚠️ SAFETY PROTOCOL ACTIVATED ⚠️")
             
-            # Display supportive message
-            crisis_msg = "I want to acknowledge your response. Your safety is very important. Please know that help is available."
-            self.add_robot_message(crisis_msg)
-            self.speak(crisis_msg)
-            time.sleep(4)
-            
-            # Show crisis resources
-            resources_title = "CRISIS RESOURCES - Please take note of these:"
-            self.add_robot_message(resources_title)
-            self.speak(resources_title)
-            time.sleep(2)
-            
-            # Display hotlines in chat (visible on screen)
-            crisis_info = """
+            # Run crisis protocol in background thread
+            def crisis_thread():
+                # Display supportive message
+                crisis_msg = "I want to acknowledge your response. Your safety is very important. Please know that help is available."
+                self.root.after(0, lambda: self.add_robot_message(crisis_msg))
+                self.speak(crisis_msg, wait=True)
+                time.sleep(4)
+                
+                # Show crisis resources
+                resources_title = "CRISIS RESOURCES - Please take note of these:"
+                self.root.after(0, lambda: self.add_robot_message(resources_title))
+                self.speak(resources_title, wait=True)
+                time.sleep(2)
+                
+                # Display hotlines in chat (visible on screen)
+                crisis_info = """
 EMERGENCY HOTLINES:
 • Germany Crisis Hotline: 0800 111 0 111 or 0800 111 0 222
 • International Crisis Line: 116 123
@@ -716,35 +767,41 @@ EMERGENCY HOTLINES:
 
 You are not alone. Professional help is available 24/7.
 Please consider reaching out to a mental health professional or counselor."""
+                
+                def add_crisis_info():
+                    self.chat_area.config(state=tk.NORMAL)
+                    self.chat_area.insert(tk.END, crisis_info + "\n\n", "system")
+                    self.chat_area.see(tk.END)
+                    self.chat_area.config(state=tk.DISABLED)
+                
+                self.root.after(0, add_crisis_info)
+                
+                # Speak resources
+                resources_msg = "Germany Crisis Hotline: 0800 111 0 111. International Crisis Line: 116 123. Emergency Services: 112. Please consider reaching out to a mental health professional. You are not alone, and help is available."
+                self.speak(resources_msg, wait=True)
+                time.sleep(8)
+                
+                # Important reminder
+                reminder = "This screening is not a diagnosis. Please contact a healthcare professional for proper evaluation and support."
+                self.root.after(0, lambda: self.add_robot_message(reminder))
+                self.speak(reminder, wait=True)
+                time.sleep(5)
+                
+                # Ask for acknowledgment
+                ack_msg = "Have you noted these resources? Type 'yes' or press the microphone to continue."
+                self.root.after(0, lambda: self.add_robot_message(ack_msg))
+                self.speak("Have you noted these resources? Please confirm to continue.", wait=True)
+                
+                # Re-enable input for acknowledgment AFTER speaking finishes
+                self.root.after(0, lambda: self.text_input.config(state=tk.NORMAL))
+                self.root.after(0, lambda: self.send_button.config(state=tk.NORMAL))
+                if ASR_AVAILABLE and self.mic_available:
+                    self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+                
+                # Set flag to wait for acknowledgment
+                self.waiting_for_crisis_ack = True
             
-            self.chat_area.config(state=tk.NORMAL)
-            self.chat_area.insert(tk.END, crisis_info + "\n\n", "system")
-            self.chat_area.see(tk.END)
-            self.chat_area.config(state=tk.DISABLED)
-            
-            # Speak resources
-            resources_msg = "Germany Crisis Hotline: 0800 111 0 111. International Crisis Line: 116 123. Emergency Services: 112. Please consider reaching out to a mental health professional. You are not alone, and help is available."
-            self.speak(resources_msg)
-            time.sleep(8)
-            
-            # Important reminder
-            reminder = "This screening is not a diagnosis. Please contact a healthcare professional for proper evaluation and support."
-            self.add_robot_message(reminder)
-            self.speak(reminder)
-            time.sleep(5)
-            
-            # Ask for acknowledgment
-            self.add_robot_message("Have you noted these resources? Type 'yes' or press the microphone to continue.")
-            self.speak("Have you noted these resources? Please confirm to continue.")
-            
-            # Re-enable input for acknowledgment
-            self.text_input.config(state=tk.NORMAL)
-            self.send_button.config(state=tk.NORMAL)
-            if ASR_AVAILABLE:
-                self.mic_button.config(state=tk.NORMAL)
-            
-            # Set flag to wait for acknowledgment
-            self.waiting_for_crisis_ack = True
+            threading.Thread(target=crisis_thread, daemon=True).start()
             
             return True
         return False
@@ -963,13 +1020,17 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 def proceed_thread():
                     thanks = "Thank you for consenting."
                     self.root.after(0, lambda: self.add_robot_message(thanks))
-                    self.speak(thanks)
+                    self.speak(thanks, wait=True)
                     time.sleep(1)
                     
                     instructions = "I will now ask you 9 questions about how you've been feeling over the last 2 weeks. Please answer with: not at all, several days, more than half the days, or nearly every day."
                     self.root.after(0, lambda: self.add_robot_message(instructions))
-                    self.speak(instructions)
+                    self.speak(instructions, wait=True)
                     time.sleep(1)
+                    
+                    # Enable mic button before starting questions
+                    if ASR_AVAILABLE and self.mic_available:
+                        self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
                     
                     # Start questions
                     self.root.after(500, self.ask_question)
@@ -981,7 +1042,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 self.add_system_message("[Consent declined]")
                 decline_msg = "I understand. Thank you for your time. The screening will not proceed."
                 self.add_robot_message(decline_msg)
-                self.speak(decline_msg)
+                self.speak(decline_msg, wait=True)
                 self.session_active = False
                 self.text_input.config(state=tk.DISABLED)
                 self.send_button.config(state=tk.DISABLED)
@@ -1029,10 +1090,13 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     if self.current_question < 8:
                         next_msg = "Let me ask you the next question."
                         self.root.after(0, lambda: self.add_robot_message(next_msg))
-                        self.speak(next_msg)
+                        self.speak(next_msg, wait=True)
                         time.sleep(0.5)
                     
                     self.current_question += 1
+                    # Re-enable mic button before next question
+                    if ASR_AVAILABLE and self.mic_available:
+                        self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
                     self.root.after(500, self.ask_question)
                 
                 threading.Thread(target=continue_thread, daemon=True).start()
@@ -1052,12 +1116,15 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     
                     fallback_msg = "I understand this is difficult. Let's move to the next question."
                     self.add_robot_message(fallback_msg)
-                    self.speak(fallback_msg)
+                    self.speak(fallback_msg, wait=True)
                     
                     # Move to next question
                     def continue_after_retry():
                         time.sleep(0.5)
                         self.current_question += 1
+                        # Re-enable mic button before next question
+                        if ASR_AVAILABLE and self.mic_available:
+                            self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
                         self.root.after(500, self.ask_question)
                     
                     threading.Thread(target=continue_after_retry, daemon=True).start()
@@ -1066,14 +1133,18 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 # Ask again
                 retry_msg = "I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day."
                 self.add_robot_message(retry_msg)
-                self.speak(retry_msg)
+                self.speak(retry_msg, wait=True)
                 
                 # Re-ask question
                 def reask():
                     q = PHQ9_QUESTIONS[self.current_question]
                     question_text = f"Question {self.current_question + 1}: {q.question}"
                     self.root.after(0, lambda: self.add_robot_message(question_text))
-                    self.speak(question_text)
+                    self.speak(question_text, wait=True)
+                    
+                    # Enable mic button after re-asking
+                    if ASR_AVAILABLE and self.mic_available:
+                        self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
                 
                 threading.Thread(target=reask, daemon=True).start()
                 return
@@ -1088,6 +1159,9 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 
                 # Move to next question or complete
                 self.current_question += 1
+                # Re-enable mic button before next question
+                if ASR_AVAILABLE and self.mic_available:
+                    self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK")
                 self.root.after(2000, self.ask_question)
                 return
             else:
@@ -1129,11 +1203,14 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     
                     fallback_msg = "I'm having trouble understanding. Let's move to the next question."
                     self.add_robot_message(fallback_msg)
-                    self.speak(fallback_msg)
+                    self.speak(fallback_msg, wait=True)
                     
                     def skip_question():
                         time.sleep(0.5)
                         self.current_question += 1
+                        # Re-enable mic button before next question
+                        if ASR_AVAILABLE and self.mic_available:
+                            self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
                         self.root.after(500, self.ask_question)
                     
                     threading.Thread(target=skip_question, daemon=True).start()
@@ -1141,8 +1218,13 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 
                 clarify_msg = f"I heard '{response}', but I'm not sure I understood correctly. Could you please repeat using: not at all, several days, more than half the days, or nearly every day?"
                 self.add_robot_message(clarify_msg)
-                self.speak(clarify_msg)
+                self.speak(clarify_msg, wait=True)
                 self.add_system_message("Asked for clarification")
+                
+                # Re-enable mic button after clarification
+                if ASR_AVAILABLE and self.mic_available:
+                    self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK")
+                
                 return
         elif not local_success:
             # Increment retry
@@ -1155,11 +1237,14 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 
                 fallback_msg = "Let's move to the next question."
                 self.add_robot_message(fallback_msg)
-                self.speak(fallback_msg)
+                self.speak(fallback_msg, wait=True)
                 
                 def skip_question():
                     time.sleep(0.5)
                     self.current_question += 1
+                    # Re-enable mic button before next question
+                    if ASR_AVAILABLE and self.mic_available:
+                        self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
                     self.root.after(500, self.ask_question)
                 
                 threading.Thread(target=skip_question, daemon=True).start()
@@ -1167,8 +1252,13 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             
             clarify_msg = f"I heard '{response}', but I'm not sure I understood correctly. Could you please repeat using: not at all, several days, more than half the days, or nearly every day?"
             self.add_robot_message(clarify_msg)
-            self.speak(clarify_msg)
+            self.speak(clarify_msg, wait=True)
             self.add_system_message("Asked for clarification")
+            
+            # Re-enable mic button after clarification
+            if ASR_AVAILABLE and self.mic_available:
+                self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK")
+            
             return
         else:
             self.add_system_message(f"Local NLP: score={score}, understood as: {confirmation}")
@@ -1179,7 +1269,11 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         # Confirm what was understood
         confirm_msg = f"I understood: {confirmation}. Is that correct?"
         self.add_robot_message(confirm_msg)
-        self.speak(confirm_msg)
+        self.speak(confirm_msg, wait=True)
+        
+        # Re-enable mic button after asking for confirmation
+        if ASR_AVAILABLE and self.mic_available:
+            self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK")
         
         # Set flag waiting for confirmation
         self.waiting_for_answer_confirmation = True
@@ -1228,21 +1322,21 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             # First message - score
             intro = f"Thank you for completing all 9 questions. Let me share your results."
             self.root.after(0, lambda: self.add_robot_message(intro))
-            self.speak(intro)
+            self.speak(intro, wait=True)
             
             # Second message - score breakdown
             score_msg = f"Your total score is {total} out of a maximum of 27 points. This indicates {severity} level symptoms."
             self.root.after(0, lambda: self.add_robot_message(score_msg))
-            self.speak(score_msg)
+            self.speak(score_msg, wait=True)
             
             # Third message - severity description
             self.root.after(0, lambda: self.add_robot_message(severity_description))
-            self.speak(severity_description)
+            self.speak(severity_description, wait=True)
             
             # Fourth message - disclaimer
             disclaimer = "Please remember: This is a technical demonstration only, not a medical diagnosis. This data is collected for research purposes. If you have real health concerns, please consult a qualified healthcare professional."
             self.root.after(0, lambda: self.add_robot_message(disclaimer))
-            self.speak(disclaimer)
+            self.speak(disclaimer, wait=True)
             
             self.root.after(0, lambda: self.export_button.config(state=tk.NORMAL))
             self.root.after(0, lambda: self.restart_button.config(state=tk.NORMAL))
@@ -1350,6 +1444,13 @@ def main():
     
     root = tk.Tk()
     app = VoicePHQ9GUI(root)
+    
+    # Force window to front
+    root.lift()
+    root.attributes('-topmost', True)
+    root.after_idle(root.attributes, '-topmost', False)
+    root.focus_force()
+    
     root.mainloop()
 
 
