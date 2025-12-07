@@ -1,0 +1,884 @@
+{
+  "session_id": "0624c351-70ce-4f03-84aa-a475a170136a",
+  "start_time": "2025-12-06T12:33:36.963427",
+  "end_time": "2025-12-06T12:42:01.906695",
+  "duration_seconds": 504.943268,
+  "phq9_responses": [
+    1,
+    2,
+    1,
+    3,
+    1,
+    1,
+    3,
+    0,
+    1
+  ],
+  "total_score": 13,
+  "severity": "moderate",
+  "transcript": [
+    {
+      "timestamp": "2025-12-06T12:33:39.723960",
+      "speaker": "Pepper",
+      "text": "Hello! I'm Pepper, ready to conduct a health screening with you."
+    },
+    {
+      "timestamp": "2025-12-06T12:33:54.264312",
+      "speaker": "Pepper",
+      "text": "Hello! Before we begin, I want to inform you that this is a technical demonstration for research purposes only. This is NOT a psychological evaluation or medical diagnosis."
+    },
+    {
+      "timestamp": "2025-12-06T12:33:55.763902",
+      "speaker": "Pepper",
+      "text": "The information collected will be used solely for technical testing. If you have real health concerns, please consult a qualified healthcare professional."
+    },
+    {
+      "timestamp": "2025-12-06T12:33:57.237555",
+      "speaker": "Pepper",
+      "text": "Do you consent to participate in this screening? Please say 'yes' to continue or 'no' to decline."
+    },
+    {
+      "timestamp": "2025-12-06T12:34:40.252973",
+      "speaker": "User",
+      "text": "Yes."
+    },
+    {
+      "timestamp": "2025-12-06T12:34:40.727713",
+      "speaker": "Pepper",
+      "text": "Thank you for consenting."
+    },
+    {
+      "timestamp": "2025-12-06T12:34:42.164562",
+      "speaker": "Pepper",
+      "text": "I will now ask you 9 questions about how you've been feeling over the last 2 weeks. Please answer with: not at all, several days, more than half the days, or nearly every day."
+    },
+    {
+      "timestamp": "2025-12-06T12:34:44.101855",
+      "speaker": "Pepper",
+      "text": "Question 1: Over the last 2 weeks, how often have you had little interest or pleasure in doing things?"
+    },
+    {
+      "timestamp": "2025-12-06T12:35:17.008672",
+      "speaker": "User",
+      "text": "Several days..."
+    },
+    {
+      "timestamp": "2025-12-06T12:35:17.010717",
+      "speaker": "Pepper",
+      "text": "I understood: several days. Is that correct?"
+    },
+    {
+      "timestamp": "2025-12-06T12:35:26.153601",
+      "speaker": "User",
+      "text": "Yes."
+    },
+    {
+      "timestamp": "2025-12-06T12:35:27.970973",
+      "speaker": "Pepper",
+      "text": "Let me ask you the next question."
+    },
+    {
+      "timestamp": "2025-12-06T12:35:29.407439",
+      "speaker": "Pepper",
+      "text": "Question 2: Over the last 2 weeks, how often have you felt down, depressed, or hopeless?"
+    },
+    {
+      "timestamp": "2025-12-06T12:36:02.462257",
+      "speaker": "User",
+      "text": "I think more than half of the days"
+    },
+    {
+      "timestamp": "2025-12-06T12:36:02.465461",
+      "speaker": "Pepper",
+      "text": "I understood: more than half the days. Is that correct?"
+    },
+    {
+      "timestamp": "2025-12-06T12:36:09.997911",
+      "speaker": "User",
+      "text": "That's right."
+    },
+    {
+      "timestamp": "2025-12-06T12:36:10.715419",
+      "speaker": "Pepper",
+      "text": "Let me ask you the next question."
+    },
+    {
+      "timestamp": "2025-12-06T12:36:12.171485",
+      "speaker": "Pepper",
+      "text": "Question 3: Over the last 2 weeks, how often have you had trouble falling or staying asleep, or sleeping too much?"
+    },
+    {
+      "timestamp": "2025-12-06T12:36:23.549391",
+      "speaker": "User",
+      "text": "Several days..."
+    },
+    {
+      "timestamp": "2025-12-06T12:36:23.551481",
+      "speaker": "Pepper",
+      "text": "I understood: several days. Is that correct?"
+    },
+    {
+      "timestamp": "2025-12-06T12:36:34.410779",
+      "speaker": "User",
+      "text": "Yes."
+    },
+    {
+      "timestamp": "2025-12-06T12:36:34.836627",
+      "speaker": "Pepper",
+      "text": "Let me ask you the next question."
+    },
+    {
+      "timestamp": "2025-12-06T12:36:36.276691",
+      "speaker": "Pepper",
+      "text": "Question 4: Over the last 2 weeks, how often have you felt tired or had little energy?"
+    },
+    {
+      "timestamp": "2025-12-06T12:36:47.030145",
+      "speaker": "User",
+      "text": "All of the days."
+    },
+    {
+      "timestamp": "2025-12-06T12:36:47.788651",
+      "speaker": "Pepper",
+      "text": "I understood: Nearly every day. Is that correct?"
+    },
+    {
+      "timestamp": "2025-12-06T12:36:53.177047",
+      "speaker": "User",
+      "text": "That's correct."
+    },
+    {
+      "timestamp": "2025-12-06T12:36:54.347679",
+      "speaker": "Pepper",
+      "text": "Let me ask you the next question."
+    },
+    {
+      "timestamp": "2025-12-06T12:36:55.796954",
+      "speaker": "Pepper",
+      "text": "Question 5: Over the last 2 weeks, how often have you had poor appetite or overeating?"
+    },
+    {
+      "timestamp": "2025-12-06T12:37:07.756131",
+      "speaker": "User",
+      "text": "Several days."
+    },
+    {
+      "timestamp": "2025-12-06T12:37:07.758232",
+      "speaker": "Pepper",
+      "text": "I understood: several days. Is that correct?"
+    },
+    {
+      "timestamp": "2025-12-06T12:37:13.361667",
+      "speaker": "User",
+      "text": "Yes, it's right."
+    },
+    {
+      "timestamp": "2025-12-06T12:37:14.380039",
+      "speaker": "Pepper",
+      "text": "Let me ask you the next question."
+    },
+    {
+      "timestamp": "2025-12-06T12:37:15.821096",
+      "speaker": "Pepper",
+      "text": "Question 6: Over the last 2 weeks, how often have you felt bad about yourself, or that you are a failure, or have let yourself or your family down?"
+    },
+    {
+      "timestamp": "2025-12-06T12:37:30.327430",
+      "speaker": "User",
+      "text": "Several days also..."
+    },
+    {
+      "timestamp": "2025-12-06T12:37:30.329424",
+      "speaker": "Pepper",
+      "text": "I understood: several days. Is that correct?"
+    },
+    {
+      "timestamp": "2025-12-06T12:37:49.424590",
+      "speaker": "User",
+      "text": "Correct."
+    },
+    {
+      "timestamp": "2025-12-06T12:37:50.701998",
+      "speaker": "Pepper",
+      "text": "I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day."
+    },
+    {
+      "timestamp": "2025-12-06T12:37:51.137795",
+      "speaker": "Pepper",
+      "text": "Question 6: Over the last 2 weeks, how often have you felt bad about yourself, or that you are a failure, or have let yourself or your family down?"
+    },
+    {
+      "timestamp": "2025-12-06T12:38:03.272392",
+      "speaker": "User",
+      "text": "Several days..."
+    },
+    {
+      "timestamp": "2025-12-06T12:38:03.273440",
+      "speaker": "Pepper",
+      "text": "I understood: several days. Is that correct?"
+    },
+    {
+      "timestamp": "2025-12-06T12:38:10.244258",
+      "speaker": "User",
+      "text": "That is correct."
+    },
+    {
+      "timestamp": "2025-12-06T12:38:10.772353",
+      "speaker": "Pepper",
+      "text": "Let me ask you the next question."
+    },
+    {
+      "timestamp": "2025-12-06T12:38:12.213004",
+      "speaker": "Pepper",
+      "text": "Question 7: Over the last 2 weeks, how often have you had trouble concentrating on things, such as reading the newspaper or watching television?"
+    },
+    {
+      "timestamp": "2025-12-06T12:38:24.803985",
+      "speaker": "User",
+      "text": "Almost all of the days"
+    },
+    {
+      "timestamp": "2025-12-06T12:38:25.327539",
+      "speaker": "Pepper",
+      "text": "I understood: Nearly every day. Is that correct?"
+    },
+    {
+      "timestamp": "2025-12-06T12:38:33.478502",
+      "speaker": "User",
+      "text": "Please see review No.11263 on PissedConsumer.com"
+    },
+    {
+      "timestamp": "2025-12-06T12:38:33.847547",
+      "speaker": "Pepper",
+      "text": "I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day."
+    },
+    {
+      "timestamp": "2025-12-06T12:38:34.280922",
+      "speaker": "Pepper",
+      "text": "Question 7: Over the last 2 weeks, how often have you had trouble concentrating on things, such as reading the newspaper or watching television?"
+    },
+    {
+      "timestamp": "2025-12-06T12:38:49.678102",
+      "speaker": "User",
+      "text": "Almost all of the days"
+    },
+    {
+      "timestamp": "2025-12-06T12:38:50.091431",
+      "speaker": "Pepper",
+      "text": "I understood: Nearly every day. Is that correct?"
+    },
+    {
+      "timestamp": "2025-12-06T12:38:56.611568",
+      "speaker": "User",
+      "text": "Yeah, correct."
+    },
+    {
+      "timestamp": "2025-12-06T12:38:56.986676",
+      "speaker": "Pepper",
+      "text": "Let me ask you the next question."
+    },
+    {
+      "timestamp": "2025-12-06T12:38:58.437301",
+      "speaker": "Pepper",
+      "text": "Question 8: Over the last 2 weeks, how often have you been moving or speaking slowly enough that other people could have noticed?"
+    },
+    {
+      "timestamp": "2025-12-06T12:39:09.759491",
+      "speaker": "User",
+      "text": "Not at all."
+    },
+    {
+      "timestamp": "2025-12-06T12:39:09.761488",
+      "speaker": "Pepper",
+      "text": "I understood: not at all. Is that correct?"
+    },
+    {
+      "timestamp": "2025-12-06T12:39:19.926925",
+      "speaker": "User",
+      "text": "Hello. I'm going to talk about the new R2-D2. R2-D2 is a new weapon. It's a weapon that can be used to kill enemies. It's a weapon that can be used to kill enemies. It's a weapon that can be used to kill enemies."
+    },
+    {
+      "timestamp": "2025-12-06T12:39:20.687233",
+      "speaker": "Pepper",
+      "text": "I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day."
+    },
+    {
+      "timestamp": "2025-12-06T12:39:21.123699",
+      "speaker": "Pepper",
+      "text": "Question 8: Over the last 2 weeks, how often have you been moving or speaking slowly enough that other people could have noticed?"
+    },
+    {
+      "timestamp": "2025-12-06T12:39:30.347527",
+      "speaker": "User",
+      "text": "Not at all."
+    },
+    {
+      "timestamp": "2025-12-06T12:39:30.349620",
+      "speaker": "Pepper",
+      "text": "I understood: not at all. Is that correct?"
+    },
+    {
+      "timestamp": "2025-12-06T12:39:37.042429",
+      "speaker": "User",
+      "text": "Correct."
+    },
+    {
+      "timestamp": "2025-12-06T12:39:37.700581",
+      "speaker": "Pepper",
+      "text": "I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day."
+    },
+    {
+      "timestamp": "2025-12-06T12:39:38.133979",
+      "speaker": "Pepper",
+      "text": "Question 8: Over the last 2 weeks, how often have you been moving or speaking slowly enough that other people could have noticed?"
+    },
+    {
+      "timestamp": "2025-12-06T12:39:52.957447",
+      "speaker": "User",
+      "text": "Not at all."
+    },
+    {
+      "timestamp": "2025-12-06T12:39:52.959453",
+      "speaker": "Pepper",
+      "text": "I understood: not at all. Is that correct?"
+    },
+    {
+      "timestamp": "2025-12-06T12:39:59.798409",
+      "speaker": "User",
+      "text": "That is correct."
+    },
+    {
+      "timestamp": "2025-12-06T12:40:00.222978",
+      "speaker": "Pepper",
+      "text": "Let me ask you the next question."
+    },
+    {
+      "timestamp": "2025-12-06T12:40:01.669942",
+      "speaker": "Pepper",
+      "text": "Question 9: Over the last 2 weeks, how often have you had thoughts that you would be better off dead or of hurting yourself in some way?"
+    },
+    {
+      "timestamp": "2025-12-06T12:40:13.856645",
+      "speaker": "User",
+      "text": "Few days"
+    },
+    {
+      "timestamp": "2025-12-06T12:40:13.858744",
+      "speaker": "Pepper",
+      "text": "I understood: sometimes. Is that correct?"
+    },
+    {
+      "timestamp": "2025-12-06T12:40:30.636955",
+      "speaker": "User",
+      "text": "Yes."
+    },
+    {
+      "timestamp": "2025-12-06T12:40:31.937839",
+      "speaker": "Pepper",
+      "text": "I want to acknowledge your response. Your safety is very important. Please know that help is available."
+    },
+    {
+      "timestamp": "2025-12-06T12:40:36.376625",
+      "speaker": "Pepper",
+      "text": "CRISIS RESOURCES - Please take note of these:"
+    },
+    {
+      "timestamp": "2025-12-06T12:40:47.245623",
+      "speaker": "Pepper",
+      "text": "This screening is not a diagnosis. Please contact a healthcare professional for proper evaluation and support."
+    },
+    {
+      "timestamp": "2025-12-06T12:40:52.678307",
+      "speaker": "Pepper",
+      "text": "Have you noted these resources? Type 'yes' or press the microphone to continue."
+    },
+    {
+      "timestamp": "2025-12-06T12:41:59.898434",
+      "speaker": "User",
+      "text": "yes"
+    }
+  ],
+  "gpt_calls": [
+    {
+      "timestamp": "2025-12-06T12:34:40.708961",
+      "purpose": "Check consent",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Reply YES if agrees/consents, NO if declines.\nUser: Does 'Yes.' mean consent?",
+      "response": "YES",
+      "tokens_used": 31
+    },
+    {
+      "timestamp": "2025-12-06T12:35:27.968676",
+      "purpose": "Check answer confirmation",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes.' a confirmation?",
+      "response": "YES",
+      "tokens_used": 28
+    },
+    {
+      "timestamp": "2025-12-06T12:36:10.712713",
+      "purpose": "Check answer confirmation",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'That's right.' a confirmation?",
+      "response": "YES",
+      "tokens_used": 29
+    },
+    {
+      "timestamp": "2025-12-06T12:36:34.834581",
+      "purpose": "Check answer confirmation",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes.' a confirmation?",
+      "response": "YES",
+      "tokens_used": 28
+    },
+    {
+      "timestamp": "2025-12-06T12:36:47.787606",
+      "purpose": "Parse PHQ-9 Q4 response",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Question: Over the last 2 weeks, how often have you felt tired or had little energy?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: All of the days.",
+      "response": "3|Nearly every day",
+      "tokens_used": 74
+    },
+    {
+      "timestamp": "2025-12-06T12:36:54.345756",
+      "purpose": "Check answer confirmation",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'That's correct.' a confirmation?",
+      "response": "YES",
+      "tokens_used": 29
+    },
+    {
+      "timestamp": "2025-12-06T12:37:14.378102",
+      "purpose": "Check answer confirmation",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes, it's right.' a confirmation?",
+      "response": "YES",
+      "tokens_used": 31
+    },
+    {
+      "timestamp": "2025-12-06T12:37:50.701998",
+      "purpose": "Check answer confirmation",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Correct.' a confirmation?",
+      "response": "NO",
+      "tokens_used": 28
+    },
+    {
+      "timestamp": "2025-12-06T12:38:10.770295",
+      "purpose": "Check answer confirmation",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'That is correct.' a confirmation?",
+      "response": "YES",
+      "tokens_used": 30
+    },
+    {
+      "timestamp": "2025-12-06T12:38:25.325447",
+      "purpose": "Parse PHQ-9 Q7 response",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Question: Over the last 2 weeks, how often have you had trouble concentrating on things, such as reading the newspaper or watching television?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: Almost all of the days",
+      "response": "3|Nearly every day",
+      "tokens_used": 82
+    },
+    {
+      "timestamp": "2025-12-06T12:38:33.846491",
+      "purpose": "Check answer confirmation",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Please see review No.11263 on PissedConsumer.com' a confirmation?",
+      "response": "NO",
+      "tokens_used": 39
+    },
+    {
+      "timestamp": "2025-12-06T12:38:50.090379",
+      "purpose": "Parse PHQ-9 Q7 response",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Question: Over the last 2 weeks, how often have you had trouble concentrating on things, such as reading the newspaper or watching television?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: Almost all of the days",
+      "response": "3|Nearly every day",
+      "tokens_used": 82
+    },
+    {
+      "timestamp": "2025-12-06T12:38:56.984426",
+      "purpose": "Check answer confirmation",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yeah, correct.' a confirmation?",
+      "response": "YES",
+      "tokens_used": 30
+    },
+    {
+      "timestamp": "2025-12-06T12:39:20.686183",
+      "purpose": "Check answer confirmation",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Hello. I'm going to talk about the new R2-D2. R2-D2 is a new weapon. It's a weapon that can be used to kill enemies. It's a weapon that can be used to kill enemies. It's a weapon that can be used to kill enemies.' a confirmation?",
+      "response": "NO",
+      "tokens_used": 82
+    },
+    {
+      "timestamp": "2025-12-06T12:39:37.699536",
+      "purpose": "Check answer confirmation",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Correct.' a confirmation?",
+      "response": "NO",
+      "tokens_used": 28
+    },
+    {
+      "timestamp": "2025-12-06T12:40:00.220904",
+      "purpose": "Check answer confirmation",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'That is correct.' a confirmation?",
+      "response": "YES",
+      "tokens_used": 30
+    },
+    {
+      "timestamp": "2025-12-06T12:40:31.915276",
+      "purpose": "Check answer confirmation",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes.' a confirmation?",
+      "response": "YES",
+      "tokens_used": 28
+    }
+  ],
+  "total_gpt_calls": 17,
+  "interaction_logs": [
+    {
+      "timestamp": 1765020837703,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 0,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "EN",
+      "phqQuestionId": "",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Hello! Before we begin, I want to inform you that this is a technical demonstration for research purposes only. This is NOT a psychological evaluation or medical diagnosis. The information collected will be used solely for technical testing. If you have real health concerns, please consult a qualified healthcare professional. Do you consent to participate in this screening? Please say 'yes' to continue or 'no' to decline.",
+      "notes": "Consent requested"
+    },
+    {
+      "timestamp": 1765020885037,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 1,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q1",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Question 1: Over the last 2 weeks, how often have you had little interest or pleasure in doing things?",
+      "notes": "Question 1"
+    },
+    {
+      "timestamp": 1765020927968,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 2,
+      "userRawSpeech": "",
+      "asrTranscript": "several days",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q1",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Confirmed",
+      "notes": "Q1 FINAL score=1, retries=0"
+    },
+    {
+      "timestamp": 1765020930336,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 3,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q2",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Question 2: Over the last 2 weeks, how often have you felt down, depressed, or hopeless?",
+      "notes": "Question 2"
+    },
+    {
+      "timestamp": 1765020970712,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 4,
+      "userRawSpeech": "",
+      "asrTranscript": "more than half the days",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q2",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Confirmed",
+      "notes": "Q2 FINAL score=2, retries=0"
+    },
+    {
+      "timestamp": 1765020973103,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 5,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q3",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Question 3: Over the last 2 weeks, how often have you had trouble falling or staying asleep, or sleeping too much?",
+      "notes": "Question 3"
+    },
+    {
+      "timestamp": 1765020994834,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 6,
+      "userRawSpeech": "",
+      "asrTranscript": "several days",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q3",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Confirmed",
+      "notes": "Q3 FINAL score=1, retries=0"
+    },
+    {
+      "timestamp": 1765020997207,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 7,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q4",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Question 4: Over the last 2 weeks, how often have you felt tired or had little energy?",
+      "notes": "Question 4"
+    },
+    {
+      "timestamp": 1765021014345,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 8,
+      "userRawSpeech": "",
+      "asrTranscript": "Nearly every day",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q4",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Confirmed",
+      "notes": "Q4 FINAL score=3, retries=0"
+    },
+    {
+      "timestamp": 1765021016723,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 9,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q5",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Question 5: Over the last 2 weeks, how often have you had poor appetite or overeating?",
+      "notes": "Question 5"
+    },
+    {
+      "timestamp": 1765021034378,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 10,
+      "userRawSpeech": "",
+      "asrTranscript": "several days",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q5",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Confirmed",
+      "notes": "Q5 FINAL score=1, retries=0"
+    },
+    {
+      "timestamp": 1765021036752,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 11,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q6",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Question 6: Over the last 2 weeks, how often have you felt bad about yourself, or that you are a failure, or have let yourself or your family down?",
+      "notes": "Question 6"
+    },
+    {
+      "timestamp": 1765021090770,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 12,
+      "userRawSpeech": "",
+      "asrTranscript": "several days",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q6",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Confirmed",
+      "notes": "Q6 FINAL score=1, retries=1"
+    },
+    {
+      "timestamp": 1765021093143,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 13,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q7",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Question 7: Over the last 2 weeks, how often have you had trouble concentrating on things, such as reading the newspaper or watching television?",
+      "notes": "Question 7"
+    },
+    {
+      "timestamp": 1765021136984,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 14,
+      "userRawSpeech": "",
+      "asrTranscript": "Nearly every day",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q7",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Confirmed",
+      "notes": "Q7 FINAL score=3, retries=1"
+    },
+    {
+      "timestamp": 1765021139368,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 15,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q8",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Question 8: Over the last 2 weeks, how often have you been moving or speaking slowly enough that other people could have noticed?",
+      "notes": "Question 8"
+    },
+    {
+      "timestamp": 1765021200220,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 16,
+      "userRawSpeech": "",
+      "asrTranscript": "not at all",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q8",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Confirmed",
+      "notes": "Q8 FINAL score=0, retries=2"
+    },
+    {
+      "timestamp": 1765021202604,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 17,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q9",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Question 9: Over the last 2 weeks, how often have you had thoughts that you would be better off dead or of hurting yourself in some way?",
+      "notes": "Question 9"
+    },
+    {
+      "timestamp": 1765021231915,
+      "sessionId": "0624c351-70ce-4f03-84aa-a475a170136a",
+      "turnIndex": 18,
+      "userRawSpeech": "",
+      "asrTranscript": "sometimes",
+      "languageDetected": "EN",
+      "phqQuestionId": "Q9",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Confirmed",
+      "notes": "Q9 FINAL score=1, retries=0"
+    }
+  ]
+}

@@ -42,7 +42,9 @@ def analyze_single_session(session_data, session_name):
     
     # Basic info
     if 'session_id' in session_data:
+        lang = session_data.get('language', 'UNKNOWN')
         print(f"\nSession ID: {session_data['session_id']}")
+        print(f"Language: {lang}")
         print(f"Start: {session_data.get('start_time', 'N/A')}")
         print(f"End: {session_data.get('end_time', 'N/A')}")
         print(f"Duration: {session_data.get('duration_seconds', 0):.1f} seconds")
@@ -113,6 +115,7 @@ def analyze_single_session(session_data, session_name):
     
     return {
         'session_name': session_name,
+        'language': session_data.get('language', 'UNKNOWN'),
         'total_score': session_data.get('total_score', None),
         'severity': session_data.get('severity', None),
         'duration': session_data.get('duration_seconds', None),
@@ -128,6 +131,14 @@ def compare_sessions(sessions_stats):
     
     print(f"\nTotal sessions analyzed: {len(sessions_stats)}")
     
+    # Group by language
+    en_sessions = [s for s in sessions_stats if s.get('language') == 'EN']
+    de_sessions = [s for s in sessions_stats if s.get('language') == 'DE']
+    
+    if en_sessions or de_sessions:
+        print(f"  - English sessions: {len(en_sessions)}")
+        print(f"  - German sessions: {len(de_sessions)}")
+    
     # Aggregate statistics
     if sessions_stats:
         scores = [s['total_score'] for s in sessions_stats if s['total_score'] is not None]
@@ -135,11 +146,26 @@ def compare_sessions(sessions_stats):
         gpt_calls = [s['gpt_calls'] for s in sessions_stats if s['gpt_calls'] is not None]
         
         if scores:
-            print(f"\nTOTAL SCORES:")
+            print(f"\nTOTAL SCORES (All Sessions):")
             print(f"  Mean: {statistics.mean(scores):.1f}")
             print(f"  Median: {statistics.median(scores):.1f}")
             print(f"  Range: {min(scores)}-{max(scores)}")
             print(f"  St.Dev: {statistics.stdev(scores):.2f}" if len(scores) > 1 else "  St.Dev: N/A")
+        
+        # Language-specific scores
+        if en_sessions:
+            en_scores = [s['total_score'] for s in en_sessions if s['total_score'] is not None]
+            if en_scores:
+                print(f"\nENGLISH SESSIONS:")
+                print(f"  Mean score: {statistics.mean(en_scores):.1f}")
+                print(f"  Mean GPT calls: {statistics.mean([s['gpt_calls'] for s in en_sessions]):.1f}")
+        
+        if de_sessions:
+            de_scores = [s['total_score'] for s in de_sessions if s['total_score'] is not None]
+            if de_scores:
+                print(f"\nGERMAN SESSIONS:")
+                print(f"  Mean score: {statistics.mean(de_scores):.1f}")
+                print(f"  Mean GPT calls: {statistics.mean([s['gpt_calls'] for s in de_sessions]):.1f}")
         
         if durations:
             print(f"\nDURATIONS:")
@@ -176,16 +202,34 @@ def main():
     print("PHQ-9 SIMULATION SESSION ANALYSIS")
     print("="*70)
     
-    # Find all session folders
+    # Find all session folders in both language directories
     sessions_dir = Path("data/sessions")
     if not sessions_dir.exists():
         print("ERROR: data/sessions directory not found!")
         return
     
-    session_folders = [d for d in sessions_dir.iterdir() if d.is_dir()]
+    session_folders = []
+    
+    # Check for language-specific folders
+    english_dir = sessions_dir / "english"
+    german_dir = sessions_dir / "german"
+    
+    if english_dir.exists():
+        session_folders.extend([d for d in english_dir.iterdir() if d.is_dir()])
+    
+    if german_dir.exists():
+        session_folders.extend([d for d in german_dir.iterdir() if d.is_dir()])
+    
+    # Also check root sessions folder for backward compatibility
+    root_sessions = [d for d in sessions_dir.iterdir() if d.is_dir() and d.name not in ['english', 'german']]
+    session_folders.extend(root_sessions)
     
     if not session_folders:
         print("No session data found!")
+        print(f"Checked:")
+        print(f"  - {english_dir}")
+        print(f"  - {german_dir}")
+        print(f"  - {sessions_dir}")
         return
     
     print(f"\nFound {len(session_folders)} session(s)")
@@ -195,6 +239,12 @@ def main():
     for session_folder in sorted(session_folders):
         try:
             session_data = load_session_data(session_folder)
+            # Determine language from folder path if not in data
+            if 'language' not in session_data:
+                if 'english' in str(session_folder):
+                    session_data['language'] = 'EN'
+                elif 'german' in str(session_folder):
+                    session_data['language'] = 'DE'
             stats = analyze_single_session(session_data, session_folder.name)
             sessions_stats.append(stats)
         except Exception as e:

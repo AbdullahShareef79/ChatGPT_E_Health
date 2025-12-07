@@ -13,7 +13,7 @@ import statistics
 import argparse
 
 def load_all_sessions(sessions_dir="data/sessions"):
-    """Load all session data"""
+    """Load all session data from both language folders"""
     sessions = []
     sessions_path = Path(sessions_dir)
     
@@ -21,36 +21,60 @@ def load_all_sessions(sessions_dir="data/sessions"):
         print(f"ERROR: {sessions_dir} not found!")
         return []
     
-    for session_folder in sessions_path.iterdir():
-        if not session_folder.is_dir():
+    # Define language-specific subdirectories
+    language_dirs = {
+        'english': sessions_path / "english",
+        'german': sessions_path / "german"
+    }
+    
+    # Also check root for backward compatibility
+    dirs_to_check = list(language_dirs.values()) + [sessions_path]
+    
+    for check_dir in dirs_to_check:
+        if not check_dir.exists():
             continue
         
-        json_file = session_folder / "session_data.json"
-        if not json_file.exists():
-            continue
-        
-        try:
-            with open(json_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        for session_folder in check_dir.iterdir():
+            if not session_folder.is_dir():
+                continue
             
-            # Load GPT calls
-            gpt_file = session_folder / "gpt_api_calls.json"
-            if gpt_file.exists():
-                with open(gpt_file, 'r', encoding='utf-8') as f:
-                    data['gpt_calls'] = json.load(f)
-            else:
-                data['gpt_calls'] = []
+            # Skip language subdirectories when checking root
+            if check_dir == sessions_path and session_folder.name in ['english', 'german']:
+                continue
             
-            # Load interaction logs for retry counts
-            csv_file = session_folder / "interaction_logs.csv"
-            if csv_file.exists():
-                with open(csv_file, 'r', encoding='utf-8') as f:
-                    reader = csv.DictReader(f)
-                    data['interaction_logs'] = list(reader)
+            json_file = session_folder / "session_data.json"
+            if not json_file.exists():
+                continue
             
-            sessions.append(data)
-        except Exception as e:
-            print(f"Error loading {session_folder.name}: {e}")
+            try:
+                with open(json_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                # Infer language from folder structure if not in data
+                if 'language' not in data:
+                    if 'english' in str(session_folder):
+                        data['language'] = 'EN'
+                    elif 'german' in str(session_folder):
+                        data['language'] = 'DE'
+                
+                # Load GPT calls
+                gpt_file = session_folder / "gpt_api_calls.json"
+                if gpt_file.exists():
+                    with open(gpt_file, 'r', encoding='utf-8') as f:
+                        data['gpt_calls'] = json.load(f)
+                else:
+                    data['gpt_calls'] = []
+                
+                # Load interaction logs for retry counts
+                csv_file = session_folder / "interaction_logs.csv"
+                if csv_file.exists():
+                    with open(csv_file, 'r', encoding='utf-8') as f:
+                        reader = csv.DictReader(f)
+                        data['interaction_logs'] = list(reader)
+                
+                sessions.append(data)
+            except Exception as e:
+                print(f"Error loading {session_folder.name}: {e}")
     
     return sessions
 
@@ -141,11 +165,20 @@ def plot_gpt_usage_comparison(en_sessions, de_sessions, output_path):
     print(f"✓ Saved: {output_path}")
     plt.close()
 
-def plot_retries_per_question(sessions, output_path):
+def plot_retries_per_question(sessions, output_path, language_filter=None):
     """
     KEY FIGURE: Average Retries per Question (Q1-Q9)
     Shows where the system struggles with natural language understanding
+    language_filter: 'EN', 'DE', or None for all
     """
+    # Filter by language if specified
+    if language_filter:
+        sessions = [s for s in sessions if s.get('language', 'EN') == language_filter]
+    
+    if not sessions:
+        print(f"! No sessions found for language filter: {language_filter}")
+        return
+    
     fig, ax = plt.subplots(figsize=(12, 6))
     
     # Collect retry counts per question
@@ -185,7 +218,12 @@ def plot_retries_per_question(sessions, output_path):
     
     ax.set_xlabel('PHQ-9 Question Number', fontsize=12)
     ax.set_ylabel('Average Number of Retries', fontsize=12)
-    ax.set_title('System Retry Behavior per Question', fontsize=14, fontweight='bold')
+    
+    title = 'System Retry Behavior per Question'
+    if language_filter:
+        title += f' ({language_filter})'
+    ax.set_title(title, fontsize=14, fontweight='bold')
+    
     ax.set_xticks(questions)
     ax.set_ylim(0, max(means + [0.5]) * 1.2)
     ax.grid(axis='y', alpha=0.3)
@@ -479,8 +517,16 @@ def main():
         plot_gpt_usage_comparison(en_sessions, de_sessions, 
                                   output_dir / "fig1_gpt_usage_comparison.png")
     
-    # 2. Retry Difficulty Analysis (KEY FIGURE)
-    plot_retries_per_question(sessions, output_dir / "fig2_retries_per_question.png")
+    # 2. Retry Difficulty Analysis (KEY FIGURE) - Combined
+    plot_retries_per_question(sessions, output_dir / "fig2_retries_per_question_combined.png")
+    
+    # 2a. Retry Analysis - English only
+    if en_sessions:
+        plot_retries_per_question(en_sessions, output_dir / "fig2a_retries_per_question_english.png", language_filter='EN')
+    
+    # 2b. Retry Analysis - German only
+    if de_sessions:
+        plot_retries_per_question(de_sessions, output_dir / "fig2b_retries_per_question_german.png", language_filter='DE')
     
     # 3. Session Duration Comparison
     if en_sessions or de_sessions:
@@ -503,6 +549,9 @@ def main():
     print("\nGenerated figures (TECHNICAL EVALUATION):")
     print("  1. GPT Usage: EN vs DE comparison (PRIMARY)")
     print("  2. Retries per Question: System difficulty analysis (KEY)")
+    print("     - Combined view (all languages)")
+    print("     - English-only view")
+    print("     - German-only view")
     print("  3. Duration: Session efficiency comparison")
     print("  4. GPT by Purpose: NLP task breakdown")
     

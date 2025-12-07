@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-PHQ-9 Health Screening Simulation - GUI with VOICE INPUT
-Uses sounddevice (easier to install than PyAudio on Windows)
+PHQ-9 Health Screening Simulation - GERMAN VERSION
+GUI with VOICE INPUT
+Deutsche Version mit Sprachunterstützung
 """
 
 import tkinter as tk
@@ -20,11 +21,9 @@ from pathlib import Path
 import queue
 
 # Load configuration
-# Look for .env in the script's directory first, then current directory
 script_dir = Path(__file__).parent
 env_path = script_dir / '.env'
 if not env_path.exists():
-    # Try parent directory
     env_path = script_dir.parent / '.env'
     
 load_dotenv(dotenv_path=env_path if env_path.exists() else None)
@@ -54,19 +53,18 @@ try:
     LISTEN_AMBIENT_DURATION = 0.3  # seconds for ambient noise calibration
     LISTEN_PAUSE_THRESHOLD = 0.7   # seconds of silence to end phrase
 except Exception as e:
-    print(f"⚠️  Speech recognition initialization error: {e}")
+    print(f"⚠️  Fehler bei der Spracherkennung: {e}")
     ASR_AVAILABLE = False
 
-# Import PHQ-9 questions from session manager
-from phq9_session import PHQ9_QUESTIONS
+# Import German PHQ-9 questions from session manager
+from phq9_session_de import PHQ9_QUESTIONS_DE
 
 # Simple language detector
 class LanguageDetector:
     @staticmethod
     def detect_language(text):
-        """Simple language detection - EN for now"""
-        # Could be enhanced with langdetect library if needed
-        return "EN"
+        """Simple language detection - DE for German"""
+        return "DE"
 
 # Interaction logger (embedded)
 class SimpleLogger:
@@ -78,8 +76,8 @@ class SimpleLogger:
         self.gpt_calls = []  # Track all GPT API calls
         self.session_start = datetime.now()
         
-        # Create session folder in English language subfolder
-        self.session_folder = Path("data") / "sessions" / "english" / f"session_{session_id[:8]}_{self.session_start.strftime('%Y%m%d_%H%M%S')}"
+        # Create session folder in German language subfolder
+        self.session_folder = Path("data") / "sessions" / "german" / f"session_{session_id[:8]}_{self.session_start.strftime('%Y%m%d_%H%M%S')}"
         self.session_folder.mkdir(parents=True, exist_ok=True)
     
     def log_gpt_call(self, purpose, prompt, response, model="gpt-4o-mini", tokens_used=None):
@@ -115,7 +113,7 @@ class SimpleLogger:
         """Save complete session data"""
         session_data = {
             "session_id": self.session_id,
-            "language": "EN",
+            "language": "DE",
             "start_time": self.session_start.isoformat(),
             "end_time": datetime.now().isoformat(),
             "duration_seconds": (datetime.now() - self.session_start).total_seconds(),
@@ -136,19 +134,19 @@ class SimpleLogger:
         # Save transcript as readable text
         transcript_file = self.session_folder / "transcript.txt"
         with open(transcript_file, 'w', encoding='utf-8') as f:
-            f.write(f"PHQ-9 Screening Session\n")
+            f.write(f"PHQ-9 Screening Session (DEUTSCH)\n")
             f.write(f"Session ID: {self.session_id}\n")
-            f.write(f"Date: {self.session_start.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"Datum: {self.session_start.strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"{'='*70}\n\n")
             
             for msg in self.transcript:
                 f.write(f"[{msg['timestamp'].split('T')[1][:8]}] {msg['speaker']}: {msg['text']}\n")
             
             f.write(f"\n{'='*70}\n")
-            f.write(f"RESULTS:\n")
-            f.write(f"Total Score: {total_score}/27\n")
-            f.write(f"Severity: {severity}\n")
-            f.write(f"Responses: {responses}\n")
+            f.write(f"ERGEBNISSE:\n")
+            f.write(f"Gesamtpunktzahl: {total_score}/27\n")
+            f.write(f"Schweregrad: {severity}\n")
+            f.write(f"Antworten: {responses}\n")
         
         # Save CSV for analysis
         csv_file = self.session_folder / "interaction_logs.csv"
@@ -171,25 +169,25 @@ class SimpleLogger:
             # Also save as readable text
             gpt_txt_file = self.session_folder / "gpt_api_calls.txt"
             with open(gpt_txt_file, 'w', encoding='utf-8') as f:
-                f.write(f"GPT API Calls Log\n")
+                f.write(f"GPT API Calls Log (DEUTSCH)\n")
                 f.write(f"Session: {self.session_id}\n")
-                f.write(f"Total Calls: {len(self.gpt_calls)}\n")
+                f.write(f"Gesamt Aufrufe: {len(self.gpt_calls)}\n")
                 f.write(f"{'='*70}\n\n")
                 
                 for i, call in enumerate(self.gpt_calls, 1):
-                    f.write(f"CALL #{i} - {call['purpose']}\n")
-                    f.write(f"Time: {call['timestamp']}\n")
-                    f.write(f"Model: {call['model']}\n")
+                    f.write(f"AUFRUF #{i} - {call['purpose']}\n")
+                    f.write(f"Zeit: {call['timestamp']}\n")
+                    f.write(f"Modell: {call['model']}\n")
                     f.write(f"Tokens: {call.get('tokens_used', 'N/A')}\n")
                     f.write(f"\nPrompt:\n{call['prompt']}\n")
-                    f.write(f"\nResponse:\n{call['response']}\n")
+                    f.write(f"\nAntwort:\n{call['response']}\n")
                     f.write(f"{'-'*70}\n\n")
         
         return self.session_folder
     
     def export_to_csv(self):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"interaction_logs_{timestamp}.csv"
+        filename = f"interaction_logs_de_{timestamp}.csv"
         
         with open(filename, 'w', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=[
@@ -207,7 +205,7 @@ class SimpleLogger:
 class VoicePHQ9GUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("PHQ-9 Pepper Simulation - Voice Enabled")
+        self.root.title("PHQ-9 Pepper Simulation - Deutsche Version")
         self.root.geometry("900x700")
         self.root.configure(bg="#f0f0f0")
         
@@ -240,18 +238,29 @@ class VoicePHQ9GUI:
                 self.tts_engine = pyttsx3.init('sapi5')  # Explicitly use SAPI5 on Windows
                 self.tts_engine.setProperty('rate', 160)
                 self.tts_engine.setProperty('volume', 1.0)
+                
+                # Try to set German voice
                 voices = self.tts_engine.getProperty('voices')
-                if voices:
+                german_voice = None
+                for voice in voices:
+                    if 'german' in voice.name.lower() or 'de' in voice.languages:
+                        german_voice = voice.id
+                        break
+                
+                if german_voice:
+                    self.tts_engine.setProperty('voice', german_voice)
+                elif voices:
                     self.tts_engine.setProperty('voice', voices[0].id)
+                
                 self.tts_ready = True
-                print("✓ TTS initialized successfully")
+                print("✓ TTS initialisiert")
                 
                 # Start TTS worker thread
                 self.tts_worker_running = True
                 self.tts_thread = threading.Thread(target=self._tts_worker, daemon=True)
                 self.tts_thread.start()
             except Exception as e:
-                print(f"⚠️  TTS initialization failed: {e}")
+                print(f"⚠️  TTS Fehler: {e}")
                 self.tts_ready = False
         
         # Initialize Speech Recognition
@@ -269,15 +278,15 @@ class VoicePHQ9GUI:
                 
                 self.mic_available = True
             except Exception as e:
-                print(f"⚠️  Microphone initialization error: {e}")
+                print(f"⚠️  Mikrofon Fehler: {e}")
                 self.mic_available = False
         
         # Create GUI
         self.create_widgets()
         
         # Welcome - don't wait for speech to complete so GUI can show
-        self.add_robot_message("Hello! I'm Pepper, ready to conduct a health screening with you.")
-        self.speak("Hello! I'm Pepper, ready to conduct a health screening with you.", wait=False)
+        self.add_robot_message("Hallo! Ich bin Pepper, bereit für ein Gesundheits-Screening mit Ihnen.")
+        self.speak("Hallo! Ich bin Pepper, bereit für ein Gesundheits-Screening mit Ihnen.", wait=False)
     
     def create_widgets(self):
         """Create the GUI interface"""
@@ -288,7 +297,7 @@ class VoicePHQ9GUI:
         
         tk.Label(
             header,
-            text="PHQ-9 HEALTH SCREENING SIMULATION",
+            text="PHQ-9 GESUNDHEITS-SCREENING SIMULATION",
             font=("Arial", 20, "bold"),
             bg="#4CAF50",
             fg="white"
@@ -301,7 +310,7 @@ class VoicePHQ9GUI:
         
         self.status_label = tk.Label(
             status_frame,
-            text=f"🔊 Voice Mode: {'ON' if ASR_AVAILABLE else 'OFF'} | GPT: {'ON' if GPT_ENABLED else 'OFF'} | Status: Ready",
+            text=f"🔊 Sprache: {'AN' if ASR_AVAILABLE else 'AUS'} | GPT: {'AN' if GPT_ENABLED else 'AUS'} | Status: Bereit",
             font=("Arial", 11),
             bg="#2196F3",
             fg="white"
@@ -314,7 +323,7 @@ class VoicePHQ9GUI:
         
         self.progress_label = tk.Label(
             progress_frame,
-            text="Question 0 / 9",
+            text="Frage 0 / 9",
             font=("Arial", 12, "bold"),
             bg="#f0f0f0"
         )
@@ -365,7 +374,7 @@ class VoicePHQ9GUI:
         
         self.send_button = tk.Button(
             input_frame,
-            text="Send",
+            text="Senden",
             font=("Arial", 12, "bold"),
             bg="#2196F3",
             fg="white",
@@ -383,7 +392,7 @@ class VoicePHQ9GUI:
         # Big microphone button
         self.mic_button = tk.Button(
             button_frame,
-            text="PRESS TO SPEAK",
+            text="ZUM SPRECHEN DRÜCKEN",
             font=("Arial", 16, "bold"),
             bg="#FF5722",
             fg="white",
@@ -397,7 +406,7 @@ class VoicePHQ9GUI:
         # Start button
         self.start_button = tk.Button(
             button_frame,
-            text="▶ START SCREENING",
+            text="▶ SCREENING STARTEN",
             font=("Arial", 14, "bold"),
             bg="#4CAF50",
             fg="white",
@@ -410,7 +419,7 @@ class VoicePHQ9GUI:
         # Export button
         self.export_button = tk.Button(
             button_frame,
-            text="📊 Export Logs",
+            text="📊 Logs Exportieren",
             font=("Arial", 12, "bold"),
             bg="#FF9800",
             fg="white",
@@ -424,7 +433,7 @@ class VoicePHQ9GUI:
         # Restart button
         self.restart_button = tk.Button(
             button_frame,
-            text="🔄 Restart",
+            text="🔄 Neustart",
             font=("Arial", 12, "bold"),
             bg="#9C27B0",
             fg="white",
@@ -438,7 +447,7 @@ class VoicePHQ9GUI:
         # Instructions
         instructions = tk.Label(
             self.root,
-            text="💡 Use the BIG RED BUTTON to speak your answer, or type in the text field",
+            text="💡 Verwenden Sie die ROTE TASTE zum Sprechen oder das Textfeld zum Tippen",
             font=("Arial", 10),
             bg="#FFF3E0",
             fg="#E65100",
@@ -461,13 +470,13 @@ class VoicePHQ9GUI:
                         self.tts_engine.runAndWait()
                         time.sleep(0.3)
                     except Exception as e:
-                        print(f"⚠️  TTS Error: {e}")
+                        print(f"⚠️  TTS Fehler: {e}")
                 
                 self.tts_queue.task_done()
             except queue.Empty:
                 continue
             except Exception as e:
-                print(f"⚠️  TTS Worker Error: {e}")
+                print(f"⚠️  TTS Worker Fehler: {e}")
     
     def speak(self, text, wait=True, blocking=False):
         """Robot speaks using TTS - uses queue-based system to prevent threading issues"""
@@ -496,14 +505,14 @@ class VoicePHQ9GUI:
     def add_user_message(self, text):
         """Add user message"""
         self.chat_area.config(state=tk.NORMAL)
-        self.chat_area.insert(tk.END, "[You]: ", "user")
+        self.chat_area.insert(tk.END, "[Sie]: ", "user")
         self.chat_area.insert(tk.END, text + "\n\n")
         self.chat_area.see(tk.END)
         self.chat_area.config(state=tk.DISABLED)
         
         # Log to transcript
         if hasattr(self, 'logger'):
-            self.logger.add_to_transcript("User", text)
+            self.logger.add_to_transcript("Benutzer", text)
     
     def add_system_message(self, text):
         """Add system info"""
@@ -524,24 +533,24 @@ class VoicePHQ9GUI:
         self.send_button.config(state=tk.NORMAL)
         
         if ASR_AVAILABLE and self.mic_available:
-            self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK")
+            self.mic_button.config(state=tk.NORMAL, text="ZUM SPRECHEN DRÜCKEN")
         
         # Run consent sequentially but non-blocking
         def consent_thread():
             # First disclaimer
-            consent = "Hello! Before we begin, I want to inform you that this is a technical demonstration for research purposes only. This is NOT a psychological evaluation or medical diagnosis."
+            consent = "Hallo! Bevor wir beginnen, möchte ich Sie informieren, dass dies eine technische Demonstration nur zu Forschungszwecken ist. Dies ist KEINE psychologische Bewertung oder medizinische Diagnose."
             self.root.after(0, lambda: self.add_robot_message(consent))
             self.speak(consent, wait=True)
             time.sleep(1)
             
             # Second disclaimer
-            consent2 = "The information collected will be used solely for technical testing. If you have real health concerns, please consult a qualified healthcare professional."
+            consent2 = "Die gesammelten Informationen werden ausschließlich für technische Tests verwendet. Wenn Sie echte gesundheitliche Bedenken haben, wenden Sie sich bitte an einen qualifizierten Gesundheitsexperten."
             self.root.after(0, lambda: self.add_robot_message(consent2))
             self.speak(consent2, wait=True)
             time.sleep(1)
             
             # Ask for consent
-            consent_question = "Do you consent to participate in this screening? Please say 'yes' to continue or 'no' to decline."
+            consent_question = "Stimmen Sie der Teilnahme an diesem Screening zu? Bitte sagen Sie 'ja' um fortzufahren oder 'nein' um abzulehnen."
             self.root.after(0, lambda: self.add_robot_message(consent_question))
             self.speak(consent_question, wait=True)
             
@@ -550,13 +559,13 @@ class VoicePHQ9GUI:
             
             # Ensure mic button is enabled after speaking
             if ASR_AVAILABLE and self.mic_available:
-                self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+                self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="ZUM SPRECHEN DRÜCKEN"))
             
             self.logger.log_turn(
-                userRawSpeech="", asrTranscript="", languageDetected="EN",
+                userRawSpeech="", asrTranscript="", languageDetected="DE",
                 phqQuestionId="", handlingModule="PEPPER_LOCAL", pepperLocalNlpSuccess=True,
                 gptUsed=False, gptReason="", gptModel="", gptPromptSnippet="",
-                gptResponse="", finalRobotOutput=consent + " " + consent2 + " " + consent_question, notes="Consent requested"
+                gptResponse="", finalRobotOutput=consent + " " + consent2 + " " + consent_question, notes="Einwilligung angefordert"
             )
         
         threading.Thread(target=consent_thread, daemon=True).start()
@@ -567,11 +576,11 @@ class VoicePHQ9GUI:
             self.complete_screening()
             return
         
-        q = PHQ9_QUESTIONS[self.current_question]
-        self.progress_label.config(text=f"Question {self.current_question + 1} / 9")
+        q = PHQ9_QUESTIONS_DE[self.current_question]
+        self.progress_label.config(text=f"Frage {self.current_question + 1} / 9")
         self.progress_bar['value'] = self.current_question + 1
         
-        question_text = f"Question {self.current_question + 1}: {q.question}"
+        question_text = f"Frage {self.current_question + 1}: {q.question}"
         
         # Display and speak question
         def question_thread():
@@ -581,28 +590,28 @@ class VoicePHQ9GUI:
             
             # Enable mic button AFTER speaking finishes
             if ASR_AVAILABLE and self.mic_available and not self.is_listening:
-                self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+                self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="ZUM SPRECHEN DRÜCKEN"))
             
             self.logger.log_turn(
-                userRawSpeech="", asrTranscript="", languageDetected="EN",
-                phqQuestionId=f"Q{q.id}", handlingModule="PEPPER_LOCAL", pepperLocalNlpSuccess=True,
+                userRawSpeech="", asrTranscript="", languageDetected="DE",
+                phqQuestionId=f"F{q.id}", handlingModule="PEPPER_LOCAL", pepperLocalNlpSuccess=True,
                 gptUsed=False, gptReason="", gptModel="", gptPromptSnippet="",
-                gptResponse="", finalRobotOutput=question_text, notes=f"Question {self.current_question + 1}"
+                gptResponse="", finalRobotOutput=question_text, notes=f"Frage {self.current_question + 1}"
             )
         
         threading.Thread(target=question_thread, daemon=True).start()
-        self.status_label.config(text=f"Question {self.current_question + 1}/9 - Press microphone or type answer")
+        self.status_label.config(text=f"Frage {self.current_question + 1}/9 - Mikrofon drücken oder Antwort tippen")
     
     def start_voice_input(self):
         """Start listening via microphone using Whisper"""
         if not self.mic_available or self.is_listening:
-            self.add_system_message("[Error] Microphone not available. Please use text input.")
+            self.add_system_message("[Fehler] Mikrofon nicht verfügbar. Bitte Texteingabe verwenden.")
             return
         
         self.is_listening = True
         # Debounce mic button during listen
-        self.mic_button.config(text="LISTENING...", bg="#D32F2F", state=tk.DISABLED)
-        self.status_label.config(text="LISTENING... Speak your answer now!")
+        self.mic_button.config(text="HÖRE ZU...", bg="#D32F2F", state=tk.DISABLED)
+        self.status_label.config(text="HÖRE ZU... Sprechen Sie jetzt!")
         # Make ASR snappier
         self.recognizer.pause_threshold = LISTEN_PAUSE_THRESHOLD
         
@@ -611,14 +620,14 @@ class VoicePHQ9GUI:
             try:
                 with sr.Microphone() as source:
                     self.recognizer.adjust_for_ambient_noise(source, duration=LISTEN_AMBIENT_DURATION)
-                    self.root.after(0, lambda: self.add_system_message("[Listening] Speak now!"))
+                    self.root.after(0, lambda: self.add_system_message("[Höre zu] Sprechen Sie jetzt!"))
                     audio = self.recognizer.listen(
                         source,
                         timeout=LISTEN_TIMEOUT,
                         phrase_time_limit=LISTEN_PHRASE_LIMIT
                     )
                 
-                self.root.after(0, lambda: self.status_label.config(text="🔄 Transcribing..."))
+                self.root.after(0, lambda: self.status_label.config(text="🔄 Transkribiere..."))
                 
                 # Save audio to temp file
                 with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_audio:
@@ -635,7 +644,7 @@ class VoicePHQ9GUI:
                     transcript = openai.Audio.transcribe(
                         model="whisper-1",
                         file=audio_file,
-                        language="en"
+                        language="de"  # German language
                     )
                 
                 # Clean up temp file
@@ -645,8 +654,8 @@ class VoicePHQ9GUI:
                 text = transcript.text.strip()
                 
                 # Check if transcription is meaningful
-                if len(text) < 2 or text.lower() in ['oh', 'uh', 'um', 'ah']:
-                    self.root.after(0, lambda: self.add_system_message("[Error] No clear speech detected. Please speak your answer clearly."))
+                if len(text) < 2 or text.lower() in ['oh', 'uh', 'um', 'ah', 'ähm']:
+                    self.root.after(0, lambda: self.add_system_message("[Fehler] Keine klare Sprache erkannt. Bitte antworten Sie deutlich."))
                     return
                 
                 self.root.after(0, lambda: self.process_response(text, is_voice=True))
@@ -654,27 +663,27 @@ class VoicePHQ9GUI:
             except (sr.WaitTimeoutError, sr.UnknownValueError, sr.RequestError) as e:
                 failures += 1
                 if isinstance(e, sr.WaitTimeoutError):
-                    msg = "⏰ No speech detected. Try again or type."
+                    msg = "⏰ Keine Sprache erkannt. Erneut versuchen oder tippen."
                 elif isinstance(e, sr.UnknownValueError):
-                    msg = "[Error] Speech not understood. Please try again."
+                    msg = "[Fehler] Sprache nicht verstanden. Bitte erneut versuchen."
                 else:
-                    msg = "[Error] Speech service issue. Please try again or type."
+                    msg = "[Fehler] Sprachdienst-Problem. Bitte erneut versuchen oder tippen."
 
                 if failures >= 2:
-                    self.root.after(0, lambda: self.add_system_message("Speech input failed twice, please type your answer instead."))
+                    self.root.after(0, lambda: self.add_system_message("Spracheingabe zweimal fehlgeschlagen, bitte Antwort tippen."))
                     return
                 else:
                     self.root.after(0, lambda: self.add_system_message(msg))
                     return
             except Exception as e:
                 error_msg = str(e)
-                print(f"Voice input error: {error_msg}")
+                print(f"Spracheingabe Fehler: {error_msg}")
                 if "PyAudio" in error_msg or "portaudio" in error_msg:
-                    self.root.after(0, lambda: self.add_system_message("[Error] Microphone error. Please use text input."))
+                    self.root.after(0, lambda: self.add_system_message("[Fehler] Mikrofonfehler. Bitte Texteingabe verwenden."))
                     self.mic_available = False
-                    self.root.after(0, lambda: self.mic_button.config(state=tk.DISABLED, text="MIC N/A"))
+                    self.root.after(0, lambda: self.mic_button.config(state=tk.DISABLED, text="MIK N/V"))
                 else:
-                    self.root.after(0, lambda: self.add_system_message(f"Error: {error_msg[:50]}. Use text input."))
+                    self.root.after(0, lambda: self.add_system_message(f"Fehler: {error_msg[:50]}. Texteingabe verwenden."))
             finally:
                 self.root.after(0, self.stop_listening)
         
@@ -683,7 +692,7 @@ class VoicePHQ9GUI:
     def stop_listening(self):
         """Stop listening"""
         self.is_listening = False
-        self.mic_button.config(text="PRESS TO SPEAK", bg="#FF5722", state=tk.NORMAL)
+        self.mic_button.config(text="ZUM SPRECHEN DRÜCKEN", bg="#FF5722", state=tk.NORMAL)
     
     def send_text(self):
         """Send text input"""
@@ -696,38 +705,38 @@ class VoicePHQ9GUI:
         """Parse response locally - returns (score, user_friendly_confirmation)"""
         resp_lower = response.lower().strip()
         
-        # Score 0
-        if "not at all" in resp_lower or "never" in resp_lower:
-            return (0, "not at all")
+        # Score 0 - "Überhaupt nicht"
+        if "überhaupt nicht" in resp_lower or "gar nicht" in resp_lower or "nie" in resp_lower:
+            return (0, "überhaupt nicht")
         elif resp_lower == "0":
-            return (0, "not at all")
+            return (0, "überhaupt nicht")
         
-        # Score 1
-        elif "several days" in resp_lower:
-            return (1, "several days")
-        elif "sometimes" in resp_lower or "few days" in resp_lower:
-            return (1, "sometimes")
+        # Score 1 - "An einzelnen Tagen"
+        elif "einzelnen tagen" in resp_lower or "einzelne tage" in resp_lower:
+            return (1, "an einzelnen Tagen")
+        elif "manchmal" in resp_lower or "selten" in resp_lower:
+            return (1, "an einzelnen Tagen")
         elif resp_lower == "1":
-            return (1, "several days")
+            return (1, "an einzelnen Tagen")
         
-        # Score 2
-        elif "more than half" in resp_lower:
-            return (2, "more than half the days")
-        elif "most days" in resp_lower or "often" in resp_lower:
-            return (2, "often")
+        # Score 2 - "An mehr als der Hälfte der Tage"
+        elif "mehr als" in resp_lower and ("hälfte" in resp_lower or "halfte" in resp_lower):
+            return (2, "an mehr als der Hälfte der Tage")
+        elif "meiste zeit" in resp_lower or "oft" in resp_lower:
+            return (2, "an mehr als der Hälfte der Tage")
         elif resp_lower == "2":
-            return (2, "more than half the days")
+            return (2, "an mehr als der Hälfte der Tage")
         
-        # Score 3
-        elif "nearly every day" in resp_lower:
-            return (3, "nearly every day")
-        elif "every day" in resp_lower or "always" in resp_lower or "all the time" in resp_lower:
-            return (3, "every day")
+        # Score 3 - "Beinahe jeden Tag"
+        elif "beinahe jeden tag" in resp_lower or "fast jeden tag" in resp_lower:
+            return (3, "beinahe jeden Tag")
+        elif "jeden tag" in resp_lower or "immer" in resp_lower or "ständig" in resp_lower:
+            return (3, "beinahe jeden Tag")
         elif resp_lower == "3":
-            return (3, "nearly every day")
+            return (3, "beinahe jeden Tag")
         
         # Try matching PHQ-9 options
-        q = PHQ9_QUESTIONS[self.current_question]
+        q = PHQ9_QUESTIONS_DE[self.current_question]
         for idx, option in enumerate(q.options):
             if option.lower() in resp_lower:
                 return (q.scores[idx], option)
@@ -743,31 +752,31 @@ class VoicePHQ9GUI:
             self.mic_button.config(state=tk.DISABLED)
             
             # Add crisis warning to chat
-            self.add_system_message("⚠️ SAFETY PROTOCOL ACTIVATED ⚠️")
+            self.add_system_message("⚠️ SICHERHEITSPROTOKOLL AKTIVIERT ⚠️")
             
             # Run crisis protocol in background thread
             def crisis_thread():
                 # Display supportive message
-                crisis_msg = "I want to acknowledge your response. Your safety is very important. Please know that help is available."
+                crisis_msg = "Ich möchte Ihre Antwort anerkennen. Ihre Sicherheit ist sehr wichtig. Bitte wissen Sie, dass Hilfe verfügbar ist."
                 self.root.after(0, lambda: self.add_robot_message(crisis_msg))
                 self.speak(crisis_msg, wait=True)
                 time.sleep(4)
                 
                 # Show crisis resources
-                resources_title = "CRISIS RESOURCES - Please take note of these:"
+                resources_title = "KRISEN-RESSOURCEN - Bitte notieren Sie diese:"
                 self.root.after(0, lambda: self.add_robot_message(resources_title))
                 self.speak(resources_title, wait=True)
                 time.sleep(2)
                 
                 # Display hotlines in chat (visible on screen)
                 crisis_info = """
-EMERGENCY HOTLINES:
-• Germany Crisis Hotline: 0800 111 0 111 or 0800 111 0 222
-• International Crisis Line: 116 123
-• Emergency Services: 112
+NOTFALL-HOTLINES:
+• Telefonseelsorge Deutschland: 0800 111 0 111 oder 0800 111 0 222
+• Internationale Krisenlinie: 116 123
+• Notdienst: 112
 
-You are not alone. Professional help is available 24/7.
-Please consider reaching out to a mental health professional or counselor."""
+Sie sind nicht allein. Professionelle Hilfe ist rund um die Uhr verfügbar.
+Bitte ziehen Sie in Betracht, sich an einen Fachmann für psychische Gesundheit oder einen Berater zu wenden."""
                 
                 def add_crisis_info():
                     self.chat_area.config(state=tk.NORMAL)
@@ -778,26 +787,26 @@ Please consider reaching out to a mental health professional or counselor."""
                 self.root.after(0, add_crisis_info)
                 
                 # Speak resources
-                resources_msg = "Germany Crisis Hotline: 0800 111 0 111. International Crisis Line: 116 123. Emergency Services: 112. Please consider reaching out to a mental health professional. You are not alone, and help is available."
+                resources_msg = "Telefonseelsorge Deutschland: 0800 111 0 111. Internationale Krisenlinie: 116 123. Notdienst: 112. Bitte ziehen Sie in Betracht, sich an einen Fachmann für psychische Gesundheit zu wenden. Sie sind nicht allein, und Hilfe ist verfügbar."
                 self.speak(resources_msg, wait=True)
                 time.sleep(8)
                 
                 # Important reminder
-                reminder = "This screening is not a diagnosis. Please contact a healthcare professional for proper evaluation and support."
+                reminder = "Dieses Screening ist keine Diagnose. Bitte kontaktieren Sie einen Gesundheitsexperten für eine ordnungsgemäße Bewertung und Unterstützung."
                 self.root.after(0, lambda: self.add_robot_message(reminder))
                 self.speak(reminder, wait=True)
                 time.sleep(5)
                 
                 # Ask for acknowledgment
-                ack_msg = "Have you noted these resources? Type 'yes' or press the microphone to continue."
+                ack_msg = "Haben Sie diese Ressourcen notiert? Tippen Sie 'ja' oder drücken Sie das Mikrofon um fortzufahren."
                 self.root.after(0, lambda: self.add_robot_message(ack_msg))
-                self.speak("Have you noted these resources? Please confirm to continue.", wait=True)
+                self.speak("Haben Sie diese Ressourcen notiert? Bitte bestätigen Sie um fortzufahren.", wait=True)
                 
                 # Re-enable input for acknowledgment AFTER speaking finishes
                 self.root.after(0, lambda: self.text_input.config(state=tk.NORMAL))
                 self.root.after(0, lambda: self.send_button.config(state=tk.NORMAL))
                 if ASR_AVAILABLE and self.mic_available:
-                    self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+                    self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="ZUM SPRECHEN DRÜCKEN"))
                 
                 # Set flag to wait for acknowledgment
                 self.waiting_for_crisis_ack = True
@@ -811,42 +820,42 @@ Please consider reaching out to a mental health professional or counselor."""
         """Get varied acknowledgment based on score (without mentioning numbers)"""
         acknowledgments = {
             0: [
-                "I understand, not at all.",
-                "Okay, not at all.",
-                "Got it, you haven't experienced that.",
-                "Thank you, not at all."
+                "Ich verstehe, überhaupt nicht.",
+                "Okay, überhaupt nicht.",
+                "Verstanden, Sie haben das nicht erlebt.",
+                "Danke, überhaupt nicht."
             ],
             1: [
-                "I see, several days.",
-                "Understood, several days.",
-                "Okay, on several days.",
-                "Thank you, several days."
+                "Ich verstehe, an einzelnen Tagen.",
+                "Verstanden, an einzelnen Tagen.",
+                "Okay, an einzelnen Tagen.",
+                "Danke, an einzelnen Tagen."
             ],
             2: [
-                "I hear you, more than half the days.",
-                "Understood, more than half the days.",
-                "Okay, more than half the days.",
-                "Thank you, more than half the days."
+                "Ich höre Sie, an mehr als der Hälfte der Tage.",
+                "Verstanden, an mehr als der Hälfte der Tage.",
+                "Okay, an mehr als der Hälfte der Tage.",
+                "Danke, an mehr als der Hälfte der Tage."
             ],
             3: [
-                "I understand, nearly every day.",
-                "Okay, nearly every day.",
-                "Got it, nearly every day.",
-                "Thank you, nearly every day."
+                "Ich verstehe, beinahe jeden Tag.",
+                "Okay, beinahe jeden Tag.",
+                "Verstanden, beinahe jeden Tag.",
+                "Danke, beinahe jeden Tag."
             ]
         }
         if score in acknowledgments:
             return random.choice(acknowledgments[score])
-        return "Thank you, I've noted your response."
+        return "Danke, ich habe Ihre Antwort notiert."
     
     def parse_with_gpt(self, response: str) -> tuple:
         """Use GPT to parse unclear response into PHQ-9 score"""
         try:
             import openai
             openai.api_key = OPENAI_API_KEY
-            q = PHQ9_QUESTIONS[self.current_question]
+            q = PHQ9_QUESTIONS_DE[self.current_question]
             
-            prompt = f"Question: {q.question}\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE"
+            prompt = f"Frage: {q.question}\n0=Überhaupt nicht, 1=An einzelnen Tagen, 2=An mehr als der Hälfte der Tage, 3=Beinahe jeden Tag\nAntworte: ZAHL|PHRASE"
             
             resp = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
@@ -863,7 +872,7 @@ Please consider reaching out to a mental health professional or counselor."""
             
             # Log GPT call
             self.logger.log_gpt_call(
-                purpose=f"Parse PHQ-9 Q{self.current_question + 1} response",
+                purpose=f"Parse PHQ-9 F{self.current_question + 1} Antwort",
                 prompt=f"System: {prompt}\nUser: {response}",
                 response=result,
                 model="gpt-4o-mini",
@@ -878,21 +887,21 @@ Please consider reaching out to a mental health professional or counselor."""
             else:
                 return (-1, None)
         except Exception as e:
-            print(f"GPT parse error: {e}")
+            print(f"GPT Parse Fehler: {e}")
             return (-1, None)
     
     def check_confirmation_with_gpt(self, response: str) -> bool:
         """Use GPT to understand if user confirmed"""
         if not OPENAI_API_KEY:
             resp_lower = response.lower().strip()
-            return any(word in resp_lower for word in ['yes', 'correct', 'right', 'yeah', 'yep', 'ok', 'okay'])
+            return any(word in resp_lower for word in ['ja', 'richtig', 'korrekt', 'stimmt', 'genau', 'ok', 'okay'])
         
         try:
             import openai
             openai.api_key = OPENAI_API_KEY
             
-            prompt = "Reply YES if confirming, NO if not."
-            user_msg = f"Is '{response}' a confirmation?"
+            prompt = "Antworte JA wenn Bestätigung, NEIN wenn nicht."
+            user_msg = f"Ist '{response}' eine Bestätigung?"
             
             resp = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
@@ -909,32 +918,32 @@ Please consider reaching out to a mental health professional or counselor."""
             
             # Log GPT call
             self.logger.log_gpt_call(
-                purpose="Check answer confirmation",
+                purpose="Prüfe Antwort Bestätigung",
                 prompt=f"System: {prompt}\nUser: {user_msg}",
                 response=result,
                 model="gpt-4o-mini",
                 tokens_used=tokens
             )
             
-            return "YES" in result
+            return "JA" in result or "YES" in result
         except Exception as e:
-            print(f"GPT confirmation error: {e}")
+            print(f"GPT Bestätigung Fehler: {e}")
             resp_lower = response.lower().strip()
-            return any(word in resp_lower for word in ['yes', 'correct', 'right', 'yeah', 'yep', 'ok', 'okay'])
+            return any(word in resp_lower for word in ['ja', 'richtig', 'korrekt', 'stimmt', 'genau', 'ok', 'okay'])
     
     def check_consent_with_gpt(self, response: str) -> bool:
         """Use GPT to understand if user consented"""
         if not OPENAI_API_KEY:
             # Fallback to keywords
             resp_lower = response.lower().strip()
-            return any(word in resp_lower for word in ['yes', 'yeah', 'yep', 'accept', 'agree', 'consent', 'ok', 'okay', 'sure', 'fine', 'alright'])
+            return any(word in resp_lower for word in ['ja', 'stimme zu', 'einverstanden', 'ok', 'okay', 'sicher', 'gut', 'einwilligung'])
         
         try:
             import openai
             openai.api_key = OPENAI_API_KEY
             
-            prompt = "Reply YES if agrees/consents, NO if declines."
-            user_msg = f"Does '{response}' mean consent?"
+            prompt = "Antworte JA wenn zustimmt/einwilligt, NEIN wenn ablehnt."
+            user_msg = f"Bedeutet '{response}' Einwilligung?"
             
             resp = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
@@ -951,28 +960,28 @@ Please consider reaching out to a mental health professional or counselor."""
             
             # Log GPT call
             self.logger.log_gpt_call(
-                purpose="Check consent",
+                purpose="Prüfe Einwilligung",
                 prompt=f"System: {prompt}\nUser: {user_msg}",
                 response=result,
                 model="gpt-4o-mini",
                 tokens_used=tokens
             )
             
-            return "YES" in result
+            return "JA" in result or "YES" in result
         except Exception as e:
-            print(f"GPT consent error: {e}")
+            print(f"GPT Einwilligung Fehler: {e}")
             # Fallback
             resp_lower = response.lower().strip()
-            return any(word in resp_lower for word in ['yes', 'yeah', 'yep', 'accept', 'agree', 'consent', 'ok', 'okay', 'sure', 'fine', 'alright'])
+            return any(word in resp_lower for word in ['ja', 'stimme zu', 'einverstanden', 'ok', 'okay', 'sicher', 'gut', 'einwilligung'])
     
     def call_gpt_fallback(self, response: str) -> tuple:
         """Call GPT for unclear responses"""
-        q = PHQ9_QUESTIONS[self.current_question]
-        prompt = f"""The user is answering PHQ-9: {q.question}
-User said: "{response}"
+        q = PHQ9_QUESTIONS_DE[self.current_question]
+        prompt = f"""Der Benutzer beantwortet PHQ-9: {q.question}
+Benutzer sagte: "{response}"
 
-Options: Not at all (0), Several days (1), More than half (2), Nearly every day (3)
-Respond with ONLY the number 0, 1, 2, or 3."""
+Optionen: Überhaupt nicht (0), An einzelnen Tagen (1), An mehr als der Hälfte der Tage (2), Beinahe jeden Tag (3)
+Antworte mit NUR der Zahl 0, 1, 2, oder 3."""
 
         try:
             import openai
@@ -989,7 +998,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             
             # Log GPT call
             self.logger.log_gpt_call(
-                purpose=f"Fallback parse PHQ-9 Q{self.current_question + 1}",
+                purpose=f"Fallback Parse PHQ-9 F{self.current_question + 1}",
                 prompt=prompt,
                 response=gpt_text,
                 model="gpt-4o-mini",
@@ -998,7 +1007,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             
             return score, gpt_text
         except Exception as e:
-            print(f"GPT fallback error: {e}")
+            print(f"GPT Fallback Fehler: {e}")
             return 1, "GPT_ERROR"
     
     def process_response(self, response: str, is_voice: bool):
@@ -1015,23 +1024,23 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             
             if consent_given:
                 self.waiting_for_consent = False
-                self.add_system_message("✓ Consent given")
+                self.add_system_message("✓ Einwilligung erteilt")
                 
                 # Thank and explain
                 def proceed_thread():
-                    thanks = "Thank you for consenting."
+                    thanks = "Vielen Dank für Ihre Einwilligung."
                     self.root.after(0, lambda: self.add_robot_message(thanks))
                     self.speak(thanks, wait=True)
                     time.sleep(1)
                     
-                    instructions = "I will now ask you 9 questions about how you've been feeling over the last 2 weeks. Please answer with: not at all, several days, more than half the days, or nearly every day."
+                    instructions = "Ich werde Ihnen jetzt 9 Fragen stellen, wie Sie sich in den letzten 2 Wochen gefühlt haben. Bitte antworten Sie mit: überhaupt nicht, an einzelnen Tagen, an mehr als der Hälfte der Tage, oder beinahe jeden Tag."
                     self.root.after(0, lambda: self.add_robot_message(instructions))
                     self.speak(instructions, wait=True)
                     time.sleep(1)
                     
                     # Enable mic button before starting questions
                     if ASR_AVAILABLE and self.mic_available:
-                        self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+                        self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="ZUM SPRECHEN DRÜCKEN"))
                     
                     # Start questions
                     self.root.after(500, self.ask_question)
@@ -1040,8 +1049,8 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 return
             else:
                 # User declined
-                self.add_system_message("[Consent declined]")
-                decline_msg = "I understand. Thank you for your time. The screening will not proceed."
+                self.add_system_message("[Einwilligung abgelehnt]")
+                decline_msg = "Ich verstehe. Vielen Dank für Ihre Zeit. Das Screening wird nicht fortgesetzt."
                 self.add_robot_message(decline_msg)
                 self.speak(decline_msg, wait=True)
                 self.session_active = False
@@ -1066,11 +1075,11 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 self.final_scores[self.current_question] = score
                 
                 # Log
-                q = PHQ9_QUESTIONS[self.current_question]
+                q = PHQ9_QUESTIONS_DE[self.current_question]
                 self.logger.log_turn(
                     userRawSpeech="", asrTranscript=confirmation,
-                    languageDetected="EN",
-                    phqQuestionId=f"Q{q.id}",
+                    languageDetected="DE",
+                    phqQuestionId=f"F{q.id}",
                     handlingModule="PEPPER_LOCAL",
                     pepperLocalNlpSuccess=True,
                     gptUsed=False,
@@ -1078,8 +1087,8 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     gptModel="",
                     gptPromptSnippet="",
                     gptResponse="",
-                    finalRobotOutput="Confirmed",
-                    notes=f"Q{self.current_question + 1} FINAL score={score}, retries={self.retry_counts[self.current_question]}"
+                    finalRobotOutput="Bestätigt",
+                    notes=f"F{self.current_question + 1} FINALE Punktzahl={score}, Wiederholungen={self.retry_counts[self.current_question]}"
                 )
                 
                 # CHECK FOR CRISIS PROTOCOL (Q9 with score > 0)
@@ -1089,7 +1098,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 # Move directly to next question
                 def continue_thread():
                     if self.current_question < 8:
-                        next_msg = "Let me ask you the next question."
+                        next_msg = "Lassen Sie mich die nächste Frage stellen."
                         self.root.after(0, lambda: self.add_robot_message(next_msg))
                         self.speak(next_msg, wait=True)
                         time.sleep(0.5)
@@ -1097,7 +1106,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     self.current_question += 1
                     # Re-enable mic button before next question
                     if ASR_AVAILABLE and self.mic_available:
-                        self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+                        self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="ZUM SPRECHEN DRÜCKEN"))
                     self.root.after(500, self.ask_question)
                 
                 threading.Thread(target=continue_thread, daemon=True).start()
@@ -1113,9 +1122,9 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
                     self.final_scores[self.current_question] = fallback_score
                     
-                    self.add_system_message(f"⚠️ Max retries reached for Q{self.current_question + 1}. Using fallback score: {fallback_score}")
+                    self.add_system_message(f"⚠️ Maximale Wiederholungen erreicht für F{self.current_question + 1}. Verwende Fallback-Punktzahl: {fallback_score}")
                     
-                    fallback_msg = "I understand this is difficult. Let's move to the next question."
+                    fallback_msg = "Ich verstehe, dass dies schwierig ist. Lassen Sie uns zur nächsten Frage übergehen."
                     self.add_robot_message(fallback_msg)
                     self.speak(fallback_msg, wait=True)
                     
@@ -1125,27 +1134,27 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                         self.current_question += 1
                         # Re-enable mic button before next question
                         if ASR_AVAILABLE and self.mic_available:
-                            self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+                            self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="ZUM SPRECHEN DRÜCKEN"))
                         self.root.after(500, self.ask_question)
                     
                     threading.Thread(target=continue_after_retry, daemon=True).start()
                     return
                 
                 # Ask again
-                retry_msg = "I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day."
+                retry_msg = "Ich verstehe. Lassen Sie mich die Frage erneut stellen. Bitte antworten Sie mit: überhaupt nicht, an einzelnen Tagen, an mehr als der Hälfte der Tage, oder beinahe jeden Tag."
                 self.add_robot_message(retry_msg)
                 self.speak(retry_msg, wait=True)
                 
                 # Re-ask question
                 def reask():
-                    q = PHQ9_QUESTIONS[self.current_question]
-                    question_text = f"Question {self.current_question + 1}: {q.question}"
+                    q = PHQ9_QUESTIONS_DE[self.current_question]
+                    question_text = f"Frage {self.current_question + 1}: {q.question}"
                     self.root.after(0, lambda: self.add_robot_message(question_text))
                     self.speak(question_text, wait=True)
                     
                     # Enable mic button after re-asking
                     if ASR_AVAILABLE and self.mic_available:
-                        self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+                        self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="ZUM SPRECHEN DRÜCKEN"))
                 
                 threading.Thread(target=reask, daemon=True).start()
                 return
@@ -1153,27 +1162,27 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         # Handle crisis acknowledgment
         if self.waiting_for_crisis_ack:
             resp_lower = response.lower().strip()
-            if any(word in resp_lower for word in ['yes', 'ok', 'okay', 'noted', 'understood', 'continue', 'proceed']):
+            if any(word in resp_lower for word in ['ja', 'ok', 'okay', 'notiert', 'verstanden', 'weiter', 'fortfahren']):
                 self.waiting_for_crisis_ack = False
                 self.add_user_message(response)
-                self.add_system_message("Crisis resources acknowledged. Continuing screening...")
+                self.add_system_message("Krisen-Ressourcen bestätigt. Screening wird fortgesetzt...")
                 
                 # Move to next question or complete
                 self.current_question += 1
                 # Re-enable mic button before next question
                 if ASR_AVAILABLE and self.mic_available:
-                    self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK")
+                    self.mic_button.config(state=tk.NORMAL, text="ZUM SPRECHEN DRÜCKEN")
                 self.root.after(2000, self.ask_question)
                 return
             else:
-                self.add_system_message("Please confirm you have noted the crisis resources by saying 'yes' or typing 'yes'.")
+                self.add_system_message("Bitte bestätigen Sie, dass Sie die Krisen-Ressourcen notiert haben, indem Sie 'ja' sagen oder tippen.")
                 return
         
         self.add_user_message(response)
         
         # Detect language
         lang = LanguageDetector.detect_language(response)
-        self.add_system_message(f"Language: {lang}")
+        self.add_system_message(f"Sprache: {lang}")
         
         # Try local NLP
         score, confirmation = self.parse_response(response)
@@ -1185,13 +1194,13 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         
         if not local_success and OPENAI_API_KEY:
             # Use GPT to understand response
-            self.add_system_message("Using GPT to understand response...")
+            self.add_system_message("Verwende GPT um Antwort zu verstehen...")
             gpt_score, gpt_confirmation = self.parse_with_gpt(response)
             if 0 <= gpt_score <= 3:
                 score = gpt_score
                 confirmation = gpt_confirmation
                 local_success = False
-                self.add_system_message(f"GPT understood: score={score}, as: {confirmation}")
+                self.add_system_message(f"GPT verstanden: Punktzahl={score}, als: {confirmation}")
             else:
                 # Increment retry and ask for clarification
                 self.retry_counts[self.current_question] += 1
@@ -1200,9 +1209,9 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     # Max retries - use fallback
                     fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
                     self.final_scores[self.current_question] = fallback_score
-                    self.add_system_message(f"⚠️ Max retries. Using fallback: {fallback_score}")
+                    self.add_system_message(f"⚠️ Max. Wiederholungen. Verwende Fallback: {fallback_score}")
                     
-                    fallback_msg = "I'm having trouble understanding. Let's move to the next question."
+                    fallback_msg = "Ich habe Schwierigkeiten zu verstehen. Lassen Sie uns zur nächsten Frage übergehen."
                     self.add_robot_message(fallback_msg)
                     self.speak(fallback_msg, wait=True)
                     
@@ -1211,20 +1220,20 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                         self.current_question += 1
                         # Re-enable mic button before next question
                         if ASR_AVAILABLE and self.mic_available:
-                            self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+                            self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="ZUM SPRECHEN DRÜCKEN"))
                         self.root.after(500, self.ask_question)
                     
                     threading.Thread(target=skip_question, daemon=True).start()
                     return
                 
-                clarify_msg = f"I heard '{response}', but I'm not sure I understood correctly. Could you please repeat using: not at all, several days, more than half the days, or nearly every day?"
+                clarify_msg = f"Ich habe '{response}' gehört, aber ich bin mir nicht sicher, ob ich es richtig verstanden habe. Könnten Sie bitte wiederholen mit: überhaupt nicht, an einzelnen Tagen, an mehr als der Hälfte der Tage, oder beinahe jeden Tag?"
                 self.add_robot_message(clarify_msg)
                 self.speak(clarify_msg, wait=True)
-                self.add_system_message("Asked for clarification")
+                self.add_system_message("Um Klarstellung gebeten")
                 
                 # Re-enable mic button after clarification
                 if ASR_AVAILABLE and self.mic_available:
-                    self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK")
+                    self.mic_button.config(state=tk.NORMAL, text="ZUM SPRECHEN DRÜCKEN")
                 
                 return
         elif not local_success:
@@ -1234,9 +1243,9 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             if self.retry_counts[self.current_question] >= self.MAX_RETRIES:
                 fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
                 self.final_scores[self.current_question] = fallback_score
-                self.add_system_message(f"⚠️ Max retries. Using fallback: {fallback_score}")
+                self.add_system_message(f"⚠️ Max. Wiederholungen. Verwende Fallback: {fallback_score}")
                 
-                fallback_msg = "Let's move to the next question."
+                fallback_msg = "Lassen Sie uns zur nächsten Frage übergehen."
                 self.add_robot_message(fallback_msg)
                 self.speak(fallback_msg, wait=True)
                 
@@ -1245,36 +1254,36 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     self.current_question += 1
                     # Re-enable mic button before next question
                     if ASR_AVAILABLE and self.mic_available:
-                        self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+                        self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="ZUM SPRECHEN DRÜCKEN"))
                     self.root.after(500, self.ask_question)
                 
                 threading.Thread(target=skip_question, daemon=True).start()
                 return
             
-            clarify_msg = f"I heard '{response}', but I'm not sure I understood correctly. Could you please repeat using: not at all, several days, more than half the days, or nearly every day?"
+            clarify_msg = f"Ich habe '{response}' gehört, aber ich bin mir nicht sicher, ob ich es richtig verstanden habe. Könnten Sie bitte wiederholen mit: überhaupt nicht, an einzelnen Tagen, an mehr als der Hälfte der Tage, oder beinahe jeden Tag?"
             self.add_robot_message(clarify_msg)
             self.speak(clarify_msg, wait=True)
-            self.add_system_message("Asked for clarification")
+            self.add_system_message("Um Klarstellung gebeten")
             
             # Re-enable mic button after clarification
             if ASR_AVAILABLE and self.mic_available:
-                self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK")
+                self.mic_button.config(state=tk.NORMAL, text="ZUM SPRECHEN DRÜCKEN")
             
             return
         else:
-            self.add_system_message(f"Local NLP: score={score}, understood as: {confirmation}")
+            self.add_system_message(f"Lokales NLP: Punktzahl={score}, verstanden als: {confirmation}")
         
         # Store as attempt (not final yet)
         self.attempts_per_question[self.current_question].append(score)
         
         # Confirm what was understood
-        confirm_msg = f"I understood: {confirmation}. Is that correct?"
+        confirm_msg = f"Ich habe verstanden: {confirmation}. Ist das richtig?"
         self.add_robot_message(confirm_msg)
         self.speak(confirm_msg, wait=True)
         
         # Re-enable mic button after asking for confirmation
         if ASR_AVAILABLE and self.mic_available:
-            self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK")
+            self.mic_button.config(state=tk.NORMAL, text="ZUM SPRECHEN DRÜCKEN")
         
         # Set flag waiting for confirmation
         self.waiting_for_answer_confirmation = True
@@ -1293,17 +1302,17 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         for i in range(9):
             if self.final_scores[i] is None:
                 self.final_scores[i] = 0
-                self.add_system_message(f"⚠️ Warning: Q{i+1} has no final score, defaulting to 0")
+                self.add_system_message(f"⚠️ Warnung: F{i+1} hat keine finale Punktzahl, Standardwert 0")
         
         # Calculate total (must be 0-27)
         total = sum(self.final_scores)
         
         # Safety clamp
         if total > 27:
-            self.add_system_message(f"[ERROR] Score {total} exceeds maximum 27! Clamping.")
+            self.add_system_message(f"[FEHLER] Punktzahl {total} überschreitet Maximum 27! Begrenzung.")
             total = 27
         elif total < 0:
-            self.add_system_message(f"[ERROR] Score {total} is negative! Clamping.")
+            self.add_system_message(f"[FEHLER] Punktzahl {total} ist negativ! Begrenzung.")
             total = 0
         
         severity = self.get_severity(total)
@@ -1313,20 +1322,20 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         session_folder = self.logger.save_session_data(self.final_scores, total, severity)
         
         # Display score breakdown
-        self.add_system_message(f"COMPLETED | Total Score: {total} out of 27 | Severity: {severity.upper()}")
-        self.add_system_message(f"Final responses (Q1-Q9): {self.final_scores}")
-        self.add_system_message(f"Retry counts: {list(self.retry_counts.values())}")
-        self.add_system_message(f"Session saved: {session_folder}")
+        self.add_system_message(f"ABGESCHLOSSEN | Gesamtpunktzahl: {total} von 27 | Schweregrad: {severity.upper()}")
+        self.add_system_message(f"Finale Antworten (F1-F9): {self.final_scores}")
+        self.add_system_message(f"Wiederholungen: {list(self.retry_counts.values())}")
+        self.add_system_message(f"Session gespeichert: {session_folder}")
         
         # Speak summary in background thread
         def summary_thread():
             # First message - score
-            intro = f"Thank you for completing all 9 questions. Let me share your results."
+            intro = f"Vielen Dank für das Ausfüllen aller 9 Fragen. Lassen Sie mich Ihre Ergebnisse mitteilen."
             self.root.after(0, lambda: self.add_robot_message(intro))
             self.speak(intro, wait=True)
             
             # Second message - score breakdown
-            score_msg = f"Your total score is {total} out of a maximum of 27 points. This indicates {severity} level symptoms."
+            score_msg = f"Ihre Gesamtpunktzahl beträgt {total} von maximal 27 Punkten. Dies deutet auf {severity} Symptome hin."
             self.root.after(0, lambda: self.add_robot_message(score_msg))
             self.speak(score_msg, wait=True)
             
@@ -1335,56 +1344,56 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             self.speak(severity_description, wait=True)
             
             # Fourth message - disclaimer
-            disclaimer = "Please remember: This is a technical demonstration only, not a medical diagnosis. This data is collected for research purposes. If you have real health concerns, please consult a qualified healthcare professional."
+            disclaimer = "Bitte denken Sie daran: Dies ist nur eine technische Demonstration, keine medizinische Diagnose. Diese Daten werden zu Forschungszwecken gesammelt. Wenn Sie echte gesundheitliche Bedenken haben, wenden Sie sich bitte an einen qualifizierten Gesundheitsexperten."
             self.root.after(0, lambda: self.add_robot_message(disclaimer))
             self.speak(disclaimer, wait=True)
             
             self.root.after(0, lambda: self.export_button.config(state=tk.NORMAL))
             self.root.after(0, lambda: self.restart_button.config(state=tk.NORMAL))
-            self.root.after(0, lambda: self.status_label.config(text=f"Completed! Total score: {total}/27 - {severity}"))
+            self.root.after(0, lambda: self.status_label.config(text=f"Abgeschlossen! Gesamtpunktzahl: {total}/27 - {severity}"))
             
-            self.root.after(0, lambda: messagebox.showinfo("Screening Complete", 
-                f"PHQ-9 Screening Complete!\n\n"
-                f"Total Score: {total} / 27\n"
-                f"Severity Level: {severity.upper()}\n\n"
+            self.root.after(0, lambda: messagebox.showinfo("Screening Abgeschlossen", 
+                f"PHQ-9 Screening Abgeschlossen!\n\n"
+                f"Gesamtpunktzahl: {total} / 27\n"
+                f"Schweregrad: {severity.upper()}\n\n"
                 f"{severity_description}\n\n"
-                f"⚠️ This is for technical demonstration only.\n\n"
-                f"Session data saved to:\n{session_folder}"))
+                f"⚠️ Dies ist nur für technische Demonstrationszwecke.\n\n"
+                f"Session-Daten gespeichert in:\n{session_folder}"))
         
         threading.Thread(target=summary_thread, daemon=True).start()
     
     def get_severity(self, score):
         """Get severity level"""
         if score <= 4: return "minimal"
-        elif score <= 9: return "mild"
-        elif score <= 14: return "moderate"
-        elif score <= 19: return "moderately severe"
-        else: return "severe"
+        elif score <= 9: return "leicht"
+        elif score <= 14: return "mittelgradig"
+        elif score <= 19: return "mittelschwer"
+        else: return "schwer"
     
     def get_severity_description(self, severity):
         """Get detailed description for each severity level"""
         descriptions = {
-            "minimal": "Minimal depression symptoms. Scores in this range (0-4) typically suggest little to no depressive symptoms.",
-            "mild": "Mild depression symptoms. Scores in this range (5-9) may indicate mild depressive symptoms that might benefit from monitoring.",
-            "moderate": "Moderate depression symptoms. Scores in this range (10-14) suggest moderate depressive symptoms that may warrant professional evaluation.",
-            "moderately severe": "Moderately severe depression symptoms. Scores in this range (15-19) indicate significant symptoms that would benefit from professional care.",
-            "severe": "Severe depression symptoms. Scores in this range (20-27) suggest severe depressive symptoms requiring immediate professional attention."
+            "minimal": "Minimale Depressionssymptome. Werte in diesem Bereich (0-4) deuten typischerweise auf wenige oder keine depressiven Symptome hin.",
+            "leicht": "Leichte Depressionssymptome. Werte in diesem Bereich (5-9) können auf leichte depressive Symptome hinweisen, die eine Beobachtung erfordern könnten.",
+            "mittelgradig": "Mittelgradige Depressionssymptome. Werte in diesem Bereich (10-14) deuten auf mittelgradige depressive Symptome hin, die möglicherweise eine professionelle Bewertung erfordern.",
+            "mittelschwer": "Mittelschwere Depressionssymptome. Werte in diesem Bereich (15-19) weisen auf signifikante Symptome hin, die von professioneller Betreuung profitieren würden.",
+            "schwer": "Schwere Depressionssymptome. Werte in diesem Bereich (20-27) deuten auf schwere depressive Symptome hin, die sofortige professionelle Aufmerksamkeit erfordern."
         }
-        return descriptions.get(severity, "Unknown severity level.")
+        return descriptions.get(severity, "Unbekannter Schweregrad.")
     
     def export_logs(self):
         """Export to CSV and open folder"""
         if hasattr(self, 'logger') and hasattr(self.logger, 'session_folder'):
             os.startfile(str(self.logger.session_folder))
-            messagebox.showinfo("Session Data", f"Opening session folder:\n{self.logger.session_folder}")
+            messagebox.showinfo("Session-Daten", f"Öffne Session-Ordner:\n{self.logger.session_folder}")
         else:
             filename = self.logger.export_to_csv()
-            messagebox.showinfo("Exported", f"Logs saved to:\n{filename}")
+            messagebox.showinfo("Exportiert", f"Logs gespeichert in:\n{filename}")
             os.startfile(os.getcwd())
     
     def restart_screening(self):
         """Restart the screening"""
-        response = messagebox.askyesno("Restart", "Start a new screening session?\n\nCurrent session data is already saved.")
+        response = messagebox.askyesno("Neustart", "Eine neue Screening-Session starten?\n\nAktuelle Session-Daten sind bereits gespeichert.")
         if response:
             # Clear chat
             self.chat_area.config(state=tk.NORMAL)
@@ -1405,18 +1414,18 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             
             # Reset UI
             self.progress_bar['value'] = 0
-            self.progress_label.config(text="Question 0 / 9")
+            self.progress_label.config(text="Frage 0 / 9")
             self.start_button.config(state=tk.NORMAL)
             self.text_input.config(state=tk.DISABLED)
             self.send_button.config(state=tk.DISABLED)
             self.mic_button.config(state=tk.DISABLED)
             self.export_button.config(state=tk.DISABLED)
             self.restart_button.config(state=tk.DISABLED)
-            self.status_label.config(text="Ready to start new session")
+            self.status_label.config(text="Bereit für neue Session")
             
             # Welcome message
-            self.add_robot_message("Ready for a new screening session. Click START SCREENING when ready.")
-            self.speak("Ready for a new screening session.")
+            self.add_robot_message("Bereit für eine neue Screening-Session. Klicken Sie SCREENING STARTEN wenn bereit.")
+            self.speak("Bereit für eine neue Screening-Session.")
     
     def update_status(self, text):
         """Update status"""
@@ -1426,22 +1435,22 @@ Respond with ONLY the number 0, 1, 2, or 3."""
 def main():
     """Launch GUI"""
     print("\n" + "="*70)
-    print("PHQ-9 VOICE SIMULATION")
+    print("PHQ-9 SPRACH-SIMULATION (DEUTSCH)")
     print("="*70)
     
     if not ASR_AVAILABLE:
-        print("\n⚠️  Speech recognition not fully available")
-        print("   Microphone button will be disabled")
-        print("   You can use text input + hear robot speak via TTS\n")
+        print("\n⚠️  Spracherkennung nicht vollständig verfügbar")
+        print("   Mikrofon-Taste wird deaktiviert")
+        print("   Sie können Texteingabe verwenden + Roboter hören via TTS\n")
     
     if not TTS_AVAILABLE:
-        print("\n⚠️  Text-to-speech not available")
-        print("   You can still see robot messages in the window\n")
+        print("\n⚠️  Text-zu-Sprache nicht verfügbar")
+        print("   Sie können dennoch Roboter-Nachrichten im Fenster sehen\n")
     
-    print("🚀 Launching GUI window...")
-    print("   - Green 'START SCREENING' button to begin")
-    print("   - Red 'PRESS TO SPEAK' for voice input")
-    print("   - Or type in text field\n")
+    print("🚀 GUI-Fenster wird gestartet...")
+    print("   - Grüne 'SCREENING STARTEN' Taste zum Beginnen")
+    print("   - Rote 'ZUM SPRECHEN DRÜCKEN' für Spracheingabe")
+    print("   - Oder tippen Sie im Textfeld\n")
     
     root = tk.Tk()
     app = VoicePHQ9GUI(root)

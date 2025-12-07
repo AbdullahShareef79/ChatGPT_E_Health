@@ -1,0 +1,138 @@
+[
+  {
+    "timestamp": "2025-12-06T12:34:40.708961",
+    "purpose": "Check consent",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if agrees/consents, NO if declines.\nUser: Does 'Yes.' mean consent?",
+    "response": "YES",
+    "tokens_used": 31
+  },
+  {
+    "timestamp": "2025-12-06T12:35:27.968676",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 28
+  },
+  {
+    "timestamp": "2025-12-06T12:36:10.712713",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'That's right.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 29
+  },
+  {
+    "timestamp": "2025-12-06T12:36:34.834581",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 28
+  },
+  {
+    "timestamp": "2025-12-06T12:36:47.787606",
+    "purpose": "Parse PHQ-9 Q4 response",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Question: Over the last 2 weeks, how often have you felt tired or had little energy?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: All of the days.",
+    "response": "3|Nearly every day",
+    "tokens_used": 74
+  },
+  {
+    "timestamp": "2025-12-06T12:36:54.345756",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'That's correct.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 29
+  },
+  {
+    "timestamp": "2025-12-06T12:37:14.378102",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes, it's right.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 31
+  },
+  {
+    "timestamp": "2025-12-06T12:37:50.701998",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Correct.' a confirmation?",
+    "response": "NO",
+    "tokens_used": 28
+  },
+  {
+    "timestamp": "2025-12-06T12:38:10.770295",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'That is correct.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 30
+  },
+  {
+    "timestamp": "2025-12-06T12:38:25.325447",
+    "purpose": "Parse PHQ-9 Q7 response",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Question: Over the last 2 weeks, how often have you had trouble concentrating on things, such as reading the newspaper or watching television?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: Almost all of the days",
+    "response": "3|Nearly every day",
+    "tokens_used": 82
+  },
+  {
+    "timestamp": "2025-12-06T12:38:33.846491",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Please see review No.11263 on PissedConsumer.com' a confirmation?",
+    "response": "NO",
+    "tokens_used": 39
+  },
+  {
+    "timestamp": "2025-12-06T12:38:50.090379",
+    "purpose": "Parse PHQ-9 Q7 response",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Question: Over the last 2 weeks, how often have you had trouble concentrating on things, such as reading the newspaper or watching television?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE\nUser: Almost all of the days",
+    "response": "3|Nearly every day",
+    "tokens_used": 82
+  },
+  {
+    "timestamp": "2025-12-06T12:38:56.984426",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yeah, correct.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 30
+  },
+  {
+    "timestamp": "2025-12-06T12:39:20.686183",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Hello. I'm going to talk about the new R2-D2. R2-D2 is a new weapon. It's a weapon that can be used to kill enemies. It's a weapon that can be used to kill enemies. It's a weapon that can be used to kill enemies.' a confirmation?",
+    "response": "NO",
+    "tokens_used": 82
+  },
+  {
+    "timestamp": "2025-12-06T12:39:37.699536",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Correct.' a confirmation?",
+    "response": "NO",
+    "tokens_used": 28
+  },
+  {
+    "timestamp": "2025-12-06T12:40:00.220904",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'That is correct.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 30
+  },
+  {
+    "timestamp": "2025-12-06T12:40:31.915276",
+    "purpose": "Check answer confirmation",
+    "model": "gpt-4o-mini",
+    "prompt": "System: Reply YES if confirming, NO if not.\nUser: Is 'Yes.' a confirmation?",
+    "response": "YES",
+    "tokens_used": 28
+  }
+]

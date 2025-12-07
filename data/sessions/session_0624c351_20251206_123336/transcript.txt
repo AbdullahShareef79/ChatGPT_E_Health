@@ -1,0 +1,87 @@
+PHQ-9 Screening Session
+Session ID: 0624c351-70ce-4f03-84aa-a475a170136a
+Date: 2025-12-06 12:33:36
+======================================================================
+
+[12:33:39] Pepper: Hello! I'm Pepper, ready to conduct a health screening with you.
+[12:33:54] Pepper: Hello! Before we begin, I want to inform you that this is a technical demonstration for research purposes only. This is NOT a psychological evaluation or medical diagnosis.
+[12:33:55] Pepper: The information collected will be used solely for technical testing. If you have real health concerns, please consult a qualified healthcare professional.
+[12:33:57] Pepper: Do you consent to participate in this screening? Please say 'yes' to continue or 'no' to decline.
+[12:34:40] User: Yes.
+[12:34:40] Pepper: Thank you for consenting.
+[12:34:42] Pepper: I will now ask you 9 questions about how you've been feeling over the last 2 weeks. Please answer with: not at all, several days, more than half the days, or nearly every day.
+[12:34:44] Pepper: Question 1: Over the last 2 weeks, how often have you had little interest or pleasure in doing things?
+[12:35:17] User: Several days...
+[12:35:17] Pepper: I understood: several days. Is that correct?
+[12:35:26] User: Yes.
+[12:35:27] Pepper: Let me ask you the next question.
+[12:35:29] Pepper: Question 2: Over the last 2 weeks, how often have you felt down, depressed, or hopeless?
+[12:36:02] User: I think more than half of the days
+[12:36:02] Pepper: I understood: more than half the days. Is that correct?
+[12:36:09] User: That's right.
+[12:36:10] Pepper: Let me ask you the next question.
+[12:36:12] Pepper: Question 3: Over the last 2 weeks, how often have you had trouble falling or staying asleep, or sleeping too much?
+[12:36:23] User: Several days...
+[12:36:23] Pepper: I understood: several days. Is that correct?
+[12:36:34] User: Yes.
+[12:36:34] Pepper: Let me ask you the next question.
+[12:36:36] Pepper: Question 4: Over the last 2 weeks, how often have you felt tired or had little energy?
+[12:36:47] User: All of the days.
+[12:36:47] Pepper: I understood: Nearly every day. Is that correct?
+[12:36:53] User: That's correct.
+[12:36:54] Pepper: Let me ask you the next question.
+[12:36:55] Pepper: Question 5: Over the last 2 weeks, how often have you had poor appetite or overeating?
+[12:37:07] User: Several days.
+[12:37:07] Pepper: I understood: several days. Is that correct?
+[12:37:13] User: Yes, it's right.
+[12:37:14] Pepper: Let me ask you the next question.
+[12:37:15] Pepper: Question 6: Over the last 2 weeks, how often have you felt bad about yourself, or that you are a failure, or have let yourself or your family down?
+[12:37:30] User: Several days also...
+[12:37:30] Pepper: I understood: several days. Is that correct?
+[12:37:49] User: Correct.
+[12:37:50] Pepper: I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day.
+[12:37:51] Pepper: Question 6: Over the last 2 weeks, how often have you felt bad about yourself, or that you are a failure, or have let yourself or your family down?
+[12:38:03] User: Several days...
+[12:38:03] Pepper: I understood: several days. Is that correct?
+[12:38:10] User: That is correct.
+[12:38:10] Pepper: Let me ask you the next question.
+[12:38:12] Pepper: Question 7: Over the last 2 weeks, how often have you had trouble concentrating on things, such as reading the newspaper or watching television?
+[12:38:24] User: Almost all of the days
+[12:38:25] Pepper: I understood: Nearly every day. Is that correct?
+[12:38:33] User: Please see review No.11263 on PissedConsumer.com
+[12:38:33] Pepper: I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day.
+[12:38:34] Pepper: Question 7: Over the last 2 weeks, how often have you had trouble concentrating on things, such as reading the newspaper or watching television?
+[12:38:49] User: Almost all of the days
+[12:38:50] Pepper: I understood: Nearly every day. Is that correct?
+[12:38:56] User: Yeah, correct.
+[12:38:56] Pepper: Let me ask you the next question.
+[12:38:58] Pepper: Question 8: Over the last 2 weeks, how often have you been moving or speaking slowly enough that other people could have noticed?
+[12:39:09] User: Not at all.
+[12:39:09] Pepper: I understood: not at all. Is that correct?
+[12:39:19] User: Hello. I'm going to talk about the new R2-D2. R2-D2 is a new weapon. It's a weapon that can be used to kill enemies. It's a weapon that can be used to kill enemies. It's a weapon that can be used to kill enemies.
+[12:39:20] Pepper: I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day.
+[12:39:21] Pepper: Question 8: Over the last 2 weeks, how often have you been moving or speaking slowly enough that other people could have noticed?
+[12:39:30] User: Not at all.
+[12:39:30] Pepper: I understood: not at all. Is that correct?
+[12:39:37] User: Correct.
+[12:39:37] Pepper: I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day.
+[12:39:38] Pepper: Question 8: Over the last 2 weeks, how often have you been moving or speaking slowly enough that other people could have noticed?
+[12:39:52] User: Not at all.
+[12:39:52] Pepper: I understood: not at all. Is that correct?
+[12:39:59] User: That is correct.
+[12:40:00] Pepper: Let me ask you the next question.
+[12:40:01] Pepper: Question 9: Over the last 2 weeks, how often have you had thoughts that you would be better off dead or of hurting yourself in some way?
+[12:40:13] User: Few days
+[12:40:13] Pepper: I understood: sometimes. Is that correct?
+[12:40:30] User: Yes.
+[12:40:31] Pepper: I want to acknowledge your response. Your safety is very important. Please know that help is available.
+[12:40:36] Pepper: CRISIS RESOURCES - Please take note of these:
+[12:40:47] Pepper: This screening is not a diagnosis. Please contact a healthcare professional for proper evaluation and support.
+[12:40:52] Pepper: Have you noted these resources? Type 'yes' or press the microphone to continue.
+[12:41:59] User: yes
+
+======================================================================
+RESULTS:
+Total Score: 13/27
+Severity: moderate
+Responses: [1, 2, 1, 3, 1, 1, 3, 0, 1]

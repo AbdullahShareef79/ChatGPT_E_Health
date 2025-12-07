@@ -1,0 +1,736 @@
+{
+  "session_id": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+  "language": "DE",
+  "start_time": "2025-12-07T18:59:20.148478",
+  "end_time": "2025-12-07T19:01:55.252258",
+  "duration_seconds": 155.10378,
+  "phq9_responses": [
+    2,
+    3,
+    3,
+    0,
+    2,
+    0,
+    1,
+    0,
+    0
+  ],
+  "total_score": 11,
+  "severity": "mittelgradig",
+  "transcript": [
+    {
+      "timestamp": "2025-12-07T18:59:21.332671",
+      "speaker": "Pepper",
+      "text": "Hallo! Ich bin Pepper, bereit für ein Gesundheits-Screening mit Ihnen."
+    },
+    {
+      "timestamp": "2025-12-07T18:59:24.242123",
+      "speaker": "Pepper",
+      "text": "Hallo! Bevor wir beginnen, möchte ich Sie informieren, dass dies eine technische Demonstration nur zu Forschungszwecken ist. Dies ist KEINE psychologische Bewertung oder medizinische Diagnose."
+    },
+    {
+      "timestamp": "2025-12-07T18:59:29.186831",
+      "speaker": "Pepper",
+      "text": "Die gesammelten Informationen werden ausschließlich für technische Tests verwendet. Wenn Sie echte gesundheitliche Bedenken haben, wenden Sie sich bitte an einen qualifizierten Gesundheitsexperten."
+    },
+    {
+      "timestamp": "2025-12-07T18:59:30.613410",
+      "speaker": "Pepper",
+      "text": "Stimmen Sie der Teilnahme an diesem Screening zu? Bitte sagen Sie 'ja' um fortzufahren oder 'nein' um abzulehnen."
+    },
+    {
+      "timestamp": "2025-12-07T18:59:31.917598",
+      "speaker": "Benutzer",
+      "text": "ja"
+    },
+    {
+      "timestamp": "2025-12-07T18:59:32.518147",
+      "speaker": "Pepper",
+      "text": "Vielen Dank für Ihre Einwilligung."
+    },
+    {
+      "timestamp": "2025-12-07T18:59:33.952976",
+      "speaker": "Pepper",
+      "text": "Ich werde Ihnen jetzt 9 Fragen stellen, wie Sie sich in den letzten 2 Wochen gefühlt haben. Bitte antworten Sie mit: überhaupt nicht, an einzelnen Tagen, an mehr als der Hälfte der Tage, oder beinahe jeden Tag."
+    },
+    {
+      "timestamp": "2025-12-07T18:59:35.892111",
+      "speaker": "Pepper",
+      "text": "Frage 1: Wie oft hatten Sie in den letzten 2 Wochen wenig Interesse oder Freude an Ihren Tätigkeiten?"
+    },
+    {
+      "timestamp": "2025-12-07T18:59:43.186491",
+      "speaker": "Benutzer",
+      "text": "so oft"
+    },
+    {
+      "timestamp": "2025-12-07T18:59:43.192217",
+      "speaker": "Pepper",
+      "text": "Ich habe verstanden: an mehr als der Hälfte der Tage. Ist das richtig?"
+    },
+    {
+      "timestamp": "2025-12-07T18:59:49.766111",
+      "speaker": "Benutzer",
+      "text": "ja"
+    },
+    {
+      "timestamp": "2025-12-07T18:59:50.841918",
+      "speaker": "Pepper",
+      "text": "Lassen Sie mich die nächste Frage stellen."
+    },
+    {
+      "timestamp": "2025-12-07T18:59:52.290631",
+      "speaker": "Pepper",
+      "text": "Frage 2: Wie oft fühlten Sie sich in den letzten 2 Wochen niedergeschlagen, schwermütig oder hoffnungslos?"
+    },
+    {
+      "timestamp": "2025-12-07T18:59:58.421987",
+      "speaker": "Benutzer",
+      "text": "immer"
+    },
+    {
+      "timestamp": "2025-12-07T18:59:58.424069",
+      "speaker": "Pepper",
+      "text": "Ich habe verstanden: beinahe jeden Tag. Ist das richtig?"
+    },
+    {
+      "timestamp": "2025-12-07T19:00:02.833333",
+      "speaker": "Benutzer",
+      "text": "ja"
+    },
+    {
+      "timestamp": "2025-12-07T19:00:03.438087",
+      "speaker": "Pepper",
+      "text": "Lassen Sie mich die nächste Frage stellen."
+    },
+    {
+      "timestamp": "2025-12-07T19:00:04.873096",
+      "speaker": "Pepper",
+      "text": "Frage 3: Wie oft hatten Sie in den letzten 2 Wochen Schwierigkeiten ein- oder durchzuschlafen oder haben Sie zu viel geschlafen?"
+    },
+    {
+      "timestamp": "2025-12-07T19:00:13.845515",
+      "speaker": "Benutzer",
+      "text": "jeden tag eigentlig"
+    },
+    {
+      "timestamp": "2025-12-07T19:00:13.847509",
+      "speaker": "Pepper",
+      "text": "Ich habe verstanden: beinahe jeden Tag. Ist das richtig?"
+    },
+    {
+      "timestamp": "2025-12-07T19:00:20.444317",
+      "speaker": "Benutzer",
+      "text": "stimmt"
+    },
+    {
+      "timestamp": "2025-12-07T19:00:21.249377",
+      "speaker": "Pepper",
+      "text": "Lassen Sie mich die nächste Frage stellen."
+    },
+    {
+      "timestamp": "2025-12-07T19:00:22.698587",
+      "speaker": "Pepper",
+      "text": "Frage 4: Wie oft fühlten Sie sich in den letzten 2 Wochen müde oder hatten wenig Energie?"
+    },
+    {
+      "timestamp": "2025-12-07T19:00:27.656164",
+      "speaker": "Benutzer",
+      "text": "nie mals"
+    },
+    {
+      "timestamp": "2025-12-07T19:00:27.659728",
+      "speaker": "Pepper",
+      "text": "Ich habe verstanden: überhaupt nicht. Ist das richtig?"
+    },
+    {
+      "timestamp": "2025-12-07T19:00:35.495884",
+      "speaker": "Benutzer",
+      "text": "ja"
+    },
+    {
+      "timestamp": "2025-12-07T19:00:36.587541",
+      "speaker": "Pepper",
+      "text": "Lassen Sie mich die nächste Frage stellen."
+    },
+    {
+      "timestamp": "2025-12-07T19:00:38.029334",
+      "speaker": "Pepper",
+      "text": "Frage 5: Wie oft hatten Sie in den letzten 2 Wochen wenig Appetit oder haben Sie zu viel gegessen?"
+    },
+    {
+      "timestamp": "2025-12-07T19:00:47.355321",
+      "speaker": "Benutzer",
+      "text": "ich hab viel gegessen"
+    },
+    {
+      "timestamp": "2025-12-07T19:00:48.059375",
+      "speaker": "Pepper",
+      "text": "Ich habe verstanden: An mehr als der Hälfte der Tage. Ist das richtig?"
+    },
+    {
+      "timestamp": "2025-12-07T19:00:54.097678",
+      "speaker": "Benutzer",
+      "text": "ja"
+    },
+    {
+      "timestamp": "2025-12-07T19:00:57.576022",
+      "speaker": "Pepper",
+      "text": "Lassen Sie mich die nächste Frage stellen."
+    },
+    {
+      "timestamp": "2025-12-07T19:00:59.029095",
+      "speaker": "Pepper",
+      "text": "Frage 6: Wie oft hatten Sie in den letzten 2 Wochen das Gefühl, ein Versager zu sein, sich selbst oder Ihre Familie enttäuscht zu haben?"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:06.536310",
+      "speaker": "Benutzer",
+      "text": "gar nix"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:07.227375",
+      "speaker": "Pepper",
+      "text": "Ich habe verstanden: Überhaupt nicht. Ist das richtig?"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:13.369995",
+      "speaker": "Benutzer",
+      "text": "ja"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:14.293332",
+      "speaker": "Pepper",
+      "text": "Lassen Sie mich die nächste Frage stellen."
+    },
+    {
+      "timestamp": "2025-12-07T19:01:15.726920",
+      "speaker": "Pepper",
+      "text": "Frage 7: Wie oft hatten Sie in den letzten 2 Wochen Schwierigkeiten, sich auf etwas zu konzentrieren, zum Beispiel beim Zeitunglesen oder Fernsehen?"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:26.072151",
+      "speaker": "Benutzer",
+      "text": "fur einege tag"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:27.153498",
+      "speaker": "Pepper",
+      "text": "Ich habe verstanden: An einzelnen Tagen. Ist das richtig?"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:31.242418",
+      "speaker": "Benutzer",
+      "text": "ja"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:31.990966",
+      "speaker": "Pepper",
+      "text": "Lassen Sie mich die nächste Frage stellen."
+    },
+    {
+      "timestamp": "2025-12-07T19:01:33.435644",
+      "speaker": "Pepper",
+      "text": "Frage 8: Wie oft waren Sie in den letzten 2 Wochen so unruhig, dass Sie nicht still sitzen konnten, oder das Gegenteil davon: Sie waren so antriebslos, dass Sie sich deutlich weniger bewegt haben als sonst?"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:38.047283",
+      "speaker": "Benutzer",
+      "text": "nie mals"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:38.050505",
+      "speaker": "Pepper",
+      "text": "Ich habe verstanden: überhaupt nicht. Ist das richtig?"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:43.163484",
+      "speaker": "Benutzer",
+      "text": "ja"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:44.058529",
+      "speaker": "Pepper",
+      "text": "Lassen Sie mich die nächste Frage stellen."
+    },
+    {
+      "timestamp": "2025-12-07T19:01:45.493729",
+      "speaker": "Pepper",
+      "text": "Frage 9: Wie oft hatten Sie in den letzten 2 Wochen Gedanken, dass Sie lieber tot wären oder sich Leid zufügen möchten?"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:48.727977",
+      "speaker": "Benutzer",
+      "text": "nein"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:49.686891",
+      "speaker": "Pepper",
+      "text": "Ich habe verstanden: Überhaupt nicht. Ist das richtig?"
+    },
+    {
+      "timestamp": "2025-12-07T19:01:54.215860",
+      "speaker": "Benutzer",
+      "text": "ja"
+    }
+  ],
+  "gpt_calls": [
+    {
+      "timestamp": "2025-12-07T18:59:32.508187",
+      "purpose": "Prüfe Einwilligung",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Antworte JA wenn zustimmt/einwilligt, NEIN wenn ablehnt.\nUser: Bedeutet 'ja' Einwilligung?",
+      "response": "JA",
+      "tokens_used": 40
+    },
+    {
+      "timestamp": "2025-12-07T18:59:50.838613",
+      "purpose": "Prüfe Antwort Bestätigung",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Antworte JA wenn Bestätigung, NEIN wenn nicht.\nUser: Ist 'ja' eine Bestätigung?",
+      "response": "JA",
+      "tokens_used": 33
+    },
+    {
+      "timestamp": "2025-12-07T19:00:03.435175",
+      "purpose": "Prüfe Antwort Bestätigung",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Antworte JA wenn Bestätigung, NEIN wenn nicht.\nUser: Ist 'ja' eine Bestätigung?",
+      "response": "JA",
+      "tokens_used": 33
+    },
+    {
+      "timestamp": "2025-12-07T19:00:21.246965",
+      "purpose": "Prüfe Antwort Bestätigung",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Antworte JA wenn Bestätigung, NEIN wenn nicht.\nUser: Ist 'stimmt' eine Bestätigung?",
+      "response": "JA",
+      "tokens_used": 34
+    },
+    {
+      "timestamp": "2025-12-07T19:00:36.585170",
+      "purpose": "Prüfe Antwort Bestätigung",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Antworte JA wenn Bestätigung, NEIN wenn nicht.\nUser: Ist 'ja' eine Bestätigung?",
+      "response": "JA",
+      "tokens_used": 33
+    },
+    {
+      "timestamp": "2025-12-07T19:00:48.058315",
+      "purpose": "Parse PHQ-9 F5 Antwort",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Frage: Wie oft hatten Sie in den letzten 2 Wochen wenig Appetit oder haben Sie zu viel gegessen?\n0=Überhaupt nicht, 1=An einzelnen Tagen, 2=An mehr als der Hälfte der Tage, 3=Beinahe jeden Tag\nAntworte: ZAHL|PHRASE\nUser: ich hab viel gegessen",
+      "response": "2|An mehr als der Hälfte der Tage",
+      "tokens_used": 92
+    },
+    {
+      "timestamp": "2025-12-07T19:00:57.575445",
+      "purpose": "Prüfe Antwort Bestätigung",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Antworte JA wenn Bestätigung, NEIN wenn nicht.\nUser: Ist 'ja' eine Bestätigung?",
+      "response": "JA",
+      "tokens_used": 33
+    },
+    {
+      "timestamp": "2025-12-07T19:01:07.224103",
+      "purpose": "Parse PHQ-9 F6 Antwort",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Frage: Wie oft hatten Sie in den letzten 2 Wochen das Gefühl, ein Versager zu sein, sich selbst oder Ihre Familie enttäuscht zu haben?\n0=Überhaupt nicht, 1=An einzelnen Tagen, 2=An mehr als der Hälfte der Tage, 3=Beinahe jeden Tag\nAntworte: ZAHL|PHRASE\nUser: gar nix",
+      "response": "0|Überhaupt nicht",
+      "tokens_used": 93
+    },
+    {
+      "timestamp": "2025-12-07T19:01:14.291150",
+      "purpose": "Prüfe Antwort Bestätigung",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Antworte JA wenn Bestätigung, NEIN wenn nicht.\nUser: Ist 'ja' eine Bestätigung?",
+      "response": "JA",
+      "tokens_used": 33
+    },
+    {
+      "timestamp": "2025-12-07T19:01:27.151387",
+      "purpose": "Parse PHQ-9 F7 Antwort",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Frage: Wie oft hatten Sie in den letzten 2 Wochen Schwierigkeiten, sich auf etwas zu konzentrieren, zum Beispiel beim Zeitunglesen oder Fernsehen?\n0=Überhaupt nicht, 1=An einzelnen Tagen, 2=An mehr als der Hälfte der Tage, 3=Beinahe jeden Tag\nAntworte: ZAHL|PHRASE\nUser: fur einege tag",
+      "response": "1|An einzelnen Tagen",
+      "tokens_used": 93
+    },
+    {
+      "timestamp": "2025-12-07T19:01:31.988460",
+      "purpose": "Prüfe Antwort Bestätigung",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Antworte JA wenn Bestätigung, NEIN wenn nicht.\nUser: Ist 'ja' eine Bestätigung?",
+      "response": "JA",
+      "tokens_used": 33
+    },
+    {
+      "timestamp": "2025-12-07T19:01:44.056548",
+      "purpose": "Prüfe Antwort Bestätigung",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Antworte JA wenn Bestätigung, NEIN wenn nicht.\nUser: Ist 'ja' eine Bestätigung?",
+      "response": "JA",
+      "tokens_used": 33
+    },
+    {
+      "timestamp": "2025-12-07T19:01:49.684327",
+      "purpose": "Parse PHQ-9 F9 Antwort",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Frage: Wie oft hatten Sie in den letzten 2 Wochen Gedanken, dass Sie lieber tot wären oder sich Leid zufügen möchten?\n0=Überhaupt nicht, 1=An einzelnen Tagen, 2=An mehr als der Hälfte der Tage, 3=Beinahe jeden Tag\nAntworte: ZAHL|PHRASE\nUser: nein",
+      "response": "0|Überhaupt nicht",
+      "tokens_used": 88
+    },
+    {
+      "timestamp": "2025-12-07T19:01:54.738537",
+      "purpose": "Prüfe Antwort Bestätigung",
+      "model": "gpt-4o-mini",
+      "prompt": "System: Antworte JA wenn Bestätigung, NEIN wenn nicht.\nUser: Ist 'ja' eine Bestätigung?",
+      "response": "JA",
+      "tokens_used": 33
+    }
+  ],
+  "total_gpt_calls": 14,
+  "interaction_logs": [
+    {
+      "timestamp": 1765130371039,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 0,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "DE",
+      "phqQuestionId": "",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Hallo! Bevor wir beginnen, möchte ich Sie informieren, dass dies eine technische Demonstration nur zu Forschungszwecken ist. Dies ist KEINE psychologische Bewertung oder medizinische Diagnose. Die gesammelten Informationen werden ausschließlich für technische Tests verwendet. Wenn Sie echte gesundheitliche Bedenken haben, wenden Sie sich bitte an einen qualifizierten Gesundheitsexperten. Stimmen Sie der Teilnahme an diesem Screening zu? Bitte sagen Sie 'ja' um fortzufahren oder 'nein' um abzulehnen.",
+      "notes": "Einwilligung angefordert"
+    },
+    {
+      "timestamp": 1765130376816,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 1,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "DE",
+      "phqQuestionId": "F1",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Frage 1: Wie oft hatten Sie in den letzten 2 Wochen wenig Interesse oder Freude an Ihren Tätigkeiten?",
+      "notes": "Frage 1"
+    },
+    {
+      "timestamp": 1765130390838,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 2,
+      "userRawSpeech": "",
+      "asrTranscript": "an mehr als der Hälfte der Tage",
+      "languageDetected": "DE",
+      "phqQuestionId": "F1",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Bestätigt",
+      "notes": "F1 FINALE Punktzahl=2, Wiederholungen=0"
+    },
+    {
+      "timestamp": 1765130393220,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 3,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "DE",
+      "phqQuestionId": "F2",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Frage 2: Wie oft fühlten Sie sich in den letzten 2 Wochen niedergeschlagen, schwermütig oder hoffnungslos?",
+      "notes": "Frage 2"
+    },
+    {
+      "timestamp": 1765130403436,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 4,
+      "userRawSpeech": "",
+      "asrTranscript": "beinahe jeden Tag",
+      "languageDetected": "DE",
+      "phqQuestionId": "F2",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Bestätigt",
+      "notes": "F2 FINALE Punktzahl=3, Wiederholungen=0"
+    },
+    {
+      "timestamp": 1765130405799,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 5,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "DE",
+      "phqQuestionId": "F3",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Frage 3: Wie oft hatten Sie in den letzten 2 Wochen Schwierigkeiten ein- oder durchzuschlafen oder haben Sie zu viel geschlafen?",
+      "notes": "Frage 3"
+    },
+    {
+      "timestamp": 1765130421246,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 6,
+      "userRawSpeech": "",
+      "asrTranscript": "beinahe jeden Tag",
+      "languageDetected": "DE",
+      "phqQuestionId": "F3",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Bestätigt",
+      "notes": "F3 FINALE Punktzahl=3, Wiederholungen=0"
+    },
+    {
+      "timestamp": 1765130423626,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 7,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "DE",
+      "phqQuestionId": "F4",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Frage 4: Wie oft fühlten Sie sich in den letzten 2 Wochen müde oder hatten wenig Energie?",
+      "notes": "Frage 4"
+    },
+    {
+      "timestamp": 1765130436585,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 8,
+      "userRawSpeech": "",
+      "asrTranscript": "überhaupt nicht",
+      "languageDetected": "DE",
+      "phqQuestionId": "F4",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Bestätigt",
+      "notes": "F4 FINALE Punktzahl=0, Wiederholungen=0"
+    },
+    {
+      "timestamp": 1765130438954,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 9,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "DE",
+      "phqQuestionId": "F5",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Frage 5: Wie oft hatten Sie in den letzten 2 Wochen wenig Appetit oder haben Sie zu viel gegessen?",
+      "notes": "Frage 5"
+    },
+    {
+      "timestamp": 1765130457575,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 10,
+      "userRawSpeech": "",
+      "asrTranscript": "An mehr als der Hälfte der Tage",
+      "languageDetected": "DE",
+      "phqQuestionId": "F5",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Bestätigt",
+      "notes": "F5 FINALE Punktzahl=2, Wiederholungen=0"
+    },
+    {
+      "timestamp": 1765130459952,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 11,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "DE",
+      "phqQuestionId": "F6",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Frage 6: Wie oft hatten Sie in den letzten 2 Wochen das Gefühl, ein Versager zu sein, sich selbst oder Ihre Familie enttäuscht zu haben?",
+      "notes": "Frage 6"
+    },
+    {
+      "timestamp": 1765130474291,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 12,
+      "userRawSpeech": "",
+      "asrTranscript": "Überhaupt nicht",
+      "languageDetected": "DE",
+      "phqQuestionId": "F6",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Bestätigt",
+      "notes": "F6 FINALE Punktzahl=0, Wiederholungen=0"
+    },
+    {
+      "timestamp": 1765130476654,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 13,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "DE",
+      "phqQuestionId": "F7",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Frage 7: Wie oft hatten Sie in den letzten 2 Wochen Schwierigkeiten, sich auf etwas zu konzentrieren, zum Beispiel beim Zeitunglesen oder Fernsehen?",
+      "notes": "Frage 7"
+    },
+    {
+      "timestamp": 1765130491988,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 14,
+      "userRawSpeech": "",
+      "asrTranscript": "An einzelnen Tagen",
+      "languageDetected": "DE",
+      "phqQuestionId": "F7",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Bestätigt",
+      "notes": "F7 FINALE Punktzahl=1, Wiederholungen=0"
+    },
+    {
+      "timestamp": 1765130494365,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 15,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "DE",
+      "phqQuestionId": "F8",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Frage 8: Wie oft waren Sie in den letzten 2 Wochen so unruhig, dass Sie nicht still sitzen konnten, oder das Gegenteil davon: Sie waren so antriebslos, dass Sie sich deutlich weniger bewegt haben als sonst?",
+      "notes": "Frage 8"
+    },
+    {
+      "timestamp": 1765130504056,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 16,
+      "userRawSpeech": "",
+      "asrTranscript": "überhaupt nicht",
+      "languageDetected": "DE",
+      "phqQuestionId": "F8",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Bestätigt",
+      "notes": "F8 FINALE Punktzahl=0, Wiederholungen=0"
+    },
+    {
+      "timestamp": 1765130506422,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 17,
+      "userRawSpeech": "",
+      "asrTranscript": "",
+      "languageDetected": "DE",
+      "phqQuestionId": "F9",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Frage 9: Wie oft hatten Sie in den letzten 2 Wochen Gedanken, dass Sie lieber tot wären oder sich Leid zufügen möchten?",
+      "notes": "Frage 9"
+    },
+    {
+      "timestamp": 1765130514738,
+      "sessionId": "eb2a0521-f1f4-4645-88d3-1b03f0c1d7cd",
+      "turnIndex": 18,
+      "userRawSpeech": "",
+      "asrTranscript": "Überhaupt nicht",
+      "languageDetected": "DE",
+      "phqQuestionId": "F9",
+      "handlingModule": "PEPPER_LOCAL",
+      "pepperLocalNlpSuccess": true,
+      "gptUsed": false,
+      "gptReason": "",
+      "gptModel": "",
+      "gptPromptSnippet": "",
+      "gptResponse": "",
+      "finalRobotOutput": "Bestätigt",
+      "notes": "F9 FINALE Punktzahl=0, Wiederholungen=0"
+    }
+  ]
+}
