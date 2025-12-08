@@ -53,7 +53,7 @@ try:
     LISTEN_AMBIENT_DURATION = 0.3  # seconds for ambient noise calibration
     LISTEN_PAUSE_THRESHOLD = 0.7   # seconds of silence to end phrase
 except Exception as e:
-    print(f"⚠️  Fehler bei der Spracherkennung: {e}")
+    print(f"  Fehler bei der Spracherkennung: {e}")
     ASR_AVAILABLE = False
 
 # Import German PHQ-9 questions from session manager
@@ -253,14 +253,14 @@ class VoicePHQ9GUI:
                     self.tts_engine.setProperty('voice', voices[0].id)
                 
                 self.tts_ready = True
-                print("✓ TTS initialisiert")
+                print("TTS initialisiert")
                 
                 # Start TTS worker thread
                 self.tts_worker_running = True
                 self.tts_thread = threading.Thread(target=self._tts_worker, daemon=True)
                 self.tts_thread.start()
             except Exception as e:
-                print(f"⚠️  TTS Fehler: {e}")
+                print(f"  TTS Fehler: {e}")
                 self.tts_ready = False
         
         # Initialize Speech Recognition
@@ -278,7 +278,7 @@ class VoicePHQ9GUI:
                 
                 self.mic_available = True
             except Exception as e:
-                print(f"⚠️  Mikrofon Fehler: {e}")
+                print(f"  Mikrofon Fehler: {e}")
                 self.mic_available = False
         
         # Create GUI
@@ -310,7 +310,7 @@ class VoicePHQ9GUI:
         
         self.status_label = tk.Label(
             status_frame,
-            text=f"🔊 Sprache: {'AN' if ASR_AVAILABLE else 'AUS'} | GPT: {'AN' if GPT_ENABLED else 'AUS'} | Status: Bereit",
+            text=f" Sprache: {'AN' if ASR_AVAILABLE else 'AUS'} | GPT: {'AN' if GPT_ENABLED else 'AUS'} | Status: Bereit",
             font=("Arial", 11),
             bg="#2196F3",
             fg="white"
@@ -406,7 +406,7 @@ class VoicePHQ9GUI:
         # Start button
         self.start_button = tk.Button(
             button_frame,
-            text="▶ SCREENING STARTEN",
+            text=" SCREENING STARTEN",
             font=("Arial", 14, "bold"),
             bg="#4CAF50",
             fg="white",
@@ -419,7 +419,7 @@ class VoicePHQ9GUI:
         # Export button
         self.export_button = tk.Button(
             button_frame,
-            text="📊 Logs Exportieren",
+            text=" Logs Exportieren",
             font=("Arial", 12, "bold"),
             bg="#FF9800",
             fg="white",
@@ -433,7 +433,7 @@ class VoicePHQ9GUI:
         # Restart button
         self.restart_button = tk.Button(
             button_frame,
-            text="🔄 Neustart",
+            text=" Neustart",
             font=("Arial", 12, "bold"),
             bg="#9C27B0",
             fg="white",
@@ -470,13 +470,13 @@ class VoicePHQ9GUI:
                         self.tts_engine.runAndWait()
                         time.sleep(0.3)
                     except Exception as e:
-                        print(f"⚠️  TTS Fehler: {e}")
+                        print(f"  TTS Fehler: {e}")
                 
                 self.tts_queue.task_done()
             except queue.Empty:
                 continue
             except Exception as e:
-                print(f"⚠️  TTS Worker Fehler: {e}")
+                print(f"  TTS Worker Fehler: {e}")
     
     def speak(self, text, wait=True, blocking=False):
         """Robot speaks using TTS - uses queue-based system to prevent threading issues"""
@@ -752,7 +752,7 @@ class VoicePHQ9GUI:
             self.mic_button.config(state=tk.DISABLED)
             
             # Add crisis warning to chat
-            self.add_system_message("⚠️ SICHERHEITSPROTOKOLL AKTIVIERT ⚠️")
+            self.add_system_message(" SICHERHEITSPROTOKOLL AKTIVIERT ")
             
             # Run crisis protocol in background thread
             def crisis_thread():
@@ -1122,7 +1122,7 @@ Antworte mit NUR der Zahl 0, 1, 2, oder 3."""
                     fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
                     self.final_scores[self.current_question] = fallback_score
                     
-                    self.add_system_message(f"⚠️ Maximale Wiederholungen erreicht für F{self.current_question + 1}. Verwende Fallback-Punktzahl: {fallback_score}")
+                    self.add_system_message(f" Maximale Wiederholungen erreicht für F{self.current_question + 1}. Verwende Fallback-Punktzahl: {fallback_score}")
                     
                     fallback_msg = "Ich verstehe, dass dies schwierig ist. Lassen Sie uns zur nächsten Frage übergehen."
                     self.add_robot_message(fallback_msg)
@@ -1209,7 +1209,7 @@ Antworte mit NUR der Zahl 0, 1, 2, oder 3."""
                     # Max retries - use fallback
                     fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
                     self.final_scores[self.current_question] = fallback_score
-                    self.add_system_message(f"⚠️ Max. Wiederholungen. Verwende Fallback: {fallback_score}")
+                    self.add_system_message(f" Max. Wiederholungen. Verwende Fallback: {fallback_score}")
                     
                     fallback_msg = "Ich habe Schwierigkeiten zu verstehen. Lassen Sie uns zur nächsten Frage übergehen."
                     self.add_robot_message(fallback_msg)
@@ -1243,7 +1243,7 @@ Antworte mit NUR der Zahl 0, 1, 2, oder 3."""
             if self.retry_counts[self.current_question] >= self.MAX_RETRIES:
                 fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
                 self.final_scores[self.current_question] = fallback_score
-                self.add_system_message(f"⚠️ Max. Wiederholungen. Verwende Fallback: {fallback_score}")
+                self.add_system_message(f" Max. Wiederholungen. Verwende Fallback: {fallback_score}")
                 
                 fallback_msg = "Lassen Sie uns zur nächsten Frage übergehen."
                 self.add_robot_message(fallback_msg)
@@ -1302,7 +1302,7 @@ Antworte mit NUR der Zahl 0, 1, 2, oder 3."""
         for i in range(9):
             if self.final_scores[i] is None:
                 self.final_scores[i] = 0
-                self.add_system_message(f"⚠️ Warnung: F{i+1} hat keine finale Punktzahl, Standardwert 0")
+                self.add_system_message(f" Warnung: F{i+1} hat keine finale Punktzahl, Standardwert 0")
         
         # Calculate total (must be 0-27)
         total = sum(self.final_scores)
@@ -1357,7 +1357,7 @@ Antworte mit NUR der Zahl 0, 1, 2, oder 3."""
                 f"Gesamtpunktzahl: {total} / 27\n"
                 f"Schweregrad: {severity.upper()}\n\n"
                 f"{severity_description}\n\n"
-                f"⚠️ Dies ist nur für technische Demonstrationszwecke.\n\n"
+                f" Dies ist nur für technische Demonstrationszwecke.\n\n"
                 f"Session-Daten gespeichert in:\n{session_folder}"))
         
         threading.Thread(target=summary_thread, daemon=True).start()
@@ -1439,15 +1439,15 @@ def main():
     print("="*70)
     
     if not ASR_AVAILABLE:
-        print("\n⚠️  Spracherkennung nicht vollständig verfügbar")
+        print("\n  Spracherkennung nicht vollständig verfügbar")
         print("   Mikrofon-Taste wird deaktiviert")
         print("   Sie können Texteingabe verwenden + Roboter hören via TTS\n")
     
     if not TTS_AVAILABLE:
-        print("\n⚠️  Text-zu-Sprache nicht verfügbar")
+        print("\n  Text-zu-Sprache nicht verfügbar")
         print("   Sie können dennoch Roboter-Nachrichten im Fenster sehen\n")
     
-    print("🚀 GUI-Fenster wird gestartet...")
+    print(" GUI-Fenster wird gestartet...")
     print("   - Grüne 'SCREENING STARTEN' Taste zum Beginnen")
     print("   - Rote 'ZUM SPRECHEN DRÜCKEN' für Spracheingabe")
     print("   - Oder tippen Sie im Textfeld\n")

@@ -54,7 +54,7 @@ try:
     LISTEN_AMBIENT_DURATION = 0.3  # seconds for ambient noise calibration
     LISTEN_PAUSE_THRESHOLD = 0.7   # seconds of silence to end phrase
 except Exception as e:
-    print(f"⚠️  Speech recognition initialization error: {e}")
+    print(f"  Speech recognition initialization error: {e}")
     ASR_AVAILABLE = False
 
 # Import PHQ-9 questions from session manager
@@ -251,7 +251,7 @@ class VoicePHQ9GUI:
                 self.tts_thread = threading.Thread(target=self._tts_worker, daemon=True)
                 self.tts_thread.start()
             except Exception as e:
-                print(f"⚠️  TTS initialization failed: {e}")
+                print(f"  TTS initialization failed: {e}")
                 self.tts_ready = False
         
         # Initialize Speech Recognition
@@ -269,7 +269,7 @@ class VoicePHQ9GUI:
                 
                 self.mic_available = True
             except Exception as e:
-                print(f"⚠️  Microphone initialization error: {e}")
+                print(f"  Microphone initialization error: {e}")
                 self.mic_available = False
         
         # Create GUI
@@ -301,7 +301,7 @@ class VoicePHQ9GUI:
         
         self.status_label = tk.Label(
             status_frame,
-            text=f"🔊 Voice Mode: {'ON' if ASR_AVAILABLE else 'OFF'} | GPT: {'ON' if GPT_ENABLED else 'OFF'} | Status: Ready",
+            text=f" Voice Mode: {'ON' if ASR_AVAILABLE else 'OFF'} | GPT: {'ON' if GPT_ENABLED else 'OFF'} | Status: Ready",
             font=("Arial", 11),
             bg="#2196F3",
             fg="white"
@@ -397,7 +397,7 @@ class VoicePHQ9GUI:
         # Start button
         self.start_button = tk.Button(
             button_frame,
-            text="▶ START SCREENING",
+            text=" START SCREENING",
             font=("Arial", 14, "bold"),
             bg="#4CAF50",
             fg="white",
@@ -410,7 +410,7 @@ class VoicePHQ9GUI:
         # Export button
         self.export_button = tk.Button(
             button_frame,
-            text="📊 Export Logs",
+            text=" Export Logs",
             font=("Arial", 12, "bold"),
             bg="#FF9800",
             fg="white",
@@ -424,7 +424,7 @@ class VoicePHQ9GUI:
         # Restart button
         self.restart_button = tk.Button(
             button_frame,
-            text="🔄 Restart",
+            text=" Restart",
             font=("Arial", 12, "bold"),
             bg="#9C27B0",
             fg="white",
@@ -438,7 +438,7 @@ class VoicePHQ9GUI:
         # Instructions
         instructions = tk.Label(
             self.root,
-            text="💡 Use the BIG RED BUTTON to speak your answer, or type in the text field",
+            text=" Use the BIG RED BUTTON to speak your answer, or type in the text field",
             font=("Arial", 10),
             bg="#FFF3E0",
             fg="#E65100",
@@ -461,13 +461,13 @@ class VoicePHQ9GUI:
                         self.tts_engine.runAndWait()
                         time.sleep(0.3)
                     except Exception as e:
-                        print(f"⚠️  TTS Error: {e}")
+                        print(f"  TTS Error: {e}")
                 
                 self.tts_queue.task_done()
             except queue.Empty:
                 continue
             except Exception as e:
-                print(f"⚠️  TTS Worker Error: {e}")
+                print(f"  TTS Worker Error: {e}")
     
     def speak(self, text, wait=True, blocking=False):
         """Robot speaks using TTS - uses queue-based system to prevent threading issues"""
@@ -654,7 +654,7 @@ class VoicePHQ9GUI:
             except (sr.WaitTimeoutError, sr.UnknownValueError, sr.RequestError) as e:
                 failures += 1
                 if isinstance(e, sr.WaitTimeoutError):
-                    msg = "⏰ No speech detected. Try again or type."
+                    msg = " No speech detected. Try again or type."
                 elif isinstance(e, sr.UnknownValueError):
                     msg = "[Error] Speech not understood. Please try again."
                 else:
@@ -743,7 +743,7 @@ class VoicePHQ9GUI:
             self.mic_button.config(state=tk.DISABLED)
             
             # Add crisis warning to chat
-            self.add_system_message("⚠️ SAFETY PROTOCOL ACTIVATED ⚠️")
+            self.add_system_message(" SAFETY PROTOCOL ACTIVATED ")
             
             # Run crisis protocol in background thread
             def crisis_thread():
@@ -1113,7 +1113,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
                     self.final_scores[self.current_question] = fallback_score
                     
-                    self.add_system_message(f"⚠️ Max retries reached for Q{self.current_question + 1}. Using fallback score: {fallback_score}")
+                    self.add_system_message(f" Max retries reached for Q{self.current_question + 1}. Using fallback score: {fallback_score}")
                     
                     fallback_msg = "I understand this is difficult. Let's move to the next question."
                     self.add_robot_message(fallback_msg)
@@ -1200,7 +1200,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     # Max retries - use fallback
                     fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
                     self.final_scores[self.current_question] = fallback_score
-                    self.add_system_message(f"⚠️ Max retries. Using fallback: {fallback_score}")
+                    self.add_system_message(f" Max retries. Using fallback: {fallback_score}")
                     
                     fallback_msg = "I'm having trouble understanding. Let's move to the next question."
                     self.add_robot_message(fallback_msg)
@@ -1234,7 +1234,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             if self.retry_counts[self.current_question] >= self.MAX_RETRIES:
                 fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
                 self.final_scores[self.current_question] = fallback_score
-                self.add_system_message(f"⚠️ Max retries. Using fallback: {fallback_score}")
+                self.add_system_message(f" Max retries. Using fallback: {fallback_score}")
                 
                 fallback_msg = "Let's move to the next question."
                 self.add_robot_message(fallback_msg)
@@ -1293,7 +1293,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         for i in range(9):
             if self.final_scores[i] is None:
                 self.final_scores[i] = 0
-                self.add_system_message(f"⚠️ Warning: Q{i+1} has no final score, defaulting to 0")
+                self.add_system_message(f" Warning: Q{i+1} has no final score, defaulting to 0")
         
         # Calculate total (must be 0-27)
         total = sum(self.final_scores)
@@ -1348,7 +1348,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                 f"Total Score: {total} / 27\n"
                 f"Severity Level: {severity.upper()}\n\n"
                 f"{severity_description}\n\n"
-                f"⚠️ This is for technical demonstration only.\n\n"
+                f" This is for technical demonstration only.\n\n"
                 f"Session data saved to:\n{session_folder}"))
         
         threading.Thread(target=summary_thread, daemon=True).start()
@@ -1430,15 +1430,15 @@ def main():
     print("="*70)
     
     if not ASR_AVAILABLE:
-        print("\n⚠️  Speech recognition not fully available")
+        print("\n  Speech recognition not fully available")
         print("   Microphone button will be disabled")
         print("   You can use text input + hear robot speak via TTS\n")
     
     if not TTS_AVAILABLE:
-        print("\n⚠️  Text-to-speech not available")
+        print("\n  Text-to-speech not available")
         print("   You can still see robot messages in the window\n")
     
-    print("🚀 Launching GUI window...")
+    print(" Launching GUI window...")
     print("   - Green 'START SCREENING' button to begin")
     print("   - Red 'PRESS TO SPEAK' for voice input")
     print("   - Or type in text field\n")
