@@ -27,5 +27,8 @@ venv/
 interaction_logs_*.csv
 tempCodeRunnerFile.py
 
+# Experimental data (contains session data, potentially sensitive)
+experiments_and_simulations/data/
+
 # Results and visualizations (regenerated each time)
-results/
+experiments_and_simulations/results/

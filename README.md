@@ -43,6 +43,19 @@ This project implements a GPT-powered conversational AI system integrated with t
 - **Python** - Simulation environment
 - **OpenAI Whisper API** - Speech recognition in simulation
 
+## Project Structure
+
+- **`app/`** - Android application for Pepper Robot
+- **`experiments_and_simulations/`** - Experimental code, simulation tools, data, and results
+  - Session management scripts (English and German)
+  - GUI simulation with voice input
+  - Session analysis and visualization tools
+  - `data/` - Session data and logs
+  - `results/` - Analysis results and figures
+  - See `experiments_and_simulations/README.md` for details
+- **`docs/`** - Documentation and implementation guides
+- **`WRITTENPART/`** - Master's thesis LaTeX documents
+
 ## PHQ-9 Implementation
 
 ### Questions
@@ -95,13 +108,20 @@ This project implements a GPT-powered conversational AI system integrated with t
    pip install -r requirements.txt
    ```
 
-2. Create `.env` file with your OpenAI API key:
+2. Create `.env` file in the project root with your OpenAI API key:
    ```
    OPENAI_API_KEY=your_key_here
+   GPT_ENABLED=True
    ```
 
-3. Run simulation:
+3. Run simulation (from project root):
    ```bash
+   python experiments_and_simulations/simulation_gui_voice.py
+   ```
+   
+   Or navigate to the experiments folder first:
+   ```bash
+   cd experiments_and_simulations
    python simulation_gui_voice.py
    ```
 
@@ -120,10 +140,10 @@ This project implements a GPT-powered conversational AI system integrated with t
 3. Use Android SpeechRecognizer and TTS instead of Pepper hardware
 
 ### Python Simulation
-1. Run `python simulation_gui_voice.py`
+1. Run `python experiments_and_simulations/simulation_gui_voice.py`
 2. Speak into microphone or type responses
 3. Complete PHQ-9 screening
-4. Review results and logs in `data/sessions/`
+4. Review results and logs in `experiments_and_simulations/data/sessions/`
 
 ## Data Collection
 
