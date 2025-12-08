@@ -3,6 +3,10 @@ SpeechRecognition==3.10.0
 pyttsx3==2.90
 python-dotenv==1.0.0
 matplotlib>=3.10.0
+pandas>=2.0.0
+numpy>=1.24.0
+seaborn>=0.12.0
+scipy>=1.10.0
 # Note: PyAudio is optional - only needed for speech input
 # On Windows, install manually if needed:
 # pip install pipwin
