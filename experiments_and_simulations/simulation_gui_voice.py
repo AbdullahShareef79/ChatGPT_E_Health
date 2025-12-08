@@ -240,6 +240,7 @@ class VoicePHQ9GUI:
         self.retry_counts = {i: 0 for i in range(9)}  # Track retries per question
         self.MAX_RETRIES = 3
         self.session_active = False
+        self.is_processing = False
         self.is_listening = False
         self.is_speaking = False  # Track if TTS is currently speaking
         self.waiting_for_crisis_ack = False
@@ -247,6 +248,11 @@ class VoicePHQ9GUI:
         self.waiting_for_answer_confirmation = False
         self.pending_score = None
         self.pending_confirmation = None
+        self.pending_gpt_used = False
+        self.pending_gpt_reason = ""
+        self.pending_gpt_prompt_snippet = ""
+        self.pending_gpt_response = ""
+        self.pending_module = "PEPPER_LOCAL"
         
         # Initialize TTS
         self.tts_queue = queue.Queue()
@@ -455,6 +461,78 @@ class VoicePHQ9GUI:
         )
         self.restart_button.pack(side=tk.LEFT, padx=5)
         
+        # Confirmation buttons frame (hidden by default)
+        self.confirm_frame = tk.Frame(control_frame, bg="#f0f0f0")
+        self.confirm_frame.pack(fill=tk.X, pady=(10, 0))
+        self.confirm_frame.pack_forget()  # Hide initially
+        
+        tk.Label(
+            self.confirm_frame,
+            text="Is that correct?",
+            font=("Arial", 14, "bold"),
+            bg="#f0f0f0"
+        ).pack(side=tk.LEFT, padx=10)
+        
+        self.yes_button = tk.Button(
+            self.confirm_frame,
+            text="✓ YES",
+            font=("Arial", 14, "bold"),
+            bg="#4CAF50",
+            fg="white",
+            width=12,
+            height=2,
+            command=self.confirm_yes
+        )
+        self.yes_button.pack(side=tk.LEFT, padx=5)
+        
+        self.no_button = tk.Button(
+            self.confirm_frame,
+            text="✗ NO",
+            font=("Arial", 14, "bold"),
+            bg="#f44336",
+            fg="white",
+            width=12,
+            height=2,
+            command=self.confirm_no
+        )
+        self.no_button.pack(side=tk.LEFT, padx=5)
+        
+        # Consent buttons frame (hidden by default)
+        self.consent_frame = tk.Frame(control_frame, bg="#f0f0f0")
+        self.consent_frame.pack(fill=tk.X, pady=(10, 0))
+        self.consent_frame.pack_forget()  # Hide initially
+        
+        tk.Label(
+            self.consent_frame,
+            text="Do you consent to participate?",
+            font=("Arial", 14, "bold"),
+            bg="#f0f0f0"
+        ).pack(side=tk.LEFT, padx=10)
+        
+        self.consent_yes_button = tk.Button(
+            self.consent_frame,
+            text="✓ I CONSENT",
+            font=("Arial", 14, "bold"),
+            bg="#4CAF50",
+            fg="white",
+            width=14,
+            height=2,
+            command=self.consent_yes
+        )
+        self.consent_yes_button.pack(side=tk.LEFT, padx=5)
+        
+        self.consent_no_button = tk.Button(
+            self.consent_frame,
+            text="✗ I DECLINE",
+            font=("Arial", 14, "bold"),
+            bg="#f44336",
+            fg="white",
+            width=14,
+            height=2,
+            command=self.consent_no
+        )
+        self.consent_no_button.pack(side=tk.LEFT, padx=5)
+        
         # Instructions
         instructions = tk.Label(
             self.root,
@@ -561,16 +639,18 @@ class VoicePHQ9GUI:
             time.sleep(1)
             
             # Ask for consent
-            consent_question = "Do you consent to participate in this screening? Please say 'yes' to continue or 'no' to decline."
+            consent_question = "Do you consent to participate in this screening?"
             self.root.after(0, lambda: self.add_robot_message(consent_question))
             self.speak(consent_question, wait=True)
             
-            # Set waiting for consent flag AFTER speaking finishes
-            self.waiting_for_consent = True
+            # Disable voice/text input and show consent buttons
+            self.mic_button.config(state=tk.DISABLED)
+            self.text_input.config(state=tk.DISABLED)
+            self.send_button.config(state=tk.DISABLED)
+            self.root.after(0, lambda: self.consent_frame.pack(fill=tk.X, pady=(10, 0)))
             
-            # Ensure mic button is enabled after speaking
-            if ASR_AVAILABLE and self.mic_available:
-                self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+            # Set waiting for consent flag
+            self.waiting_for_consent = True
             
             self.logger.log_turn(
                 userRawSpeech="", asrTranscript="", languageDetected="EN",
@@ -711,6 +791,188 @@ class VoicePHQ9GUI:
         if text and self.session_active:
             self.text_input.delete(0, tk.END)
             self.process_response(text, is_voice=False)
+    
+    def confirm_yes(self):
+        """Handle YES confirmation button click"""
+        if not self.waiting_for_answer_confirmation:
+            return
+        
+        self.waiting_for_answer_confirmation = False
+        self.confirm_frame.pack_forget()  # Hide confirmation buttons
+        
+        score = self.pending_score
+        confirmation = self.pending_confirmation
+        
+        # Store as FINAL confirmed score
+        self.final_scores[self.current_question] = score
+        self.add_system_message(f"✓ Confirmed: {confirmation}")
+        
+        # Log
+        q = PHQ9_QUESTIONS[self.current_question]
+        self.logger.log_turn(
+            userRawSpeech="[BUTTON: YES]", asrTranscript=confirmation,
+            languageDetected="EN",
+            phqQuestionId=f"Q{q.id}",
+            handlingModule=self.pending_module,
+            pepperLocalNlpSuccess=(self.pending_module == "PEPPER_LOCAL"),
+            gptUsed=self.pending_gpt_used,
+            gptReason=self.pending_gpt_reason if self.pending_gpt_reason else "",
+            gptModel="gpt-4o-mini" if self.pending_gpt_used else "",
+            gptPromptSnippet=self.pending_gpt_prompt_snippet if self.pending_gpt_used else "",
+            gptResponse=self.pending_gpt_response if self.pending_gpt_used else "",
+            finalRobotOutput="Confirmed via button",
+            notes=f"Q{self.current_question + 1} FINAL score={score}, retries={self.retry_counts[self.current_question]}"
+        )
+        
+        # CHECK FOR CRISIS PROTOCOL (Q9 with score > 0)
+        if self.handle_crisis_protocol(score):
+            return
+        
+        # Move directly to next question
+        def continue_thread():
+            if self.current_question < 8:
+                next_msg = "Let me ask you the next question."
+                self.root.after(0, lambda: self.add_robot_message(next_msg))
+                self.speak(next_msg, wait=True)
+                time.sleep(0.5)
+            
+            self.current_question += 1
+            # Re-enable input before next question
+            self.root.after(0, lambda: self.text_input.config(state=tk.NORMAL))
+            self.root.after(0, lambda: self.send_button.config(state=tk.NORMAL))
+            if ASR_AVAILABLE and self.mic_available:
+                self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+            self.root.after(500, self.ask_question)
+        
+        threading.Thread(target=continue_thread, daemon=True).start()
+    
+    def confirm_no(self):
+        """Handle NO confirmation button click"""
+        if not self.waiting_for_answer_confirmation:
+            return
+        
+        self.waiting_for_answer_confirmation = False
+        self.confirm_frame.pack_forget()  # Hide confirmation buttons
+        
+        # User says no - increment retry count
+        self.retry_counts[self.current_question] += 1
+        self.add_system_message(f"✗ Not confirmed. Retry {self.retry_counts[self.current_question]}/{self.MAX_RETRIES}")
+        
+        # Check if max retries reached
+        if self.retry_counts[self.current_question] >= self.MAX_RETRIES:
+            # Use last attempted score or default to 0
+            fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
+            self.final_scores[self.current_question] = fallback_score
+            
+            self.add_system_message(f"Max retries reached. Using fallback score: {fallback_score}")
+            
+            fallback_msg = "I understand this is difficult. Let's move to the next question."
+            self.add_robot_message(fallback_msg)
+            self.speak(fallback_msg, wait=True)
+            
+            # Move to next question
+            def continue_after_retry():
+                time.sleep(0.5)
+                self.current_question += 1
+                self.root.after(0, lambda: self.text_input.config(state=tk.NORMAL))
+                self.root.after(0, lambda: self.send_button.config(state=tk.NORMAL))
+                if ASR_AVAILABLE and self.mic_available:
+                    self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+                self.root.after(500, self.ask_question)
+            
+            threading.Thread(target=continue_after_retry, daemon=True).start()
+            return
+        
+        # Ask again
+        def reask_thread():
+            retry_msg = "I see. Let me ask the question again. Please answer with: not at all, several days, more than half the days, or nearly every day."
+            self.root.after(0, lambda: self.add_robot_message(retry_msg))
+            self.speak(retry_msg, wait=True)
+            
+            # Re-ask question
+            q = PHQ9_QUESTIONS[self.current_question]
+            question_text = f"Question {self.current_question + 1}: {q.question}"
+            self.root.after(0, lambda: self.add_robot_message(question_text))
+            self.speak(question_text, wait=True)
+            
+            # Re-enable input after re-asking
+            self.root.after(0, lambda: self.text_input.config(state=tk.NORMAL))
+            self.root.after(0, lambda: self.send_button.config(state=tk.NORMAL))
+            if ASR_AVAILABLE and self.mic_available:
+                self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+        
+        threading.Thread(target=reask_thread, daemon=True).start()
+    
+    def consent_yes(self):
+        """Handle consent YES button click"""
+        if not self.waiting_for_consent:
+            return
+        
+        self.waiting_for_consent = False
+        self.consent_frame.pack_forget()  # Hide consent buttons
+        
+        self.add_system_message("✓ Consent given via button")
+        
+        # Log consent
+        self.logger.log_turn(
+            userRawSpeech="[BUTTON: I CONSENT]", asrTranscript="Consent given",
+            languageDetected="EN", phqQuestionId="",
+            handlingModule="BUTTON", pepperLocalNlpSuccess=True,
+            gptUsed=False, finalRobotOutput="Thank you for consenting",
+            notes="Consent given via button click"
+        )
+        
+        # Continue with screening
+        def continue_screening():
+            thank_msg = "Thank you for consenting."
+            self.root.after(0, lambda: self.add_robot_message(thank_msg))
+            self.speak(thank_msg, wait=True)
+            
+            explain_msg = "I will now ask you 9 questions about how you've been feeling over the last 2 weeks. Please answer with: not at all, several days, more than half the days, or nearly every day."
+            self.root.after(0, lambda: self.add_robot_message(explain_msg))
+            self.speak(explain_msg, wait=True)
+            
+            # Re-enable input
+            self.root.after(0, lambda: self.text_input.config(state=tk.NORMAL))
+            self.root.after(0, lambda: self.send_button.config(state=tk.NORMAL))
+            if ASR_AVAILABLE and self.mic_available:
+                self.root.after(0, lambda: self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK"))
+            
+            # Ask first question
+            self.root.after(500, self.ask_question)
+        
+        threading.Thread(target=continue_screening, daemon=True).start()
+    
+    def consent_no(self):
+        """Handle consent NO button click"""
+        if not self.waiting_for_consent:
+            return
+        
+        self.waiting_for_consent = False
+        self.consent_frame.pack_forget()  # Hide consent buttons
+        
+        self.add_system_message("✗ Consent declined via button")
+        
+        # Log declined consent
+        self.logger.log_turn(
+            userRawSpeech="[BUTTON: I DECLINE]", asrTranscript="Consent declined",
+            languageDetected="EN", phqQuestionId="",
+            handlingModule="BUTTON", pepperLocalNlpSuccess=True,
+            gptUsed=False, finalRobotOutput="Session ended - consent declined",
+            notes="Consent declined via button click"
+        )
+        
+        # End session
+        def end_session():
+            decline_msg = "I understand. Thank you for your time. The session will now end."
+            self.root.after(0, lambda: self.add_robot_message(decline_msg))
+            self.speak(decline_msg, wait=True)
+            
+            self.session_active = False
+            self.root.after(0, lambda: self.restart_button.config(state=tk.NORMAL))
+            self.root.after(0, lambda: self.add_system_message("Session ended - consent declined"))
+        
+        threading.Thread(target=end_session, daemon=True).start()
     
     def parse_response(self, response: str) -> tuple:
         """Parse response locally - returns (score, user_friendly_confirmation)"""
@@ -860,7 +1122,9 @@ Please consider reaching out to a mental health professional or counselor."""
         return "Thank you, I've noted your response."
     
     def parse_with_gpt(self, response: str) -> tuple:
-        """Use GPT to parse unclear response into PHQ-9 score"""
+        """Use GPT to parse unclear response into PHQ-9 score
+        Returns: (score, confirmation, prompt_snippet, gpt_response)
+        """
         try:
             import openai
             openai.api_key = OPENAI_API_KEY
@@ -881,10 +1145,12 @@ Please consider reaching out to a mental health professional or counselor."""
             result = resp.choices[0].message.content.strip()
             tokens = resp.usage.total_tokens if hasattr(resp, 'usage') else None
             
+            full_prompt = f"System: {prompt}\nUser: {response}"
+            
             # Log GPT call
             self.logger.log_gpt_call(
                 purpose=f"Parse PHQ-9 Q{self.current_question + 1} response",
-                prompt=f"System: {prompt}\nUser: {response}",
+                prompt=full_prompt,
                 response=result,
                 model="gpt-4o-mini",
                 tokens_used=tokens
@@ -894,12 +1160,14 @@ Please consider reaching out to a mental health professional or counselor."""
             if len(parts) >= 2:
                 score = int(parts[0].strip())
                 confirm = parts[1].strip()
-                return (score, confirm)
+                # Return prompt snippet (first 100 chars) and response
+                prompt_snippet = full_prompt[:100] + "..." if len(full_prompt) > 100 else full_prompt
+                return (score, confirm, prompt_snippet, result)
             else:
-                return (-1, None)
+                return (-1, None, full_prompt[:100], result)
         except Exception as e:
             print(f"GPT parse error: {e}")
-            return (-1, None)
+            return (-1, None, "", str(e))
     
     def check_confirmation_with_gpt(self, response: str) -> bool:
         """Use GPT to understand if user confirmed"""
@@ -1023,14 +1291,26 @@ Respond with ONLY the number 0, 1, 2, or 3."""
     
     def process_response(self, response: str, is_voice: bool):
         """Process user response in a background thread to prevent GUI freeze"""
-        threading.Thread(target=self._process_response_worker, args=(response, is_voice), daemon=True).start()
+        if getattr(self, 'is_processing', False):
+            print("⚠️ Input ignored - already processing")
+            return
+            
+        self.is_processing = True
+        threading.Thread(target=self._process_response_wrapper, args=(response, is_voice), daemon=True).start()
 
-    def _process_response_worker(self, response: str, is_voice: bool):
+    def _process_response_wrapper(self, response, is_voice):
+        """Wrapper to ensure processing flag is reset"""
+        try:
+            self._process_response_logic(response, is_voice)
+        finally:
+            self.is_processing = False
+
+    def _process_response_logic(self, response: str, is_voice: bool):
         """Worker method containing the actual logic"""
         if not self.session_active:
             return
-        
-        # Handle consent response
+            
+            # Handle consent response
         if self.waiting_for_consent:
             self.add_user_message(response)
             
@@ -1095,11 +1375,11 @@ Respond with ONLY the number 0, 1, 2, or 3."""
                     userRawSpeech="", asrTranscript=confirmation,
                     languageDetected="EN",
                     phqQuestionId=f"Q{q.id}",
-                    handlingModule="PEPPER_LOCAL",
-                    pepperLocalNlpSuccess=True,
-                    gptUsed=False,
-                    gptReason="",
-                    gptModel="",
+                    handlingModule=self.pending_module,
+                    pepperLocalNlpSuccess=(self.pending_module == "PEPPER_LOCAL"),
+                    gptUsed=self.pending_gpt_used,
+                    gptReason=self.pending_gpt_reason,
+                    gptModel="gpt-4o-mini" if self.pending_gpt_used else "",
                     gptPromptSnippet="",
                     gptResponse="",
                     finalRobotOutput="Confirmed",
@@ -1205,20 +1485,37 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         
         gpt_used = False
         gpt_reason = None
+        gpt_prompt_snippet = ""
+        gpt_response_text = ""
         module = "PEPPER_LOCAL"
         
         if not local_success and OPENAI_API_KEY:
             # Use GPT to understand response
             self.add_system_message("Using GPT to understand response...")
-            gpt_score, gpt_confirmation = self.parse_with_gpt(response)
+            gpt_score, gpt_confirmation, gpt_prompt_snippet, gpt_response_text = self.parse_with_gpt(response)
             if 0 <= gpt_score <= 3:
                 score = gpt_score
                 confirmation = gpt_confirmation
                 local_success = False
+                gpt_used = True
+                gpt_reason = "parse_answer"
+                module = "GPT_FALLBACK"
                 self.add_system_message(f"GPT understood: score={score}, as: {confirmation}")
             else:
                 # Increment retry and ask for clarification
                 self.retry_counts[self.current_question] += 1
+                
+                # --- ADDED LOGGING ---
+                q = PHQ9_QUESTIONS[self.current_question]
+                self.logger.log_turn(
+                    userRawSpeech=response, asrTranscript=response, languageDetected=lang,
+                    phqQuestionId=f"Q{q.id}", handlingModule="GPT_FALLBACK", pepperLocalNlpSuccess=False,
+                    gptUsed=True, gptReason="parse_answer", gptModel="gpt-4o-mini",
+                    gptPromptSnippet=gpt_prompt_snippet, gptResponse=gpt_response_text,
+                    finalRobotOutput="Clarification asked", 
+                    notes=f"Failed attempt (GPT failed). Retry {self.retry_counts[self.current_question]}/{self.MAX_RETRIES}"
+                )
+                # ---------------------
                 
                 if self.retry_counts[self.current_question] >= self.MAX_RETRIES:
                     # Max retries - use fallback
@@ -1254,6 +1551,16 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         elif not local_success:
             # Increment retry
             self.retry_counts[self.current_question] += 1
+            
+            # --- ADDED LOGGING ---
+            q = PHQ9_QUESTIONS[self.current_question]
+            self.logger.log_turn(
+                userRawSpeech=response, asrTranscript=response, languageDetected=lang,
+                phqQuestionId=f"Q{q.id}", handlingModule="PEPPER_LOCAL", pepperLocalNlpSuccess=False,
+                gptUsed=False, finalRobotOutput="Clarification asked", 
+                notes=f"Failed attempt. Retry {self.retry_counts[self.current_question]}/{self.MAX_RETRIES}"
+            )
+            # ---------------------
             
             if self.retry_counts[self.current_question] >= self.MAX_RETRIES:
                 fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
@@ -1296,14 +1603,21 @@ Respond with ONLY the number 0, 1, 2, or 3."""
         self.add_robot_message(confirm_msg)
         self.speak(confirm_msg, wait=True)
         
-        # Re-enable mic button after asking for confirmation
-        if ASR_AVAILABLE and self.mic_available:
-            self.mic_button.config(state=tk.NORMAL, text="PRESS TO SPEAK")
+        # Disable voice/text input and show confirmation buttons
+        self.mic_button.config(state=tk.DISABLED)
+        self.text_input.config(state=tk.DISABLED)
+        self.send_button.config(state=tk.DISABLED)
+        self.root.after(0, lambda: self.confirm_frame.pack(fill=tk.X, pady=(10, 0)))
         
         # Set flag waiting for confirmation
         self.waiting_for_answer_confirmation = True
         self.pending_score = score
         self.pending_confirmation = confirmation
+        self.pending_gpt_used = gpt_used
+        self.pending_gpt_reason = gpt_reason
+        self.pending_gpt_prompt_snippet = gpt_prompt_snippet
+        self.pending_gpt_response = gpt_response_text
+        self.pending_module = module
         return
     
     def complete_screening(self):
