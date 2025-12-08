@@ -6,7 +6,7 @@ Deutsche Version mit Sprachunterstützung
 """
 
 import tkinter as tk
-from tkinter import scrolledtext, messagebox, ttk
+from tkinter import scrolledtext, messagebox, ttk, simpledialog
 import threading
 import time
 import uuid
@@ -68,8 +68,9 @@ class LanguageDetector:
 
 # Interaction logger (embedded)
 class SimpleLogger:
-    def __init__(self, session_id):
+    def __init__(self, session_id, participant_info=None):
         self.session_id = session_id
+        self.participant_info = participant_info or {}
         self.entries = []
         self.turn_index = 0
         self.transcript = []
@@ -79,6 +80,18 @@ class SimpleLogger:
         # Create session folder in German language subfolder
         self.session_folder = Path("data") / "sessions" / "german" / f"session_{session_id[:8]}_{self.session_start.strftime('%Y%m%d_%H%M%S')}"
         self.session_folder.mkdir(parents=True, exist_ok=True)
+        
+        # Initialize CSV immediately for real-time logging
+        self.csv_file = self.session_folder / "interaction_logs.csv"
+        self.csv_fields = [
+            "timestamp", "sessionId", "turnIndex", "userRawSpeech", "asrTranscript",
+            "languageDetected", "phqQuestionId", "handlingModule", "pepperLocalNlpSuccess",
+            "gptUsed", "gptReason", "gptModel", "gptPromptSnippet", "gptResponse",
+            "finalRobotOutput", "notes"
+        ]
+        with open(self.csv_file, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=self.csv_fields)
+            writer.writeheader()
     
     def log_gpt_call(self, purpose, prompt, response, model="gpt-4o-mini", tokens_used=None):
         """Log GPT API call with input/output"""
@@ -100,6 +113,14 @@ class SimpleLogger:
         }
         self.entries.append(entry)
         self.turn_index += 1
+        
+        # Real-time append to CSV (Instant updates for Demo)
+        try:
+            with open(self.csv_file, 'a', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=self.csv_fields)
+                writer.writerow(entry)
+        except Exception as e:
+            print(f"⚠️ Error appending to CSV: {e}")
     
     def add_to_transcript(self, speaker, text):
         """Add message to conversation transcript"""
@@ -109,17 +130,19 @@ class SimpleLogger:
             "text": text
         })
     
-    def save_session_data(self, responses, total_score, severity):
+    def save_session_data(self, responses, total_score, severity, retry_counts):
         """Save complete session data"""
         session_data = {
             "session_id": self.session_id,
             "language": "DE",
+            "participant_info": self.participant_info,
             "start_time": self.session_start.isoformat(),
             "end_time": datetime.now().isoformat(),
             "duration_seconds": (datetime.now() - self.session_start).total_seconds(),
             "phq9_responses": responses,
             "total_score": total_score,
             "severity": severity,
+            "retry_counts": retry_counts,
             "transcript": self.transcript,
             "gpt_calls": self.gpt_calls,
             "total_gpt_calls": len(self.gpt_calls),
@@ -209,9 +232,16 @@ class VoicePHQ9GUI:
         self.root.geometry("900x700")
         self.root.configure(bg="#f0f0f0")
         
+        # Ensure window is visible before asking for input
+        self.root.update()
+        
+        # Ask for participant metadata at startup (German)
+        self.participant_id = simpledialog.askstring("Teilnehmer Info", "Teilnehmer ID eingeben:", parent=root) or str(uuid.uuid4())[:8]
+        self.proficiency = simpledialog.askstring("Teilnehmer Info", "Sprachkenntnisse (Muttersprache/B1/etc):", parent=root) or "Unbekannt"
+        
         # State
         self.session_id = str(uuid.uuid4())
-        self.logger = SimpleLogger(self.session_id)
+        self.logger = SimpleLogger(self.session_id, {"id": self.participant_id, "proficiency": self.proficiency})
         self.current_question = 0
         self.final_scores = [None] * 9  # Exactly 9 final confirmed scores
         self.attempts_per_question = {i: [] for i in range(9)}  # Track all attempts
@@ -1011,7 +1041,11 @@ Antworte mit NUR der Zahl 0, 1, 2, oder 3."""
             return 1, "GPT_ERROR"
     
     def process_response(self, response: str, is_voice: bool):
-        """Process user response"""
+        """Process user response in a background thread to prevent GUI freeze"""
+        threading.Thread(target=self._process_response_worker, args=(response, is_voice), daemon=True).start()
+
+    def _process_response_worker(self, response: str, is_voice: bool):
+        """Worker method containing the actual logic"""
         if not self.session_active:
             return
         
@@ -1205,6 +1239,16 @@ Antworte mit NUR der Zahl 0, 1, 2, oder 3."""
                 # Increment retry and ask for clarification
                 self.retry_counts[self.current_question] += 1
                 
+                # --- START ADDED LOGGING ---
+                q = PHQ9_QUESTIONS_DE[self.current_question]
+                self.logger.log_turn(
+                    userRawSpeech=response, asrTranscript=response, languageDetected=lang,
+                    phqQuestionId=f"Q{q.id}", handlingModule="PEPPER_LOCAL", pepperLocalNlpSuccess=False,
+                    gptUsed=False, finalRobotOutput="Clarification asked", 
+                    notes=f"Failed attempt. Retry {self.retry_counts[self.current_question]}/{self.MAX_RETRIES}"
+                )
+                # --- END ADDED LOGGING ---
+                
                 if self.retry_counts[self.current_question] >= self.MAX_RETRIES:
                     # Max retries - use fallback
                     fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
@@ -1239,6 +1283,16 @@ Antworte mit NUR der Zahl 0, 1, 2, oder 3."""
         elif not local_success:
             # Increment retry
             self.retry_counts[self.current_question] += 1
+            
+            # --- START ADDED LOGGING ---
+            q = PHQ9_QUESTIONS_DE[self.current_question]
+            self.logger.log_turn(
+                userRawSpeech=response, asrTranscript=response, languageDetected=lang,
+                phqQuestionId=f"Q{q.id}", handlingModule="PEPPER_LOCAL", pepperLocalNlpSuccess=False,
+                gptUsed=False, finalRobotOutput="Clarification asked", 
+                notes=f"Failed attempt. Retry {self.retry_counts[self.current_question]}/{self.MAX_RETRIES}"
+            )
+            # --- END ADDED LOGGING ---
             
             if self.retry_counts[self.current_question] >= self.MAX_RETRIES:
                 fallback_score = self.attempts_per_question[self.current_question][-1] if self.attempts_per_question[self.current_question] else 0
@@ -1319,7 +1373,7 @@ Antworte mit NUR der Zahl 0, 1, 2, oder 3."""
         severity_description = self.get_severity_description(severity)
         
         # Save session data
-        session_folder = self.logger.save_session_data(self.final_scores, total, severity)
+        session_folder = self.logger.save_session_data(self.final_scores, total, severity, self.retry_counts)
         
         # Display score breakdown
         self.add_system_message(f"ABGESCHLOSSEN | Gesamtpunktzahl: {total} von 27 | Schweregrad: {severity.upper()}")
