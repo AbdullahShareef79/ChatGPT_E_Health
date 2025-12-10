@@ -235,13 +235,39 @@ class VoicePHQ9GUI:
         # Ensure window is visible before asking for input
         self.root.update()
         
-        # Ask for participant metadata at startup (German)
-        self.participant_id = simpledialog.askstring("Teilnehmer Info", "Teilnehmer ID eingeben:", parent=root) or str(uuid.uuid4())[:8]
-        self.proficiency = simpledialog.askstring("Teilnehmer Info", "Sprachkenntnisse (Muttersprache/B1/etc):", parent=root) or "Unbekannt"
+        # Ask for participant metadata at startup (essential demographics only - German)
+        self.participant_id = simpledialog.askstring(
+            "Teilnehmer ID", 
+            "Teilnehmer ID oder Pseudonym eingeben:", 
+            parent=root
+        ) or str(uuid.uuid4())[:8]
+        
+        self.age_group = simpledialog.askstring(
+            "Demografie", 
+            "Altersgruppe (18-25 / 26-35 / 36-45 / 46+):", 
+            parent=root
+        ) or "Nicht angegeben"
+        
+        self.proficiency = simpledialog.askstring(
+            "Sprachkenntnisse", 
+            "Deutschniveau (Muttersprache / C2 / C1 / B2 / B1 / A2):", 
+            parent=root
+        ) or "Nicht angegeben"
+        
+        self.native_speaker = simpledialog.askstring(
+            "Sprachhintergrund", 
+            "Muttersprache Deutsch? (Ja / Nein):", 
+            parent=root
+        ) or "Nicht angegeben"
         
         # State
         self.session_id = str(uuid.uuid4())
-        self.logger = SimpleLogger(self.session_id, {"id": self.participant_id, "proficiency": self.proficiency})
+        self.logger = SimpleLogger(self.session_id, {
+            "id": self.participant_id,
+            "age_group": self.age_group, 
+            "proficiency": self.proficiency,
+            "native_speaker": self.native_speaker
+        })
         self.current_question = 0
         self.final_scores = [None] * 9  # Exactly 9 final confirmed scores
         self.attempts_per_question = {i: [] for i in range(9)}  # Track all attempts
@@ -555,7 +581,7 @@ class VoicePHQ9GUI:
         # Instructions
         instructions = tk.Label(
             self.root,
-            text="💡 Verwenden Sie die ROTE TASTE zum Sprechen oder das Textfeld zum Tippen",
+            text=" Verwenden Sie die ROTE TASTE zum Sprechen oder das Textfeld zum Tippen",
             font=("Arial", 10),
             bg="#FFF3E0",
             fg="#E65100",
@@ -737,7 +763,7 @@ class VoicePHQ9GUI:
                         phrase_time_limit=LISTEN_PHRASE_LIMIT
                     )
                 
-                self.root.after(0, lambda: self.status_label.config(text="🔄 Transkribiere..."))
+                self.root.after(0, lambda: self.status_label.config(text=" Transkribiere..."))
                 
                 # Save audio to temp file
                 with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_audio:
@@ -773,7 +799,7 @@ class VoicePHQ9GUI:
             except (sr.WaitTimeoutError, sr.UnknownValueError, sr.RequestError) as e:
                 failures += 1
                 if isinstance(e, sr.WaitTimeoutError):
-                    msg = "⏰ Keine Sprache erkannt. Erneut versuchen oder tippen."
+                    msg = " Keine Sprache erkannt. Erneut versuchen oder tippen."
                 elif isinstance(e, sr.UnknownValueError):
                     msg = "[Fehler] Sprache nicht verstanden. Bitte erneut versuchen."
                 else:
@@ -970,7 +996,7 @@ class VoicePHQ9GUI:
         self.waiting_for_consent = False
         self.consent_frame.pack_forget()  # Hide consent buttons
         
-        self.add_system_message("✗ Zustimmung per Button abgelehnt")
+        self.add_system_message(" Zustimmung per Button abgelehnt")
         
         # Log declined consent
         self.logger.log_turn(

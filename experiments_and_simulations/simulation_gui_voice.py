@@ -227,13 +227,39 @@ class VoicePHQ9GUI:
         # Ensure window is visible before asking for input
         self.root.update()
         
-        # Ask for participant metadata at startup
-        self.participant_id = simpledialog.askstring("Participant Info", "Enter Participant ID:", parent=root) or str(uuid.uuid4())[:8]
-        self.proficiency = simpledialog.askstring("Participant Info", "Language Proficiency (Native/B1/etc):", parent=root) or "Unknown"
+        # Ask for participant metadata at startup (essential demographics only)
+        self.participant_id = simpledialog.askstring(
+            "Participant ID", 
+            "Enter Participant ID or pseudonym:", 
+            parent=root
+        ) or str(uuid.uuid4())[:8]
+        
+        self.age_group = simpledialog.askstring(
+            "Demographics", 
+            "Age group (18-25 / 26-35 / 36-45 / 46+):", 
+            parent=root
+        ) or "Not specified"
+        
+        self.proficiency = simpledialog.askstring(
+            "Language Proficiency", 
+            "English level (Native / C2 / C1 / B2 / B1 / A2):", 
+            parent=root
+        ) or "Not specified"
+        
+        self.native_speaker = simpledialog.askstring(
+            "Language Background", 
+            "Native English speaker? (Yes / No):", 
+            parent=root
+        ) or "Not specified"
         
         # State
         self.session_id = str(uuid.uuid4())
-        self.logger = SimpleLogger(self.session_id, {"id": self.participant_id, "proficiency": self.proficiency})
+        self.logger = SimpleLogger(self.session_id, {
+            "id": self.participant_id, 
+            "age_group": self.age_group,
+            "proficiency": self.proficiency,
+            "native_speaker": self.native_speaker
+        })
         self.current_question = 0
         self.final_scores = [None] * 9  # Exactly 9 final confirmed scores
         self.attempts_per_question = {i: [] for i in range(9)}  # Track all attempts
