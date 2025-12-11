@@ -122,7 +122,7 @@ class SimpleLogger:
                 writer = csv.DictWriter(f, fieldnames=self.csv_fields)
                 writer.writerow(entry)
         except Exception as e:
-            print(f"⚠️ Error appending to CSV: {e}")
+            print(f" Error appending to CSV: {e}")
     
     def add_to_transcript(self, speaker, text):
         """Add message to conversation transcript"""
@@ -1318,7 +1318,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
     def process_response(self, response: str, is_voice: bool):
         """Process user response in a background thread to prevent GUI freeze"""
         if getattr(self, 'is_processing', False):
-            print("⚠️ Input ignored - already processing")
+            print(" Input ignored - already processing")
             return
             
         self.is_processing = True
