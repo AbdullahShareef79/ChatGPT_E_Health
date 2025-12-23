@@ -14,6 +14,10 @@
 .cxx
 local.properties
 /docs
+/analysis_figures
+/analysis_tables
+/experiments_and_simulations/analysis_tables/
+/experiments_and_simulations/analysis_figures/
 WRITTENPART/
 # Environment variables (NEVER commit API keys!)
 .env
