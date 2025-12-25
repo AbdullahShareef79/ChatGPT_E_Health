@@ -183,8 +183,8 @@ def main():
     
     # Set paths
     base_path = Path(__file__).parent.parent
-    sessions_root = base_path / "data" / "sessions"
-    output_dir = base_path / "results" / "tables"
+    sessions_root = base_path / "data" / "data" / "sessions"
+    output_dir = base_path / "analysis_tables"
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # Load session metadata
