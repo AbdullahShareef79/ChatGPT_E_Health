@@ -64,7 +64,8 @@ def generate_summary_report(output_dir):
             "nlp_performance_by_question.csv - Local NLP success rates",
             "retry_statistics.csv - Retry patterns",
             "timing_statistics.csv - Duration statistics",
-            "conversation_examples.txt - Example dialogues for thesis"
+            "conversation_examples.txt - Example dialogues for thesis",
+            "pipeline_error_summary.csv - Pipeline error and intervention summary"
         ]
         for table in tables:
             f.write(f"  • {table}\n")
@@ -144,7 +145,8 @@ def main():
         ("02_descriptive_metrics.py", "Descriptive Statistics and Metrics"),
         ("03_gpt_usage_analysis.py", "GPT Usage Analysis"),
         ("04_local_nlp_performance.py", "Local NLP Performance Analysis"),
-        ("05_timing_and_conversation_flow.py", "Timing and Conversation Flow Analysis")
+        ("05_timing_and_conversation_flow.py", "Timing and Conversation Flow Analysis"),
+        ("06_pipeline_error_summary.py", "Pipeline Error and Intervention Summary")
     ]
     
     results = []

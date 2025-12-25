@@ -21,7 +21,7 @@ local.properties
 WRITTENPART/
 # Environment variables (NEVER commit API keys!)
 .env
-
+data.zip
 # Python
 __pycache__/
 *.py[cod]
