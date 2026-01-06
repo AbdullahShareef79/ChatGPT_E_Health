@@ -1,6 +1,6 @@
 # ChatGPT E-Health: Pepper Robot PHQ-9 Health Screening
 
-Master's Thesis Project - Natural Language Processing Integration with Social Robots for Mental Health Screening
+Master's Thesis Project 
 
 ## Overview
 
@@ -53,8 +53,8 @@ This project implements a GPT-powered conversational AI system integrated with t
   - `data/` - Session data and logs
   - `results/` - Analysis results and figures
   - See `experiments_and_simulations/README.md` for details
-- **`docs/`** - Documentation and implementation guides
-- **`WRITTENPART/`** - Master's thesis LaTeX documents
+
+
 
 ## PHQ-9 Implementation
 
@@ -118,22 +118,40 @@ This project implements a GPT-powered conversational AI system integrated with t
    ```bash
    pip install -r requirements.txt
    ```
+   
+   **Note for Windows/Python 3.12+ users:** If PyAudio installation fails with "No module named 'distutils'", use:
+   ```bash
+   pip install pipwin
+   pipwin install pyaudio
+   ```
+   Or download a pre-built wheel from [Unofficial Windows Binaries](https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio).
+   
+   PyAudio is only needed for voice input. The simulation works without it (text input only).
 
 3. Create `.env` file in the project root with your OpenAI API key:
+   ```bash
+   # Copy the example file
+   cp .env.example .env
    ```
-   OPENAI_API_KEY=your_key_here
+   
+   Then edit `.env` and replace `your_openai_api_key_here` with your actual OpenAI API key:
+   ```
+   OPENAI_API_KEY=sk-proj-...your-key-here...
    GPT_ENABLED=True
    ```
+   
+   Get your API key from: https://platform.openai.com/api-keys
 
-4. Run simulation (from project root):
+4. Run simulation:
+   
+   **English version:**
    ```bash
    python experiments_and_simulations/simulation_gui_voice.py
    ```
    
-   Or navigate to the experiments folder first:
+   **German version:**
    ```bash
-   cd experiments_and_simulations
-   python simulation_gui_voice.py
+   python experiments_and_simulations/simulation_gui_voice_de.py
    ```
 
    **Note:** The `venv/` directory is already included in `.gitignore` and should not be committed to the repository.

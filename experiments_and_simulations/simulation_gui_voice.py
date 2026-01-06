@@ -292,9 +292,24 @@ class VoicePHQ9GUI:
                 self.tts_engine = pyttsx3.init('sapi5')  # Explicitly use SAPI5 on Windows
                 self.tts_engine.setProperty('rate', 160)
                 self.tts_engine.setProperty('volume', 1.0)
+                
+                # Select English voice (not German)
                 voices = self.tts_engine.getProperty('voices')
-                if voices:
+                english_voice = None
+                for voice in voices:
+                    # Look for English voice (US or GB)
+                    if 'english' in voice.name.lower() or 'david' in voice.name.lower() or 'zira' in voice.name.lower():
+                        english_voice = voice.id
+                        print(f"  Selected English voice: {voice.name}")
+                        break
+                
+                if english_voice:
+                    self.tts_engine.setProperty('voice', english_voice)
+                elif voices:
+                    # Fallback to first voice
                     self.tts_engine.setProperty('voice', voices[0].id)
+                    print(f"  Warning: Using default voice: {voices[0].name}")
+                
                 self.tts_ready = True
                 print("✓ TTS initialized successfully")
                 

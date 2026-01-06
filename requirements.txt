@@ -7,8 +7,15 @@ pandas>=2.0.0
 numpy>=1.24.0
 seaborn>=0.12.0
 scipy>=1.10.0
-# Note: PyAudio is optional - only needed for speech input
-# On Windows, install manually if needed:
-# pip install pipwin
-# pipwin install pyaudio
 
+# Setuptools includes distutils replacement for Python 3.12+
+setuptools>=65.0.0
+
+# PyAudio - Required for voice input (optional for text-only mode)
+# Note: On Windows with Python 3.12+, standard pip install may fail due to distutils removal
+# If you get an error, install using one of these methods:
+#   Method 1: pip install pipwin && pipwin install pyaudio
+#   Method 2: Download pre-built wheel from https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
+#   Then: pip install PyAudio-0.2.14-cp312-cp312-win_amd64.whl
+# The simulation will work without PyAudio (text input only)
+PyAudio>=0.2.13
