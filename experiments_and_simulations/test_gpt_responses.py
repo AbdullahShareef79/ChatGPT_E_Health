@@ -31,7 +31,7 @@ def test_phq9_parsing():
     prompt = "Question: Over the last 2 weeks, how often have you felt down, depressed, or hopeless?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE"
     
     for user_response in test_responses:
-        print(f"\n📝 User said: \"{user_response}\"")
+        print(f"\n User said: \"{user_response}\"")
         print("-" * 80)
         
         try:
@@ -49,13 +49,13 @@ def test_phq9_parsing():
             finish_reason = resp.choices[0].finish_reason
             tokens_used = resp.usage.total_tokens if hasattr(resp, 'usage') else None
             
-            print(f"✅ GPT Response: \"{result}\"")
+            print(f" GPT Response: \"{result}\"")
             print(f"   Finish Reason: {finish_reason}")
             print(f"   Tokens Used: {tokens_used}")
             
             # Check if truncated
             if finish_reason == "length":
-                print("   ⚠️  WARNING: Response was TRUNCATED!")
+                print("     WARNING: Response was TRUNCATED!")
             
             # Try to parse like the real code does
             parts = result.split('|')
@@ -65,10 +65,10 @@ def test_phq9_parsing():
                 print(f"   Parsed Score: {score}")
                 print(f"   Confirmation: \"{confirm}\"")
             else:
-                print(f"   ❌ Failed to parse - expected NUMBER|PHRASE format")
+                print(f"    Failed to parse - expected NUMBER|PHRASE format")
                 
         except Exception as e:
-            print(f"   ❌ Error: {e}")
+            print(f"    Error: {e}")
 
 
 def test_confirmation_check():
@@ -88,7 +88,7 @@ def test_confirmation_check():
     ]
     
     for user_response in test_responses:
-        print(f"\n📝 User said: \"{user_response}\"")
+        print(f"\n User said: \"{user_response}\"")
         print("-" * 80)
         
         try:
@@ -109,16 +109,16 @@ def test_confirmation_check():
             finish_reason = resp.choices[0].finish_reason
             tokens_used = resp.usage.total_tokens if hasattr(resp, 'usage') else None
             
-            print(f"✅ GPT Response: \"{result}\"")
+            print(f" GPT Response: \"{result}\"")
             print(f"   Finish Reason: {finish_reason}")
             print(f"   Tokens Used: {tokens_used}")
             print(f"   Interpreted as: {'CONFIRMED' if 'YES' in result else 'NOT CONFIRMED'}")
             
             if finish_reason == "length":
-                print("   ⚠️  WARNING: Response was TRUNCATED!")
+                print("     WARNING: Response was TRUNCATED!")
                 
         except Exception as e:
-            print(f"   ❌ Error: {e}")
+            print(f"    Error: {e}")
 
 
 def test_fallback_parsing():
@@ -137,7 +137,7 @@ def test_fallback_parsing():
     question = "Over the last 2 weeks, how often have you had trouble falling or staying asleep, or sleeping too much?"
     
     for user_response in test_responses:
-        print(f"\n📝 User said: \"{user_response}\"")
+        print(f"\n User said: \"{user_response}\"")
         print("-" * 80)
         
         try:
@@ -158,7 +158,7 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             finish_reason = resp.choices[0].finish_reason
             tokens_used = resp.usage.total_tokens if hasattr(resp, 'usage') else None
             
-            print(f"✅ GPT Response: \"{result}\"")
+            print(f" GPT Response: \"{result}\"")
             print(f"   Finish Reason: {finish_reason}")
             print(f"   Tokens Used: {tokens_used}")
             
@@ -167,10 +167,10 @@ Respond with ONLY the number 0, 1, 2, or 3."""
             print(f"   Extracted Score: {score}")
             
             if finish_reason == "length":
-                print("   ⚠️  WARNING: Response was TRUNCATED!")
+                print("     WARNING: Response was TRUNCATED!")
                 
         except Exception as e:
-            print(f"   ❌ Error: {e}")
+            print(f"    Error: {e}")
 
 
 def test_with_increased_tokens():
@@ -182,7 +182,7 @@ def test_with_increased_tokens():
     user_response = "I feel that way almost every day"
     prompt = "Question: Over the last 2 weeks, how often have you felt down, depressed, or hopeless?\n0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day\nRespond: NUMBER|PHRASE"
     
-    print(f"\n📝 User said: \"{user_response}\"")
+    print(f"\n User said: \"{user_response}\"")
     print("-" * 80)
     
     try:
@@ -200,17 +200,17 @@ def test_with_increased_tokens():
         finish_reason = resp.choices[0].finish_reason
         tokens_used = resp.usage.total_tokens if hasattr(resp, 'usage') else None
         
-        print(f"✅ GPT Full Response: \"{result}\"")
+        print(f" GPT Full Response: \"{result}\"")
         print(f"   Finish Reason: {finish_reason}")
         print(f"   Tokens Used: {tokens_used}")
         print(f"   Response Length: {len(result)} characters")
         
     except Exception as e:
-        print(f"   ❌ Error: {e}")
+        print(f"    Error: {e}")
 
 
 if __name__ == "__main__":
-    print("\n🧪 Testing GPT Response Behavior in PHQ-9 Experiment")
+    print("\n Testing GPT Response Behavior in PHQ-9 Experiment")
     print("=" * 80)
     print("This will show you exactly what GPT returns and if truncation occurs")
     print("=" * 80)
@@ -221,7 +221,7 @@ if __name__ == "__main__":
     test_with_increased_tokens()
     
     print("\n" + "="*80)
-    print("✅ Testing Complete!")
+    print(" Testing Complete!")
     print("="*80)
     print("\nKEY FINDINGS TO TELL YOUR SUPERVISOR:")
     print("1. Check if any responses show 'finish_reason: length' (truncation)")

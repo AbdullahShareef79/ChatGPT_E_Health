@@ -36,3 +36,5 @@ experiments_and_simulations/data/
 
 # Results and visualizations (regenerated each time)
 experiments_and_simulations/results/
+
+venv/

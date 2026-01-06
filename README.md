@@ -102,19 +102,30 @@ This project implements a GPT-powered conversational AI system integrated with t
 
 ### Python Simulation
 
-1. Install dependencies:
+1. Create and activate a virtual environment (recommended):
    ```bash
    cd ChatGPT_E_Health
+   python -m venv venv
+   
+   # On Windows:
+   venv\Scripts\activate
+   
+   # On macOS/Linux:
+   source venv/bin/activate
+   ```
+
+2. Install dependencies:
+   ```bash
    pip install -r requirements.txt
    ```
 
-2. Create `.env` file in the project root with your OpenAI API key:
+3. Create `.env` file in the project root with your OpenAI API key:
    ```
    OPENAI_API_KEY=your_key_here
    GPT_ENABLED=True
    ```
 
-3. Run simulation (from project root):
+4. Run simulation (from project root):
    ```bash
    python experiments_and_simulations/simulation_gui_voice.py
    ```
@@ -124,6 +135,8 @@ This project implements a GPT-powered conversational AI system integrated with t
    cd experiments_and_simulations
    python simulation_gui_voice.py
    ```
+
+   **Note:** The `venv/` directory is already included in `.gitignore` and should not be committed to the repository.
 
 ## Usage
 
