@@ -23,13 +23,13 @@ def run_script(script_name, description):
             text=True,
             check=True
         )
-        print(f"✅ {script_name} completed successfully")
+        print(f" {script_name} completed successfully")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ {script_name} failed with error code {e.returncode}")
+        print(f" {script_name} failed with error code {e.returncode}")
         return False
     except Exception as e:
-        print(f"❌ Error running {script_name}: {e}")
+        print(f" Error running {script_name}: {e}")
         return False
 
 
@@ -52,7 +52,7 @@ def generate_summary_report(output_dir):
         f.write("GENERATED OUTPUTS\n")
         f.write("="*80 + "\n\n")
         
-        f.write("📊 TABLES (results/tables/):\n")
+        f.write(" TABLES (results/tables/):\n")
         tables = [
             "simulation_master.csv - Combined session metadata",
             "all_interaction_logs.csv - All interaction turns",
@@ -70,7 +70,7 @@ def generate_summary_report(output_dir):
         for table in tables:
             f.write(f"  • {table}\n")
         
-        f.write("\n📈 FIGURES (results/figures/) - 20 visualizations:\n")
+        f.write("\n FIGURES (results/figures/) - 20 visualizations:\n")
         figures = [
             "01_total_score_distribution.png",
             "02_scores_by_language.png",
@@ -164,7 +164,7 @@ def main():
     
     output_dir = base_path.parent / "results" / "tables"
     report_file = generate_summary_report(output_dir)
-    print(f"\n✅ Summary report generated: {report_file}")
+    print(f"\n Summary report generated: {report_file}")
     
     # Final status
     print("\n" + "="*80)
@@ -176,18 +176,18 @@ def main():
     
     print(f"\nScripts completed: {successful}/{total}")
     for script_name, success in results:
-        status = "✅" if success else "❌"
+        status = "" if success else ""
         print(f"  {status} {script_name}")
     
     if successful == total:
-        print("\n🎉 All analyses completed successfully!")
-        print("\n📁 Outputs:")
+        print("\n All analyses completed successfully!")
+        print("\n Outputs:")
         print(f"   • Tables: {base_path.parent / 'results' / 'tables'}")
         print(f"   • Figures: {base_path.parent / 'results' / 'figures'}")
         print(f"   • Summary: {report_file}")
-        print("\n✅ Ready for thesis writing!")
+        print("\n Ready for thesis writing!")
     else:
-        print("\n⚠️  Some analyses failed. Please check the errors above.")
+        print("\n  Some analyses failed. Please check the errors above.")
         return 1
     
     return 0

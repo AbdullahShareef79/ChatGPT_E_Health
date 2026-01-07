@@ -23,7 +23,7 @@ def load_data():
     interactions_file = base_path / "results" / "tables" / "all_interaction_logs.csv"
     
     if not master_file.exists() or not interactions_file.exists():
-        print("❌ Required data files not found. Run 01_load_and_clean.py first!")
+        print(" Required data files not found. Run 01_load_and_clean.py first!")
         return None, None
     
     df_master = pd.read_csv(master_file)
@@ -43,20 +43,20 @@ def analyze_timing(df_master, df_interactions):
     # Session duration analysis
     df_master['duration_minutes'] = df_master['duration_seconds'] / 60
     
-    print(f"\n⏱️ Session Duration:")
+    print(f"\n⏱ Session Duration:")
     print(f"Mean duration: {df_master['duration_minutes'].mean():.2f} minutes")
     print(f"Std deviation: {df_master['duration_minutes'].std():.2f} minutes")
     print(f"Range: [{df_master['duration_minutes'].min():.2f}, {df_master['duration_minutes'].max():.2f}] minutes")
     
     # By language
-    print(f"\n🌍 Duration by Language:")
+    print(f"\n Duration by Language:")
     for lang in ['EN', 'DE']:
         lang_data = df_master[df_master['language'] == lang]
         if len(lang_data) > 0:
             print(f"  • {lang}: {lang_data['duration_minutes'].mean():.2f} ± {lang_data['duration_minutes'].std():.2f} minutes")
     
     # Turn count analysis
-    print(f"\n💬 Turn Count Analysis:")
+    print(f"\n Turn Count Analysis:")
     
     turn_counts = df_interactions.groupby('session_folder').size()
     mean_turns = turn_counts.mean()
@@ -68,13 +68,13 @@ def analyze_timing(df_master, df_interactions):
     phq_turns = df_interactions[df_interactions['phqQuestionId'].str.startswith('Q', na=False)]
     turns_per_q = phq_turns.groupby('phqQuestionId').size()
     
-    print(f"\n📊 Turns per Question:")
+    print(f"\n Turns per Question:")
     for q_id in sorted(turns_per_q.index):
         mean_per_q = turns_per_q[q_id] / len(df_master)
         print(f"  • {q_id}: {turns_per_q[q_id]} total ({mean_per_q:.1f} per session avg)")
     
     # Correlation analysis
-    print(f"\n🔗 Correlation Analysis:")
+    print(f"\n Correlation Analysis:")
     correlations = df_master[['duration_seconds', 'total_score', 'total_gpt_calls', 'total_retries']].corr()
     print(f"\nDuration correlations:")
     print(f"  • with Total Score: r = {correlations.loc['duration_seconds', 'total_score']:.3f}")
@@ -191,7 +191,7 @@ def create_timing_visualizations(df_master, df_interactions, turn_counts, output
     plt.close()
     print(f"✓ {fig5.name}")
     
-    print("\n✅ All timing visualizations generated!")
+    print("\n All timing visualizations generated!")
 
 
 def extract_conversation_examples(df_interactions, output_dir):
@@ -326,7 +326,7 @@ def main():
     save_timing_tables(df_master, tables_dir)
     
     print("\n" + "="*80)
-    print("✅ TIMING AND FLOW ANALYSIS COMPLETE!")
+    print(" TIMING AND FLOW ANALYSIS COMPLETE!")
     print("="*80)
 
 

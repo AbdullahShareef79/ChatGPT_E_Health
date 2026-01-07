@@ -23,7 +23,7 @@ def load_data():
     interactions_file = base_path / "results" / "tables" / "all_interaction_logs.csv"
     
     if not gpt_file.exists() or not interactions_file.exists():
-        print("❌ Required data files not found. Run 01_load_and_clean.py first!")
+        print(" Required data files not found. Run 01_load_and_clean.py first!")
         return None, None
     
     df_gpt = pd.read_csv(gpt_file)
@@ -39,7 +39,7 @@ def analyze_gpt_usage(df_gpt, df_interactions):
     print("="*80)
     
     # Overall statistics
-    print(f"\n📊 Overall GPT Statistics:")
+    print(f"\n Overall GPT Statistics:")
     print(f"Total GPT calls: {len(df_gpt)}")
     
     if 'tokens_used' in df_gpt.columns:
@@ -50,7 +50,7 @@ def analyze_gpt_usage(df_gpt, df_interactions):
     
     # GPT calls by purpose
     if 'purpose' in df_gpt.columns:
-        print(f"\n🎯 GPT Calls by Purpose:")
+        print(f"\n GPT Calls by Purpose:")
         purpose_counts = df_gpt['purpose'].value_counts()
         for purpose, count in purpose_counts.items():
             pct = (count / len(df_gpt)) * 100
@@ -60,7 +60,7 @@ def analyze_gpt_usage(df_gpt, df_interactions):
     df_gpt['question_num'] = df_gpt['purpose'].str.extract(r'Q(\d+)').astype(float)
     
     # Per-question GPT usage from interactions
-    print(f"\n📈 GPT Usage by Question:")
+    print(f"\n GPT Usage by Question:")
     gpt_by_question = df_interactions[df_interactions['gptUsed'] == True].groupby('phqQuestionId').size()
     for q_id, count in gpt_by_question.items():
         if q_id and q_id.startswith('Q'):
@@ -75,7 +75,7 @@ def analyze_gpt_usage(df_gpt, df_interactions):
         ])
         local_success = total_turns - gpt_turns
         
-        print(f"\n✅ Local NLP vs GPT Fallback:")
+        print(f"\n Local NLP vs GPT Fallback:")
         print(f"  • Total answer turns: {total_turns}")
         print(f"  • Local NLP success: {local_success} ({local_success/total_turns*100:.1f}%)")
         print(f"  • GPT fallback needed: {gpt_turns} ({gpt_turns/total_turns*100:.1f}%)")
@@ -191,7 +191,7 @@ def create_gpt_visualizations(df_gpt, df_interactions, output_dir):
         plt.close()
         print(f"✓ {fig4.name}")
     
-    print("\n✅ All GPT visualizations generated!")
+    print("\n All GPT visualizations generated!")
 
 
 def save_gpt_tables(df_gpt, df_interactions, output_dir):
@@ -241,7 +241,7 @@ def main():
     save_gpt_tables(df_gpt, df_interactions, tables_dir)
     
     print("\n" + "="*80)
-    print("✅ GPT USAGE ANALYSIS COMPLETE!")
+    print(" GPT USAGE ANALYSIS COMPLETE!")
     print("="*80)
 
 

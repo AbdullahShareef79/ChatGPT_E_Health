@@ -23,7 +23,7 @@ def load_data():
     interactions_file = base_path / "results" / "tables" / "all_interaction_logs.csv"
     
     if not master_file.exists() or not interactions_file.exists():
-        print("❌ Required data files not found. Run 01_load_and_clean.py first!")
+        print(" Required data files not found. Run 01_load_and_clean.py first!")
         return None, None
     
     df_master = pd.read_csv(master_file)
@@ -49,13 +49,13 @@ def analyze_nlp_performance(df_master, df_interactions):
     local_success = len(df_phq[df_phq['pepperLocalNlpSuccess'] == True])
     local_rate = (local_success / total_turns) * 100 if total_turns > 0 else 0
     
-    print(f"\n📊 Overall NLP Performance:")
+    print(f"\n Overall NLP Performance:")
     print(f"Total PHQ-9 answer turns: {total_turns}")
     print(f"Local NLP success: {local_success} ({local_rate:.1f}%)")
     print(f"Required GPT fallback: {total_turns - local_success} ({100-local_rate:.1f}%)")
     
     # Success rate by language
-    print(f"\n🌍 Performance by Language:")
+    print(f"\n Performance by Language:")
     for lang in df_interactions['languageDetected'].unique():
         if pd.isna(lang):
             continue
@@ -66,7 +66,7 @@ def analyze_nlp_performance(df_master, df_interactions):
             print(f"  • {lang}: {lang_success}/{len(lang_turns)} ({lang_rate:.1f}% success)")
     
     # Success rate per question
-    print(f"\n📈 Performance by Question:")
+    print(f"\n Performance by Question:")
     for q_num in range(1, 10):
         q_id = f'Q{q_num}'
         q_turns = df_phq[df_phq['phqQuestionId'] == q_id]
@@ -77,7 +77,7 @@ def analyze_nlp_performance(df_master, df_interactions):
             print(f"  • Q{q_num}: {q_success}/{len(q_turns)} ({q_rate:.1f}% success)")
     
     # Retry analysis
-    print(f"\n🔄 Retry Analysis:")
+    print(f"\n Retry Analysis:")
     retry_cols = [f'Q{i}_retries' for i in range(1, 10)]
     if all(col in df_master.columns for col in retry_cols):
         retry_data = df_master[retry_cols]
@@ -200,7 +200,7 @@ def create_nlp_visualizations(df_master, df_phq, output_dir):
     plt.close()
     print(f"✓ {fig4.name}")
     
-    print("\n✅ All NLP visualizations generated!")
+    print("\n All NLP visualizations generated!")
 
 
 def save_nlp_tables(df_master, df_phq, output_dir):
@@ -266,7 +266,7 @@ def main():
     save_nlp_tables(df_master, df_phq, tables_dir)
     
     print("\n" + "="*80)
-    print("✅ LOCAL NLP PERFORMANCE ANALYSIS COMPLETE!")
+    print(" LOCAL NLP PERFORMANCE ANALYSIS COMPLETE!")
     print("="*80)
 
 

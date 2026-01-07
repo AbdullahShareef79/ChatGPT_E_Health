@@ -37,7 +37,7 @@ def load_all_sessions(sessions_root):
             session_json = session_folder / "session_data.json"
             
             if not session_json.exists():
-                print(f"⚠️  Skipping {session_folder.name} - no session_data.json")
+                print(f"  Skipping {session_folder.name} - no session_data.json")
                 continue
             
             try:
@@ -78,7 +78,7 @@ def load_all_sessions(sessions_root):
                 print(f"✓ Loaded {session_folder.name} ({session_info['language']})")
                 
             except Exception as e:
-                print(f"❌ Error loading {session_folder.name}: {e}")
+                print(f" Error loading {session_folder.name}: {e}")
                 continue
     
     df = pd.DataFrame(sessions_data)
@@ -119,7 +119,7 @@ def load_interaction_logs(sessions_root):
                 all_logs.append(df_log)
                 
             except Exception as e:
-                print(f"❌ Error loading CSV from {session_folder.name}: {e}")
+                print(f" Error loading CSV from {session_folder.name}: {e}")
                 continue
     
     if all_logs:
@@ -165,7 +165,7 @@ def load_gpt_calls(sessions_root):
                     all_gpt_calls.append(call)
                     
             except Exception as e:
-                print(f"❌ Error loading GPT calls from {session_folder.name}: {e}")
+                print(f" Error loading GPT calls from {session_folder.name}: {e}")
                 continue
     
     if all_gpt_calls:
@@ -188,7 +188,7 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # Load session metadata
-    print("📁 Loading session metadata...")
+    print(" Loading session metadata...")
     df_sessions = load_all_sessions(sessions_root)
     print(f"\n✓ Loaded {len(df_sessions)} sessions")
     print(f"  • English: {len(df_sessions[df_sessions['language']=='EN'])}")
@@ -196,7 +196,7 @@ def main():
     print(f"  • Other/Unknown: {len(df_sessions[~df_sessions['language'].isin(['EN', 'DE'])])}")
     
     # Load interaction logs
-    print("\n📊 Loading interaction logs...")
+    print("\n Loading interaction logs...")
     df_interactions = load_interaction_logs(sessions_root)
     if not df_interactions.empty:
         print(f"✓ Loaded {len(df_interactions)} interaction turns")
@@ -204,7 +204,7 @@ def main():
         print(f"  • Local NLP success: {df_interactions['pepperLocalNlpSuccess'].sum() if 'pepperLocalNlpSuccess' in df_interactions else 'N/A'}")
     
     # Load GPT calls
-    print("\n🤖 Loading GPT API calls...")
+    print("\n Loading GPT API calls...")
     df_gpt = load_gpt_calls(sessions_root)
     if not df_gpt.empty:
         print(f"✓ Loaded {len(df_gpt)} GPT API calls")
@@ -213,7 +213,7 @@ def main():
             print(f"  • Total tokens: {total_tokens:,}")
     
     # Save master datasets
-    print("\n💾 Saving cleaned datasets...")
+    print("\n Saving cleaned datasets...")
     
     # Master sessions table
     sessions_file = output_dir / "simulation_master.csv"
@@ -237,11 +237,11 @@ def main():
     print("SUMMARY STATISTICS")
     print("="*80)
     
-    print("\n📈 Session Overview:")
+    print("\n Session Overview:")
     print(df_sessions[['language', 'duration_seconds', 'total_score', 'severity', 
                        'total_gpt_calls', 'total_retries']].describe())
     
-    print("\n📊 By Language:")
+    print("\n By Language:")
     summary = df_sessions.groupby('language').agg({
         'duration_seconds': ['mean', 'std'],
         'total_score': ['mean', 'std'],
@@ -250,7 +250,7 @@ def main():
     }).round(2)
     print(summary)
     
-    print("\n✅ Data loading and cleaning complete!")
+    print("\n Data loading and cleaning complete!")
     print(f"   Master dataset saved to: {sessions_file}")
 
 

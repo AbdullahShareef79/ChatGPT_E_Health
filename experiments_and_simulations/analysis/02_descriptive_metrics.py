@@ -21,7 +21,7 @@ def load_master_data():
     data_file = base_path / "results" / "tables" / "simulation_master.csv"
     
     if not data_file.exists():
-        print("❌ Master dataset not found. Run 01_load_and_clean.py first!")
+        print(" Master dataset not found. Run 01_load_and_clean.py first!")
         return None
     
     df = pd.read_csv(data_file)
@@ -37,7 +37,7 @@ def compute_descriptives(df):
     print("="*80)
     
     # Overall statistics
-    print("\n📊 Overall Session Statistics:")
+    print("\n Overall Session Statistics:")
     print(f"Total sessions: {len(df)}")
     print(f"  • English: {len(df[df['language']=='EN'])}")
     print(f"  • German: {len(df[df['language']=='DE'])}")
@@ -69,7 +69,7 @@ def compute_descriptives(df):
     print("\n", summary)
     
     # Severity distribution
-    print("\n📈 Severity Distribution:")
+    print("\n Severity Distribution:")
     severity_counts = df['severity'].value_counts()
     print(severity_counts)
     
@@ -196,7 +196,7 @@ def create_visualizations(df, output_dir):
         plt.close()
         print(f"✓ {fig7.name}")
     
-    print("\n✅ All visualizations generated!")
+    print("\n All visualizations generated!")
 
 
 def save_descriptive_tables(df, summary, output_dir):
@@ -244,7 +244,7 @@ def main():
     save_descriptive_tables(df, summary, tables_dir)
     
     print("\n" + "="*80)
-    print("✅ DESCRIPTIVE ANALYSIS COMPLETE!")
+    print(" DESCRIPTIVE ANALYSIS COMPLETE!")
     print("="*80)
 
 

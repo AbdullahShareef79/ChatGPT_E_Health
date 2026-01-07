@@ -1,35 +1,4 @@
-"""
-07_qualitative_fallback_derivation.py
-================================================================================
-REPRODUCIBILITY SCRIPT: Derives fallback counts and reconciles all discrepancies
 
-COMPLETE RECONCILIATION (Verified December 2025):
-
-  +---------------------------+-------+
-  | Metric                    | Count |
-  +---------------------------+-------+
-  | Total GPT API calls       |    38 |
-  | Unique (session, question)|    33 |
-  | GPT as FINAL (all langs)  |    29 |
-  |   - English (Q1-Q9)       |    17 |
-  |   - German (F1-F9)        |    12 |
-  +---------------------------+-------+
-
-The thesis Table (nlp_performance_by_question.csv) reports 17 fallbacks
-because it only analyzed ENGLISH sessions (Q1-Q9). The 12 German fallbacks
-are in the interaction logs but not in that summary table.
-
-FULL QUALITATIVE SAMPLE: 29 fallback cases (both EN and DE)
-
-Unit of Analysis Definitions:
-- GPT API Call: A single invocation of the GPT-4o-mini API
-- Unique GPT Question: A (session, question) pair with at least one GPT call
-- Fallback Turn: A question where GPT provided the FINAL confirmed answer
-
-Author: [Thesis Author]
-Date: December 2025
-================================================================================
-"""
 
 import pandas as pd
 from pathlib import Path

@@ -220,7 +220,7 @@ print(f"Total retry attempts:            {total_retries}")
 print(f"GPT parse errors:                {gpt_parse_errors}")
 print("="*70)
 
-print("\n✓ Pipeline error summary analysis complete!")
+print("\n Pipeline error summary analysis complete!")
 print(f"\nGenerated files:")
 print(f"  - {output_csv.name}")
 print(f"  - {latex_file.name}")

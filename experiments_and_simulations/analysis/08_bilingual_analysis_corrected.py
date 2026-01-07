@@ -1,24 +1,4 @@
-"""
-08_bilingual_analysis_corrected.py
-================================================================================
-CORRECTED BILINGUAL ANALYSIS - PHQ-9 Voice Screening System
 
-This script generates all analysis tables and figures using the CORRECT methodology:
-- Analyzes FINAL answers only (not all interaction turns including retries)
-- Includes BOTH English (Q1-Q9) and German (F1-F9) sessions
-- Uses handlingModule to determine if GPT provided the final answer
-
-GROUND TRUTH (verified from raw data):
-- 10 sessions total (5 English, 5 German)
-- 90 FINAL answers (45 English, 45 German)
-- Local NLP success: 61/90 (67.8%) - 28 EN + 33 DE
-- GPT fallback: 29/90 (32.2%) - 17 EN + 12 DE
-- Total GPT API calls: 38 (includes retries)
-
-Author: [Thesis Author]
-Date: December 2025
-================================================================================
-"""
 
 import pandas as pd
 import matplotlib.pyplot as plt
